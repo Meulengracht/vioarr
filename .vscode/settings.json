@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "vioarr_renderer.h": "c",
+        "vioarr_screen.h": "c",
+        "types.h": "c",
+        "vioarr_objects.h": "c"
+    }
+}

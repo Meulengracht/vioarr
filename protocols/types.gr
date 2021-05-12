@@ -1,0 +1,57 @@
+/**
+ * Vioar Window Manager Protocol
+ * Defines the various services that together provide functionality for the
+ * window management service.
+ */
+
+namespace wm
+
+enum pixel_format {
+    A8R8G8B8,
+    A8B8G8R8,
+    X8R8G8B8,
+    X8B8G8R8,
+    R8G8B8A8,
+    B8G8R8A8
+}
+
+enum object_type {
+    SCREEN,
+    POINTER,
+    MEMORY,
+    MEMORY_POOL,
+    SURFACE,
+    BUFFER
+}
+
+enum mode_attributes {
+    CURRENT,
+    PREFERRED
+}
+
+enum transform {
+    NO_TRANSFORM,
+    ROTATE_90,
+    ROTATE_180,
+    ROTATE_270
+}
+
+enum surface_edge {
+    NO_EDGES = 0,
+    TOP_LEFT = 1,
+    TOP_RIGHT = 2,
+    BOTTOM_LEFT = 4,
+    BOTTOM_RIGHT = 8
+}
+
+enum fullscreen_mode {
+    EXIT,
+    NORMAL,
+    FULL
+}
+
+enum pointer_button {
+    LEFT,
+    MIDDLE,
+    RIGHT
+}

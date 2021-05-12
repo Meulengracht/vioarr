@@ -1,0 +1,83 @@
+/**
+ * Vioar Window Manager Protocol
+ * Defines the various services that together provide functionality for the
+ * window management service.
+ */
+
+import "types"
+
+namespace wm
+
+service core (80) {
+    func get_objects() : () = 1;
+    func sync(uint32 serial) : () = 2;
+
+    event sync : (uint32 serial) = 3;
+    event object : (uint32 id, ulong handle, object_type type) = 4;
+    event error : (uint32 id, int errorCode, string description) = 5;
+}
+
+service screen (81) {
+    func get_properties(uint32 id) : () = 1;
+    func get_modes(uint32 id) : () = 2;
+    func set_scale(uint32 id, int scale) : () = 3;
+    func set_transform(uint32 id, transform transform) : () = 4;
+    func create_surface(uint32 screenId, uint32 surfaceId, int width, int height) : () = 5;
+
+    event properties : (uint32 id, int x, int y, transform transform, int scale) = 6;
+    event mode : (uint32 id, mode_attributes attributes, int resolutionX, int resolutionY, int refreshRate) = 7;
+}
+
+service memory (82) {
+    func create_pool(uint32 poolId, ulong handle, int size) : () = 1;
+}
+
+service memory_pool (83) {
+    func create_buffer(uint32 poolId, uint32 bufferId, int offset, int width, int height, int stride, pixel_format format, uint flags) : () = 1;
+    func destroy(uint32 id) : () = 2;
+}
+
+service surface (84) {
+    func get_formats(uint32 id) : () = 1;
+    func set_buffer(uint32 surfaceId, uint32 bufferId) : () = 2;
+    func invalidate(uint32 id, int x, int y, int width, int height) : () = 3;
+    func set_transparency(uint32 id, bool set) : () = 4;
+    func set_drop_shadow(uint32 id, int x, int y, int width, int height) : () = 5;
+    func set_input_region(uint32 id, int x, int y, int width, int height) : () = 6;
+    func add_subsurface(uint32 parentId, uint32 childId, int x, int y) : () = 7;
+    func resize_subsurface(uint32 id, int width, int height) : () = 8;
+    func move_subsurface(uint32 id, int x, int y) : () = 9;
+    func request_fullscreen_mode(uint32 id, fullscreen_mode mode) : () = 10;
+    func request_level(uint32 id, int level) : () = 11;
+    func request_frame(uint32 id) : () = 12;
+    func commit(uint32 id) : () = 13;
+    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 14;
+    func move(uint32 id, uint32 pointerId) : () = 15;
+    func destroy(uint32 id) : () = 16;
+
+    event format : (uint32 id, pixel_format format) = 17;
+    event frame : (uint32 id) = 18;
+    event resize : (uint32 id, int width, int height, surface_edge edges) = 19;
+    event focus : (uint32 id, bool focus) = 20;
+}
+
+service buffer (85) {
+    func destroy(uint32 id) : () = 1;
+
+    event release : (uint32 id) = 2;
+}
+
+service pointer (86) {
+    func set_surface(uint32 pointerId, uint32 surfaceId, int xOffset, int yOffset) : () = 1;
+    func grab(uint32 pointerId, uint32 surfaceId) : () = 2;
+    func ungrab(uint32 pointerId, uint32 surfaceId) : () = 3;
+
+    event enter : (uint32 pointerId, uint32 surfaceId, int surfaceX, int surfaceY) = 4;
+    event leave : (uint32 pointerId, uint32 surfaceId) = 5;
+    event move : (uint32 pointerId, uint32 surfaceId, int surfaceX, int surfaceY) = 6;
+    event click : (uint32 pointerId, uint32 surfaceId, pointer_button button, bool pressed) = 7;
+}
+
+service keyboard (87) {
+    event key : (uint32 surfaceId, uint8 keycode, uint16 flags) = 1;
+}

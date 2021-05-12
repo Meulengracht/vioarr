@@ -1,19 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
-project(heimdall C CXX)
-
-# setup include directories
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-if (MOLLENOS)
-  include_directories($ENV{VALI_APPLICATION_PATH}/include)
-  include_directories($ENV{VALI_DDK_PATH}/include)
-
-  link_directories($ENV{VALI_APPLICATION_PATH}/lib)
-  link_directories($ENV{VALI_DDK_PATH}/lib)
-endif()
-
-set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 set (GENERATED_SOURCES
     hd_core_protocol_server.c
@@ -41,13 +26,3 @@ add_dependencies(heimdall protocols)
 if (MOLLENOS)
   target_link_libraries(heimdall asgaard static_libddk static_libgracht)
 endif()
-
-# Add a new install target
-install(TARGETS heimdall
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-    RUNTIME DESTINATION bin
-)
-
-# install the generated map file
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/bin/heimdall.map DESTINATION bin)

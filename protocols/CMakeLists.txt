@@ -52,7 +52,7 @@ set (GENERATED_CLIENT_SOURCES
 add_custom_command(
     OUTPUT  ${GENERATED_HEADERS} ${GENERATED_SERVER_SOURCES} ${GENERATED_CLIENT_SOURCES}
     COMMAND python3 ${GRACHT_INSTALL_DIR}/share/gracht/parser.py --service ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --server --client
-    DEPENDS gracht ${CMAKE_CURRENT_SOURCE_DIR}/types.gr ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr
+    DEPENDS gracht_dl ${CMAKE_CURRENT_SOURCE_DIR}/types.gr ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr
 )
 
 add_custom_target(

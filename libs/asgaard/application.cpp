@@ -24,7 +24,6 @@
 #include <cstring>
 #include <errno.h>
 #include <gracht/client.h>
-#include <gracht/link/socket.h>
 #include "include/application.hpp"
 #include "include/pointer.hpp"
 #include "include/screen.hpp"
@@ -32,96 +31,34 @@
 #include "include/window_base.hpp"
 #include "include/exceptions/application_exception.h"
 #include "include/utils/descriptor_listener.hpp"
+#include <type_traits>
+
+#ifdef MOLLENOS
 #include <inet/socket.h>
 #include <inet/local.h>
 #include <ioset.h>
-#include <type_traits>
+#elif defined(_WIN32)
+#include <windows.h>
+static const char* g_ipAddress = "127.0.0.1";
+static uint16_t    g_portNo    = 55555;
+#else
+#include <gracht/link/socket.h>
+#include <sys/epoll.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+static const char* g_serverPath = "/tmp/vioarr";
+#endif
 
-#include "wm_core_protocol_client.h"
-#include "wm_screen_protocol_client.h"
-#include "wm_surface_protocol_client.h"
-#include "wm_buffer_protocol_client.h"
-#include "wm_pointer_protocol_client.h"
-#include "wm_keyboard_protocol_client.h"
+#include "wm_core_service_client.h"
+#include "wm_screen_service_client.h"
+#include "wm_surface_service_client.h"
+#include "wm_buffer_service_client.h"
+#include "wm_pointer_service_client.h"
+#include "wm_keyboard_service_client.h"
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Waddress-of-temporary"
 #pragma clang diagnostic ignored "-Wwritable-strings"
-
-extern "C" {
-    static void wm_core_event_error_callback(struct wm_core_error_event*);
-    static void wm_core_event_sync_callback(struct wm_core_sync_event*);
-    static void wm_core_event_object_callback(struct wm_core_object_event*);
- 
-    static gracht_protocol_function_t wm_core_callbacks[3] = {
-        { PROTOCOL_WM_CORE_EVENT_ERROR_ID ,  (void*)wm_core_event_error_callback },
-        { PROTOCOL_WM_CORE_EVENT_SYNC_ID ,   (void*)wm_core_event_sync_callback },
-        { PROTOCOL_WM_CORE_EVENT_OBJECT_ID , (void*)wm_core_event_object_callback },
-    };
-    DEFINE_WM_CORE_CLIENT_PROTOCOL(wm_core_callbacks, 3);
-
-    static void wm_screen_event_screen_properties_callback(struct wm_screen_screen_properties_event*);
-    static void wm_screen_event_mode_callback(struct wm_screen_mode_event*);
- 
-    static gracht_protocol_function_t wm_screen_callbacks[2] = {
-        { PROTOCOL_WM_SCREEN_EVENT_SCREEN_PROPERTIES_ID , (void*)wm_screen_event_screen_properties_callback },
-        { PROTOCOL_WM_SCREEN_EVENT_MODE_ID , (void*)wm_screen_event_mode_callback },
-    };
-    DEFINE_WM_SCREEN_CLIENT_PROTOCOL(wm_screen_callbacks, 2);
-
-    static void wm_surface_event_format_callback(struct wm_surface_format_event*);
-    static void wm_surface_event_frame_callback(struct wm_surface_frame_event*);
-    static void wm_surface_event_resize_callback(struct wm_surface_resize_event*);
-    static void wm_surface_event_focus_callback(struct wm_surface_focus_event*);
-
-    static gracht_protocol_function_t wm_surface_callbacks[4] = {
-        { PROTOCOL_WM_SURFACE_EVENT_FORMAT_ID , (void*)wm_surface_event_format_callback },
-        { PROTOCOL_WM_SURFACE_EVENT_FRAME_ID ,  (void*)wm_surface_event_frame_callback },
-        { PROTOCOL_WM_SURFACE_EVENT_RESIZE_ID , (void*)wm_surface_event_resize_callback },
-        { PROTOCOL_WM_SURFACE_EVENT_FOCUS_ID , (void*)wm_surface_event_focus_callback },
-    };
-    DEFINE_WM_SURFACE_CLIENT_PROTOCOL(wm_surface_callbacks, 4);
-
-    static void wm_buffer_event_release_callback(struct wm_buffer_release_event*);
-
-    static gracht_protocol_function_t wm_buffer_callbacks[1] = {
-        { PROTOCOL_WM_BUFFER_EVENT_RELEASE_ID , (void*)wm_buffer_event_release_callback },
-    };
-    DEFINE_WM_BUFFER_CLIENT_PROTOCOL(wm_buffer_callbacks, 1);
-
-    static void wm_pointer_event_enter_callback(struct wm_pointer_enter_event*);
-    static void wm_pointer_event_leave_callback(struct wm_pointer_leave_event*);
-    static void wm_pointer_event_move_callback(struct wm_pointer_move_event*);
-    static void wm_pointer_event_click_callback(struct wm_pointer_click_event*);
- 
-    static gracht_protocol_function_t wm_pointer_callbacks[4] = {
-        { PROTOCOL_WM_POINTER_EVENT_ENTER_ID , (void*)wm_pointer_event_enter_callback },
-        { PROTOCOL_WM_POINTER_EVENT_LEAVE_ID , (void*)wm_pointer_event_leave_callback },
-        { PROTOCOL_WM_POINTER_EVENT_MOVE_ID ,  (void*)wm_pointer_event_move_callback },
-        { PROTOCOL_WM_POINTER_EVENT_CLICK_ID , (void*)wm_pointer_event_click_callback },
-    };
-    DEFINE_WM_POINTER_CLIENT_PROTOCOL(wm_pointer_callbacks, 4);
- 
-    static void wm_keyboard_event_key_callback(struct wm_keyboard_key_event*);
- 
-    static gracht_protocol_function_t wm_keyboard_callbacks[1] = {
-        { PROTOCOL_WM_KEYBOARD_EVENT_KEY_ID , (void*)wm_keyboard_event_key_callback },
-    };
-    DEFINE_WM_KEYBOARD_CLIENT_PROTOCOL(wm_keyboard_callbacks, 1);
-}
-
-int gracht_os_get_server_client_address(struct sockaddr_storage* address, int* address_length_out)
-{
-    struct sockaddr_lc* local_address = sstolc(address);
-    *address_length_out               = sizeof(struct sockaddr_lc);
-
-    // Prepare the server address.
-    memset(local_address, 0, sizeof(struct sockaddr_lc));
-    memcpy(&local_address->slc_addr[0], LCADDR_WM0, strlen(LCADDR_WM0));
-    local_address->slc_len    = sizeof(struct sockaddr_lc);
-    local_address->slc_family = AF_LOCAL;
-    return 0;
-}
 
 namespace Asgaard {
     Application APP;
@@ -132,7 +69,6 @@ namespace Asgaard {
         , m_ioset(-1)
         , m_syncRecieved(false)
         , m_screenFound(false)
-        , m_messageBuffer(nullptr)
     {
         
     }
@@ -142,20 +78,30 @@ namespace Asgaard {
         Destroy();
     }
 
+#ifdef MOLLENOS
     void Application::Initialize()
     {
-        struct socket_client_configuration linkConfiguration;
         struct gracht_client_configuration clientConfiguration;
+        struct gracht_link*                link;
         int                                status;
 
         if (IsInitialized()) {
             throw ApplicationException("Initialize has been called twice", -1);
         }
         
-        linkConfiguration.type = gracht_link_stream_based;
-        gracht_os_get_server_client_address(&linkConfiguration.address, &linkConfiguration.address_length);
+        struct sockaddr_un addr = { 0 };
         
-        gracht_link_socket_client_create(&clientConfiguration.link, &linkConfiguration);
+        addr.sun_family = AF_LOCAL;
+        strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
+        addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
+
+        gracht_link_socket_set_type(link, gracht_link_stream_based);
+        gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+        gracht_link_socket_set_domain(link, AF_LOCAL);
+
+        gracht_client_configuration_init(&clientConfiguration);
+        gracht_client_configuration_set_link(&clientConfiguration, link);
+        
         status = gracht_client_create(&clientConfiguration, &m_client);
         if (status) {
             throw ApplicationException("failed to initialize gracht client library", status);
@@ -173,9 +119,6 @@ namespace Asgaard {
         if (m_ioset <= 0) {
             throw ApplicationException("failed to initialize the ioset descriptor", errno);
         }
-
-        // allocate the message buffer
-        m_messageBuffer = new char[GRACHT_MAX_MESSAGE_SIZE];
         
         // add the client as a target
         AddEventDescriptor(
@@ -189,44 +132,7 @@ namespace Asgaard {
 
         // wait for initialization to complete
         while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_client, NULL, m_messageBuffer, 0);
-        }
-    }
-
-    void Application::Destroy()
-    {
-        // unsubscribe from screens
-        for (const auto& screen : m_screens) {
-            screen->Unsubscribe(this);
-        }
-
-        m_listeners.clear();
-        m_screens.clear();
-        
-        if (m_client != nullptr) {
-            gracht_client_shutdown(m_client);
-        }
-
-        if (m_messageBuffer != nullptr) {
-            delete[] m_messageBuffer;
-        }
-    }
-
-    bool Application::IsInitialized() const
-    {
-        return m_screenFound && m_syncRecieved;
-    }
-    
-    void Application::PumpMessages()
-    {
-        int status = 0;
-        
-        if (!IsInitialized()) {
-            Initialize();
-        }
-
-        while (!status) {
-            status = gracht_client_wait_message(m_client, NULL, m_messageBuffer, 0);
+            (void)gracht_client_wait_message(m_client, NULL, 0);
         }
     }
     
@@ -273,6 +179,244 @@ namespace Asgaard {
 
         m_listeners[iod] = listener;
     }
+#elif defined(_WIN32)
+    void Application::Initialize()
+    {
+        struct gracht_client_configuration clientConfiguration;
+        struct gracht_link_socket*         link;
+        struct sockaddr_in                 addr = { 0 };
+        int                                status;
+
+        if (IsInitialized()) {
+            throw ApplicationException("Initialize has been called twice", -1);
+        }
+        
+    
+        // initialize the WSA library
+        gracht_link_socket_setup();
+
+        // AF_INET is the Internet address family.
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = inet_addr(g_ipAddress);
+        addr.sin_port = htons(g_portNo);
+
+        gracht_link_socket_set_type(link, gracht_link_stream_based);
+        gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_in));
+
+        gracht_client_configuration_init(&clientConfiguration);
+        gracht_client_configuration_set_link(&clientConfiguration, (struct gracht_link*)link);
+        
+        status = gracht_client_create(&clientConfiguration, &m_client);
+        if (status) {
+            throw ApplicationException("failed to initialize gracht client library", status);
+        }
+        
+        gracht_client_register_protocol(m_client, &wm_core_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_screen_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_surface_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_buffer_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_pointer_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_keyboard_client_protocol);
+
+        // Prepare the ioset to listen to multiple events
+        m_ioset = ioset(0);
+        if (m_ioset <= 0) {
+            throw ApplicationException("failed to initialize the ioset descriptor", errno);
+        }
+
+        // add the client as a target
+        AddEventDescriptor(
+            gracht_client_iod(m_client), 
+            IOSETIN | IOSETCTL | IOSETLVT,
+            std::shared_ptr<Utils::DescriptorListener>(nullptr));
+
+        // kick off a chain reaction by asking for all objects
+        wm_core_get_objects(m_client, nullptr);
+        wm_core_sync(m_client, nullptr, 0);
+
+        // wait for initialization to complete
+        while (!IsInitialized()) {
+            (void)gracht_client_wait_message(m_client, NULL, 0);
+        }
+    }
+    
+    int Application::Execute()
+    {
+        struct ioset_event events[8];
+
+        if (!IsInitialized()) {
+            Initialize();
+        }
+        
+        while (true) {
+            int num_events = ioset_wait(m_ioset, &events[0], 8, 0);
+            for (int i = 0; i < num_events; i++) {
+                if (events[i].data.iod == gracht_client_iod(m_client)) {
+                    gracht_client_wait_message(m_client, NULL, m_messageBuffer, 0);
+                }
+                else {
+                    auto listener = m_listeners.find(events[i].data.iod);
+                    if (listener != m_listeners.end()) {
+                        listener->second->DescriptorEvent(events[i].data.iod, events[i].events);
+                    }
+                }
+            }
+        }
+        
+        return 0;
+    }
+    
+    void Application::AddEventDescriptor(int iod, unsigned int events, const std::shared_ptr<Utils::DescriptorListener>& listener)
+    {
+        if (m_ioset == -1) {
+            throw ApplicationException("Initialize() must be called before AddEventDescriptor", -1);
+        }
+
+        int status = ioset_ctrl(m_ioset, IOSET_ADD, iod,
+               &(struct ioset_event) {
+                    .events   = events,
+                    .data.iod = iod
+               });
+        if (status) {
+            throw ApplicationException("ioset_ctrl failed to add event descriptor", status);
+        }
+
+        m_listeners[iod] = listener;
+    }
+#else
+    void Application::Initialize()
+    {
+        struct gracht_client_configuration clientConfiguration;
+        struct gracht_link_socket*         link;
+        int                                status;
+        struct sockaddr_un                 addr = { 0 };
+
+        if (IsInitialized()) {
+            throw ApplicationException("Initialize has been called twice", -1);
+        }
+        
+        addr.sun_family = AF_LOCAL;
+        strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
+        addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
+
+        gracht_link_socket_set_type(link, gracht_link_stream_based);
+        gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+        gracht_link_socket_set_domain(link, AF_LOCAL);
+
+        gracht_client_configuration_init(&clientConfiguration);
+        gracht_client_configuration_set_link(&clientConfiguration, (struct gracht_link*)link);
+        
+        status = gracht_client_create(&clientConfiguration, &m_client);
+        if (status) {
+            throw ApplicationException("failed to initialize gracht client library", status);
+        }
+        
+        gracht_client_register_protocol(m_client, &wm_core_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_screen_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_surface_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_buffer_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_pointer_client_protocol);
+        gracht_client_register_protocol(m_client, &wm_keyboard_client_protocol);
+
+        // Prepare the ioset to listen to multiple events
+        m_ioset = epoll_create(0);
+        if (m_ioset <= 0) {
+            throw ApplicationException("failed to initialize the ioset descriptor", errno);
+        }
+
+        // add the client as a target
+        AddEventDescriptor(
+            gracht_client_iod(m_client), 
+            EPOLLIN | EPOLLRDHUP,
+            std::shared_ptr<Utils::DescriptorListener>(nullptr));
+
+        // kick off a chain reaction by asking for all objects
+        wm_core_get_objects(m_client, nullptr);
+        wm_core_sync(m_client, nullptr, 0);
+
+        // wait for initialization to complete
+        while (!IsInitialized()) {
+            (void)gracht_client_wait_message(m_client, NULL, 0);
+        }
+    }
+    
+    int Application::Execute()
+    {
+        struct epoll_event events[8];
+
+        if (!IsInitialized()) {
+            Initialize();
+        }
+        
+        while (true) {
+            int num_events = epoll_wait(m_ioset, &events[0], 8, -1);
+            for (int i = 0; i < num_events; i++) {
+                if (events[i].data.fd == gracht_client_iod(m_client)) {
+                    gracht_client_wait_message(m_client, NULL, 0);
+                }
+                else {
+                    auto listener = m_listeners.find(events[i].data.fd);
+                    if (listener != m_listeners.end()) {
+                        listener->second->DescriptorEvent(events[i].data.fd, events[i].events);
+                    }
+                }
+            }
+        }
+        
+        return 0;
+    }
+    
+    void Application::AddEventDescriptor(int iod, unsigned int events, const std::shared_ptr<Utils::DescriptorListener>& listener)
+    {
+        if (m_ioset == -1) {
+            throw ApplicationException("Initialize() must be called before AddEventDescriptor", -1);
+        }
+
+        int status = epoll_ctl(m_ioset, EPOLL_CTL_ADD, iod,
+               &(struct epoll_event) {
+                    .events  = events,
+                    .data.fd = iod
+               });
+        if (status) {
+            throw ApplicationException("ioset_ctrl failed to add event descriptor", status);
+        }
+
+        m_listeners[iod] = listener;
+    }
+#endif
+
+    void Application::Destroy()
+    {
+        // unsubscribe from screens
+        for (const auto& screen : m_screens) {
+            screen->Unsubscribe(this);
+        }
+
+        m_listeners.clear();
+        m_screens.clear();
+        
+        if (m_client != nullptr) {
+            gracht_client_shutdown(m_client);
+        }
+    }
+
+    bool Application::IsInitialized() const
+    {
+        return m_screenFound && m_syncRecieved;
+    }
+    
+    void Application::PumpMessages()
+    {
+        int status = 0;
+        
+        if (!IsInitialized()) {
+            Initialize();
+        }
+
+        while (!status) {
+            status = gracht_client_wait_message(m_client, NULL, 0);
+        }
+    }
 
     void Application::ExternalEvent(enum ObjectEvent event, void* data)
     {
@@ -283,13 +427,13 @@ namespace Asgaard {
                 
                 // Handle new server objects
                 switch (event->type) {
-                    case object_type_screen: {
+                    case WM_OBJECT_TYPE_SCREEN: {
                         auto screen = Asgaard::OM.CreateServerObject<Asgaard::Screen>(event->object_id);
                         screen->Subscribe(this);
                         m_screens.push_back(screen);
                     } break;
 
-                    case object_type_pointer: {
+                    case WM_OBJECT_TYPE_POINTER: {
                         auto pointer = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(event->object_id);
                     } break;
                     
@@ -336,10 +480,10 @@ extern "C"
     }
 
     // CORE PROTOCOL EVENTS
-    void wm_core_event_sync_callback(struct wm_core_sync_event* input)
+    void wm_core_event_sync_invocation(gracht_client_t* client, const uint32_t serial)
     {
-        if (input->serial != 0) {
-            auto object = Asgaard::OM[input->serial];
+        if (serial != 0) {
+            auto object = Asgaard::OM[serial];
             if (!object) {
                 return;
             }
@@ -352,9 +496,9 @@ extern "C"
         }
     }
 
-    void wm_core_event_error_callback(struct wm_core_error_event* input)
+    void wm_core_event_error_invocation(gracht_client_t* client, const uint32_t id, const int errorCode, const char* description)
     {
-        auto object = Asgaard::OM[input->object_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // Global error, this must be handled on application level
             Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::ERROR, input);
@@ -365,20 +509,20 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::ERROR, input);
     }
     
-    void wm_core_event_object_callback(struct wm_core_object_event* input)
+    void wm_core_event_object_invocation(gracht_client_t* client, const uint32_t id, const size_t handle, const enum wm_object_type type)
     {
-        switch (input->type) {
+        switch (type) {
             // Handle new server objects
-            case object_type_screen: {
+            case WM_OBJECT_TYPE_SCREEN: {
                 Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::CREATION, input);
             } break;
-            case object_type_pointer: {
+            case WM_OBJECT_TYPE_POINTER: {
                 Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::CREATION, input);
             } break;
             
             // Handle client completion objects
             default: {
-                auto object = Asgaard::OM[input->object_id];
+                auto object = Asgaard::OM[id];
                 if (object == nullptr) {
                     // log
                     return;
@@ -389,9 +533,9 @@ extern "C"
     }
     
     // SCREEN PROTOCOL EVENTS
-    void wm_screen_event_screen_properties_callback(struct wm_screen_screen_properties_event* input)
+    void wm_screen_event_properties_invocation(gracht_client_t* client, const uint32_t id, const int x, const int y, const enum wm_transform transform, const int scale)
     {
-        auto object = Asgaard::OM[input->screen_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -401,9 +545,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::SCREEN_PROPERTIES, input);
     }
     
-    void wm_screen_event_mode_callback(struct wm_screen_mode_event* input)
+    void wm_screen_event_mode_invocation(gracht_client_t* client, const uint32_t id, const enum wm_mode_attributes attributes, const int resolutionX, const int resolutionY, const int refreshRate)
     {
-        auto object = Asgaard::OM[input->screen_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -413,9 +557,9 @@ extern "C"
     }
     
     // SURFACE PROTOCOL EVENTS
-    void wm_surface_event_format_callback(struct wm_surface_format_event* input)
+    void wm_surface_event_format_invocation(gracht_client_t* client, const uint32_t id, const enum wm_pixel_format format)
     {
-        auto object = Asgaard::OM[input->surface_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -424,9 +568,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_FORMAT, input);
     }
     
-    void wm_surface_event_frame_callback(struct wm_surface_frame_event* input)
+    void wm_surface_event_frame_invocation(gracht_client_t* client, const uint32_t id)
     {
-        auto object = Asgaard::OM[input->surface_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -435,9 +579,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_FRAME, input);
     }
     
-    void wm_surface_event_resize_callback(struct wm_surface_resize_event* input)
+    void wm_surface_event_resize_invocation(gracht_client_t* client, const uint32_t id, const int width, const int height, const enum wm_surface_edge edges)
     {
-        auto object = Asgaard::OM[input->surface_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -446,9 +590,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_RESIZE, input);
     }
 
-    void wm_surface_event_focus_callback(struct wm_surface_focus_event* input)
+    void wm_surface_event_focus_invocation(gracht_client_t* client, const uint32_t id, const uint8_t focus)
     {
-        auto object = Asgaard::OM[input->surface_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -458,9 +602,9 @@ extern "C"
     }
     
     // BUFFER PROTOCOL EVENTS
-    void wm_buffer_event_release_callback(struct wm_buffer_release_event* input)
+    void wm_buffer_event_release_invocation(gracht_client_t* client, const uint32_t id)
     {
-        auto object = Asgaard::OM[input->buffer_id];
+        auto object = Asgaard::OM[id];
         if (!object) {
             // log
             return;
@@ -470,9 +614,9 @@ extern "C"
     }
 
     // POINTER PROTOCOL EVENTS
-    void wm_pointer_event_enter_callback(struct wm_pointer_enter_event* event)
+    void wm_pointer_event_enter_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const int surfaceX, const int surfaceY)
     {
-        auto object = Asgaard::OM[event->surface_id];
+        auto object = Asgaard::OM[surfaceId];
         if (!object) {
             return;
         }
@@ -480,9 +624,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_ENTER, event);
     }
 
-    void wm_pointer_event_leave_callback(struct wm_pointer_leave_event* event)
+    void wm_pointer_event_leave_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId)
     {
-        auto object = Asgaard::OM[event->surface_id];
+        auto object = Asgaard::OM[surfaceId];
         if (!object) {
             return;
         }
@@ -490,9 +634,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_LEAVE, event);
     }
 
-    void wm_pointer_event_move_callback(struct wm_pointer_move_event* event)
+    void wm_pointer_event_move_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const int surfaceX, const int surfaceY)
     {
-        auto object = Asgaard::OM[event->surface_id];
+        auto object = Asgaard::OM[surfaceId];
         if (!object) {
             // log
             return;
@@ -501,9 +645,9 @@ extern "C"
         object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_MOVE, event);
     }
 
-    void wm_pointer_event_click_callback(struct wm_pointer_click_event* event)
+    void wm_pointer_event_click_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const enum wm_pointer_button button, const uint8_t pressed)
     {
-        auto object = Asgaard::OM[event->surface_id];
+        auto object = Asgaard::OM[surfaceId];
         if (!object) {
             return;
         }
@@ -512,9 +656,9 @@ extern "C"
     }
 
     // KEYBOARD PROTOCOL EVENTS
-    void wm_keyboard_event_key_callback(struct wm_keyboard_key_event* event)
+    void wm_keyboard_event_key_invocation(gracht_client_t* client, const uint32_t surfaceId, const uint8_t keycode, const uint16_t flags)
     {
-        auto object = Asgaard::OM[event->surface_id];
+        auto object = Asgaard::OM[surfaceId];
         if (!object) {
             // log
             return;

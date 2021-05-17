@@ -96,7 +96,6 @@ namespace Asgaard {
         int                                                       m_ioset;
         volatile bool                                             m_syncRecieved;
         volatile bool                                             m_screenFound;
-        char*                                                     m_messageBuffer;
     };
     
     extern ASGAARD_API Application APP;

@@ -25,7 +25,14 @@
 #include "config.hpp"
 #include "object_manager.hpp"
 #include "object.hpp"
+
+#ifdef MOLLENOS
 #include <os/dmabuf.h>
+#elif defined(_WIN32)
+
+#else
+#include <sys/types.h>
+#endif
 
 namespace Asgaard {
     class MemoryPool : public Object {
@@ -49,6 +56,15 @@ namespace Asgaard {
         
     private:
         std::size_t           m_size;
+        
+#ifdef MOLLENOS
         struct dma_attachment m_attachment;
+#elif defined(_WIN32)
+
+#else
+    key_t                     m_poolKey;
+    int                       m_shmFd;
+    void*                     m_memory;
+#endif
     };
 }

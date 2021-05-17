@@ -1,5 +1,24 @@
+
+set (SRCS "")
+
+macro (add_sources)
+    file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}/libs/asgaard" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND SRCS "${_relPath}/${_src}")
+        else()
+            list (APPEND SRCS "${_src}")
+        endif()
+    endforeach()
+endmacro()
+
 # setup include directories
-include_directories(${GRACHT_INSTALL_DIR}/include)
+include_directories(
+    ${CMAKE_BINARY_DIR}/protocols
+    ${GRACHT_INSTALL_DIR}/include
+    ${LIBZIP_INSTALL_DIR}/include
+    ../freetype/include
+)
 
 set (GENERATED_SOURCES
     ${CMAKE_BINARY_DIR}/protocols/wm_core_service_client.c
@@ -19,9 +38,7 @@ endif ()
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 
 # Configure primary executable target
-add_library(asgaard SHARED
-    ${GENERATED_SOURCES}
-    
+add_sources (
     drawing/font_manager.cpp
     drawing/font.cpp
     drawing/image.cpp
@@ -36,7 +53,6 @@ add_library(asgaard SHARED
     application.cpp
     key_event.cpp
     memory_buffer.cpp
-    memory_pool.cpp
     object_manager.cpp
     object.cpp
     pointer.cpp
@@ -49,11 +65,21 @@ add_library(asgaard SHARED
     window_title.cpp
 )
 
-add_dependencies(asgaard wm_client_service)
+if (MOLLENOS)
+    add_sources (memory_pool_vali.cpp)
+elseif (WIN32)
+
+elseif (UNIX)
+    add_sources (memory_pool_unix.cpp)
+endif ()
+
+add_library(asgaard SHARED ${GENERATED_SOURCES} ${SRCS})
+add_dependencies(asgaard libzip_dl wm_client_service)
 target_compile_definitions(asgaard PRIVATE
     -DASGAARD_BUILD -DASGAARD_THEME_PASSWORD=\"$ENV{VALI_CODE}\"
 )
+target_link_libraries(asgaard freetype gracht libbzip2 liblzma libzip)
 
 if (MOLLENOS)
-  target_link_libraries(asgaard static_zip static_z static_lzma static_bzip2 static_libgracht libfreetype static_libddk)
+  target_link_libraries(asgaard static_libddk)
 endif()

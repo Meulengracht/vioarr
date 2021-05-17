@@ -3,6 +3,10 @@
         "vioarr_renderer.h": "c",
         "vioarr_screen.h": "c",
         "types.h": "c",
-        "vioarr_objects.h": "c"
+        "vioarr_objects.h": "c",
+        "vioarr_buffer.h": "c",
+        "vioarr_manager.h": "c",
+        "vioarr_input.h": "c",
+        "wm_core_service.h": "c"
     }
 }

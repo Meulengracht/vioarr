@@ -23,7 +23,7 @@
  */
 
 #ifdef VIOARR_BACKEND_NANOVG
-#include <glad/glad.h>
+#include <glad.h>
 #include "backend/backend.h"
 #include "backend/nanovg/nanovg_gl.h"
 #endif

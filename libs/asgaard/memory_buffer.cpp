@@ -28,9 +28,9 @@
 #include "include/memory_pool.hpp"
 #include "include/memory_buffer.hpp"
 
-#include "wm_core_protocol_client.h"
-#include "wm_memory_pool_protocol_client.h"
-#include "wm_buffer_protocol_client.h"
+#include "wm_core_service_client.h"
+#include "wm_memory_pool_service_client.h"
+#include "wm_buffer_service_client.h"
 
 
 static int CalculateStride(int width, enum Asgaard::PixelFormat format)
@@ -41,12 +41,12 @@ static int CalculateStride(int width, enum Asgaard::PixelFormat format)
 static enum wm_pixel_format GetWmPixelFormat(enum Asgaard::PixelFormat format)
 {
     switch (format) {
-        case Asgaard::PixelFormat::A8R8G8B8: return format_a8r8g8b8;
-        case Asgaard::PixelFormat::A8B8G8R8: return format_a8b8g8r8;
-        case Asgaard::PixelFormat::X8R8G8B8: return format_x8r8g8b8;
-        case Asgaard::PixelFormat::X8B8G8R8: return format_x8b8g8r8;
-        case Asgaard::PixelFormat::R8G8B8A8: return format_r8g8b8a8;
-        case Asgaard::PixelFormat::B8G8R8A8: return format_b8g8r8a8;
+        case Asgaard::PixelFormat::A8R8G8B8: return WM_PIXEL_FORMAT_A8R8G8B8;
+        case Asgaard::PixelFormat::A8B8G8R8: return WM_PIXEL_FORMAT_A8B8G8R8;
+        case Asgaard::PixelFormat::X8R8G8B8: return WM_PIXEL_FORMAT_X8R8G8B8;
+        case Asgaard::PixelFormat::X8B8G8R8: return WM_PIXEL_FORMAT_X8B8G8R8;
+        case Asgaard::PixelFormat::R8G8B8A8: return WM_PIXEL_FORMAT_R8G8B8A8;
+        case Asgaard::PixelFormat::B8G8R8A8: return WM_PIXEL_FORMAT_B8G8R8A8;
     }
 }
 

@@ -12,6 +12,12 @@ macro (add_sources)
     endforeach()
 endmacro()
 
+include_directories (
+    ${CMAKE_BINARY_DIR}/protocols
+    ${GRACHT_INSTALL_DIR}/include
+    ${CMAKE_BINARY_DIR}/libs/glad/include/glad
+)
+
 if (WIN32)
     add_sources (
         engine/core/vioarr_engine_glfw.c

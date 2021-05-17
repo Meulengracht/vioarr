@@ -33,7 +33,7 @@ struct GLFWMonitor;
 typedef struct GLFWMonitor video_output_t;
 #endif
 
-#include "../protocols/wm_screen_protocol.h"
+#include "wm_screen_service.h"
 #include "vioarr_region.h"
 #include "vioarr_surface.h"
 

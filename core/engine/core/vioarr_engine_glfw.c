@@ -30,10 +30,10 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "vioarr_engine.h"
-#include "vioarr_renderer.h"
-#include "vioarr_screen.h"
-#include "vioarr_utils.h"
+#include "../vioarr_engine.h"
+#include "../vioarr_renderer.h"
+#include "../vioarr_screen.h"
+#include "../vioarr_utils.h"
 #include <time.h>
 
 static int vioarr_engine_setup_screens(void);

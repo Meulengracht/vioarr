@@ -25,8 +25,6 @@
 #ifndef __VIOARR_MANAGER_H__
 #define __VIOARR_MANAGER_H__
 
-#include <os/osdefs.h>
-
 typedef struct list list_t;
 typedef struct vioarr_surface vioarr_surface_t;
 

@@ -27,10 +27,10 @@
 
 #include <ddk/video.h>
 #include <os/mollenos.h>
-#include "vioarr_engine.h"
-#include "vioarr_renderer.h"
-#include "vioarr_screen.h"
-#include "vioarr_utils.h"
+#include "../vioarr_engine.h"
+#include "../vioarr_renderer.h"
+#include "../vioarr_screen.h"
+#include "../vioarr_utils.h"
 #include <time.h>
 #include <threads.h>
 

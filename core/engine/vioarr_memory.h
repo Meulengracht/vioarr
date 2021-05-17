@@ -33,6 +33,7 @@ typedef UUId_t mhandle_t;
 
 #elif defined(__linux__)
 #include <sys/types.h>
+#include <stdint.h>
 typedef key_t mhandle_t;
 #endif
 

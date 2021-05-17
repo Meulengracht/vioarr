@@ -23,152 +23,137 @@
  */
 
 #include <errno.h>
-#include <ddk/service.h>
-#include <ddk/utils.h>
 #include <gracht/link/socket.h>
-#include <gracht/link/vali.h>
 #include <gracht/server.h>
-#include <io.h>
-#include <ioset.h>
-#include <os/process.h>
+#include <gracht/client.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "protocols/ctt_input_protocol_client.h"
-#include "protocols/svc_device_protocol_client.h"
+#ifdef MOLLENOS
+#include <ddk/service.h>
+#include <ddk/utils.h>
+#include <gracht/link/vali.h>
+#include <io.h>
+#include <ioset.h>
+#include <os/process.h>
 
-#include "protocols/wm_core_protocol_server.h"
-#include "protocols/wm_screen_protocol_server.h"
-#include "protocols/wm_memory_protocol_server.h"
-#include "protocols/wm_memory_pool_protocol_server.h"
-#include "protocols/wm_buffer_protocol_server.h"
-#include "protocols/wm_surface_protocol_server.h"
-#include "protocols/wm_pointer_protocol_server.h"
+#include "ctt_input_service_client.h"
+#include "svc_device_service_client.h"
+#elif defined(_WIN32)
+#include <gracht/link/socket.h>
+#include <windows.h>
+static const char* g_ipAddress = "127.0.0.1";
+static uint16_t    g_portNo    = 55555;
+#else
+#include <gracht/link/socket.h>
+#include <sys/epoll.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+static const char* g_serverPath = "/tmp/vioarr";
+#endif
+
+#include "wm_core_service_server.h"
+#include "wm_screen_service_server.h"
+#include "wm_memory_service_server.h"
+#include "wm_memory_pool_service_server.h"
+#include "wm_buffer_service_server.h"
+#include "wm_surface_service_server.h"
+#include "wm_pointer_service_server.h"
 
 #include "engine/vioarr_engine.h"
 #include "engine/vioarr_objects.h"
 #include "engine/vioarr_utils.h"
 
-extern void ctt_input_event_properties_callback(struct ctt_input_properties_event*);
-extern void ctt_input_event_button_callback(struct ctt_input_button_event*);
-extern void ctt_input_event_cursor_callback(struct ctt_input_cursor_event*);
- 
-static gracht_protocol_function_t ctt_input_callbacks[3] = {
-    { PROTOCOL_CTT_INPUT_EVENT_PROPERTIES_ID , ctt_input_event_properties_callback },
-    { PROTOCOL_CTT_INPUT_EVENT_BUTTON_ID , ctt_input_event_button_callback },
-    { PROTOCOL_CTT_INPUT_EVENT_CURSOR_ID , ctt_input_event_cursor_callback },
-};
-DEFINE_CTT_INPUT_CLIENT_PROTOCOL(ctt_input_callbacks, 3);
-
-static void svc_device_event_protocol_device_callback(struct svc_device_protocol_device_event*);
-static void svc_device_event_device_update_callback(struct svc_device_device_update_event*);
- 
-static gracht_protocol_function_t svc_device_callbacks[2] = {
-    { PROTOCOL_SVC_DEVICE_EVENT_PROTOCOL_DEVICE_ID , svc_device_event_protocol_device_callback },
-    { PROTOCOL_SVC_DEVICE_EVENT_DEVICE_UPDATE_ID , svc_device_event_device_update_callback },
-};
-DEFINE_SVC_DEVICE_CLIENT_PROTOCOL(svc_device_callbacks, 2);
-
-extern void wm_core_sync_callback(struct gracht_recv_message* message, struct wm_core_sync_args*);
-extern void wm_core_get_objects_callback(struct gracht_recv_message* message);
-
-static gracht_protocol_function_t wm_core_callbacks[2] = {
-    { PROTOCOL_WM_CORE_SYNC_ID , wm_core_sync_callback },
-    { PROTOCOL_WM_CORE_GET_OBJECTS_ID , wm_core_get_objects_callback },
-};
-DEFINE_WM_CORE_SERVER_PROTOCOL(wm_core_callbacks, 2);
-
-extern void wm_screen_get_properties_callback(struct gracht_recv_message* message, struct wm_screen_get_properties_args*);
-extern void wm_screen_get_modes_callback(struct gracht_recv_message* message, struct wm_screen_get_modes_args*);
-extern void wm_screen_set_scale_callback(struct gracht_recv_message* message, struct wm_screen_set_scale_args*);
-extern void wm_screen_set_transform_callback(struct gracht_recv_message* message, struct wm_screen_set_transform_args*);
-extern void wm_screen_create_surface_callback(struct gracht_recv_message* message, struct wm_screen_create_surface_args*);
-
-static gracht_protocol_function_t wm_screen_callbacks[5] = {
-    { PROTOCOL_WM_SCREEN_GET_PROPERTIES_ID , wm_screen_get_properties_callback },
-    { PROTOCOL_WM_SCREEN_GET_MODES_ID , wm_screen_get_modes_callback },
-    { PROTOCOL_WM_SCREEN_SET_SCALE_ID , wm_screen_set_scale_callback },
-    { PROTOCOL_WM_SCREEN_SET_TRANSFORM_ID , wm_screen_set_transform_callback },
-    { PROTOCOL_WM_SCREEN_CREATE_SURFACE_ID , wm_screen_create_surface_callback },
-};
-DEFINE_WM_SCREEN_SERVER_PROTOCOL(wm_screen_callbacks, 5);
-
-extern void wm_memory_create_pool_callback(struct gracht_recv_message* message, struct wm_memory_create_pool_args*);
-
-static gracht_protocol_function_t wm_memory_callbacks[1] = {
-    { PROTOCOL_WM_MEMORY_CREATE_POOL_ID , wm_memory_create_pool_callback },
-};
-DEFINE_WM_MEMORY_SERVER_PROTOCOL(wm_memory_callbacks, 1);
-
-extern void wm_memory_pool_create_buffer_callback(struct gracht_recv_message* message, struct wm_memory_pool_create_buffer_args*);
-extern void wm_memory_pool_destroy_callback(struct gracht_recv_message* message, struct wm_memory_pool_destroy_args*);
-
-static gracht_protocol_function_t wm_memory_pool_callbacks[2] = {
-    { PROTOCOL_WM_MEMORY_POOL_CREATE_BUFFER_ID , wm_memory_pool_create_buffer_callback },
-    { PROTOCOL_WM_MEMORY_POOL_DESTROY_ID ,       wm_memory_pool_destroy_callback }
-};
-DEFINE_WM_MEMORY_POOL_SERVER_PROTOCOL(wm_memory_pool_callbacks, 2);
-
-extern void wm_buffer_destroy_callback(struct gracht_recv_message* message, struct wm_buffer_destroy_args*);
-
-static gracht_protocol_function_t wm_buffer_callbacks[1] = {
-    { PROTOCOL_WM_BUFFER_DESTROY_ID , wm_buffer_destroy_callback },
-};
-DEFINE_WM_BUFFER_SERVER_PROTOCOL(wm_buffer_callbacks, 1);
-
-extern void wm_surface_get_formats_callback(struct gracht_recv_message* message, struct wm_surface_get_formats_args*);
-extern void wm_surface_set_buffer_callback(struct gracht_recv_message* message, struct wm_surface_set_buffer_args*);
-extern void wm_surface_invalidate_callback(struct gracht_recv_message* message, struct wm_surface_invalidate_args*);
-extern void wm_surface_set_transparency_callback(struct gracht_recv_message* message, struct wm_surface_set_transparency_args*);
-extern void wm_surface_set_drop_shadow_callback(struct gracht_recv_message* message, struct wm_surface_set_drop_shadow_args*);
-extern void wm_surface_set_input_region_callback(struct gracht_recv_message* message, struct wm_surface_set_input_region_args*);
-extern void wm_surface_add_subsurface_callback(struct gracht_recv_message* message, struct wm_surface_add_subsurface_args*);
-extern void wm_surface_resize_subsurface_callback(struct gracht_recv_message* message, struct wm_surface_resize_subsurface_args*);
-extern void wm_surface_move_subsurface_callback(struct gracht_recv_message* message, struct wm_surface_move_subsurface_args*);
-extern void wm_surface_request_fullscreen_mode(struct gracht_recv_message* message, struct wm_surface_request_fullscreen_mode_args*);
-extern void wm_surface_request_level(struct gracht_recv_message* message, struct wm_surface_request_level_args*);
-extern void wm_surface_request_frame_callback(struct gracht_recv_message* message, struct wm_surface_request_frame_args*);
-extern void wm_surface_commit_callback(struct gracht_recv_message* message, struct wm_surface_commit_args*);
-extern void wm_surface_resize_callback(struct gracht_recv_message* message, struct wm_surface_resize_args*);
-extern void wm_surface_move_callback(struct gracht_recv_message* message, struct wm_surface_move_args*);
-extern void wm_surface_destroy_callback(struct gracht_recv_message* message, struct wm_surface_destroy_args*);
-
-static gracht_protocol_function_t wm_surface_callbacks[16] = {
-    { PROTOCOL_WM_SURFACE_GET_FORMATS_ID , wm_surface_get_formats_callback },
-    { PROTOCOL_WM_SURFACE_SET_BUFFER_ID , wm_surface_set_buffer_callback },
-    { PROTOCOL_WM_SURFACE_INVALIDATE_ID , wm_surface_invalidate_callback },
-    { PROTOCOL_WM_SURFACE_SET_TRANSPARENCY_ID , wm_surface_set_transparency_callback },
-    { PROTOCOL_WM_SURFACE_SET_DROP_SHADOW_ID , wm_surface_set_drop_shadow_callback },
-    { PROTOCOL_WM_SURFACE_SET_INPUT_REGION_ID , wm_surface_set_input_region_callback },
-    { PROTOCOL_WM_SURFACE_ADD_SUBSURFACE_ID , wm_surface_add_subsurface_callback },
-    { PROTOCOL_WM_SURFACE_RESIZE_SUBSURFACE_ID , wm_surface_resize_subsurface_callback },
-    { PROTOCOL_WM_SURFACE_MOVE_SUBSURFACE_ID , wm_surface_move_subsurface_callback },
-    { PROTOCOL_WM_SURFACE_REQUEST_FULLSCREEN_MODE_ID, wm_surface_request_fullscreen_mode },
-    { PROTOCOL_WM_SURFACE_REQUEST_LEVEL_ID, wm_surface_request_level },
-    { PROTOCOL_WM_SURFACE_REQUEST_FRAME_ID , wm_surface_request_frame_callback },
-    { PROTOCOL_WM_SURFACE_COMMIT_ID , wm_surface_commit_callback },
-    { PROTOCOL_WM_SURFACE_RESIZE_ID , wm_surface_resize_callback },
-    { PROTOCOL_WM_SURFACE_MOVE_ID , wm_surface_move_callback },
-    { PROTOCOL_WM_SURFACE_DESTROY_ID , wm_surface_destroy_callback },
-};
-DEFINE_WM_SURFACE_SERVER_PROTOCOL(wm_surface_callbacks, 16);
-
-extern void wm_pointer_set_surface_callback(struct gracht_recv_message* message, struct wm_pointer_set_surface_args*);
-extern void wm_pointer_grab_callback(struct gracht_recv_message* message, struct wm_pointer_grab_args*);
-extern void wm_pointer_ungrab_callback(struct gracht_recv_message* message, struct wm_pointer_ungrab_args*);
-
-static gracht_protocol_function_t wm_pointer_callbacks[3] = {
-    { PROTOCOL_WM_POINTER_SET_SURFACE_ID , wm_pointer_set_surface_callback },
-    { PROTOCOL_WM_POINTER_GRAB_ID , wm_pointer_grab_callback },
-    { PROTOCOL_WM_POINTER_UNGRAB_ID , wm_pointer_ungrab_callback },
-};
-DEFINE_WM_POINTER_SERVER_PROTOCOL(wm_pointer_callbacks, 3);
-
-static gracht_client_t* valiClient = NULL;
+static gracht_client_t* g_valiClient = NULL;
+static gracht_server_t* g_valiServer = NULL;
 
 static void __gracht_handle_disconnect(int client)
 {
     vioarr_objects_remove_by_client(client);
+}
+
+#ifdef MOLLENOS
+static int __create_platform_link(void)
+{
+
+
+    return 0;
+}
+#elif defined(_WIN32)
+static int __create_platform_link(void)
+{
+    struct gracht_link_socket* link;
+    struct sockaddr_in         addr = { 0 };
+
+    // initialize the WSA library
+    gracht_link_socket_setup();
+
+    // AF_INET is the Internet address family.
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(g_ipAddress);
+    addr.sin_port = htons(g_portNo);
+
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+    gracht_link_socket_set_domain(link, AF_INET);
+    gracht_link_socket_set_listen(link, 1);
+    
+    return gracht_server_add_link(g_valiServer, link);
+}
+#else
+static int __create_platform_link(void)
+{
+    struct gracht_link_socket* link;
+    struct sockaddr_un         addr = { 0 };
+
+    addr.sun_family = AF_LOCAL;
+    strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
+
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+    gracht_link_socket_set_domain(link, AF_LOCAL);
+    gracht_link_socket_set_listen(link, 1);
+
+    return gracht_server_add_link(g_valiServer, link);
+}
+#endif
+
+#if defined(MOLLENOS)
+int server_initialize(int* eventIodOut)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    
+    gracht_server_configuration_init(&config);
+
+    // Create the set descriptor we are listening to
+    gracht_server_configuration_set_aio_descriptor(&config, ioset(0));
+    if (config.set_descriptor < 0) {
+        ERROR("error creating event descriptor %i", errno);
+        return -1;
+    }
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        ERROR("error initializing server library %i", errno);
+        close(config.set_descriptor);
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        ERROR("error initializing server link %i", errno);
+        close(config.set_descriptor);
+    }
+
+    *eventIodOut = config.set_descriptor;
+    return status;
 }
 
 int client_initialize(void)
@@ -181,41 +166,10 @@ int client_initialize(void)
         return status;
     }
 
-    status = gracht_client_create(&clientConfiguration, &valiClient);
+    status = gracht_client_create(&clientConfiguration, &g_valiClient);
     if (status) {
         return status;
     }
-    return status;
-}
-
-int server_initialize(int* eventIodOut)
-{
-    struct socket_server_configuration linkConfiguration;
-    struct gracht_server_configuration serverConfiguration = { 0 };
-    int                                status;
-    
-    gracht_os_get_server_client_address(&linkConfiguration.server_address, &linkConfiguration.server_address_length);
-    gracht_os_get_server_packet_address(&linkConfiguration.dgram_address, &linkConfiguration.dgram_address_length);
-    gracht_link_socket_server_create(&serverConfiguration.link, &linkConfiguration);
-
-    // Create the set descriptor we are listening to
-    serverConfiguration.set_descriptor = ioset(0);
-    serverConfiguration.set_descriptor_provided = 1;
-    if (serverConfiguration.set_descriptor < 0) {
-        ERROR("error creating event descriptor %i", errno);
-        return -1;
-    }
-
-    // Listen to client disconnects so we can remove resources
-    serverConfiguration.callbacks.clientDisconnected = __gracht_handle_disconnect;
-    
-    status = gracht_server_initialize(&serverConfiguration);
-    if (status) {
-        ERROR("error initializing server library %i", errno);
-        close(serverConfiguration.set_descriptor);
-    }
-
-    *eventIodOut = serverConfiguration.set_descriptor;
     return status;
 }
 
@@ -225,10 +179,10 @@ void server_get_hid_devices(void)
     TRACE("[server_get_hid_devices]");
 
     // subscribe to events from the device manager
-    svc_device_subscribe(valiClient, &msg.base);
+    svc_device_subscribe(g_valiClient, &msg.base);
 
     // query all input devices
-    svc_device_get_devices_by_protocol(valiClient, &msg.base, PROTOCOL_CTT_INPUT_ID);
+    svc_device_get_devices_by_protocol(g_valiClient, &msg.base, PROTOCOL_CTT_INPUT_ID);
 }
 
 void svc_device_event_protocol_device_callback(struct svc_device_protocol_device_event* input)
@@ -237,10 +191,10 @@ void svc_device_event_protocol_device_callback(struct svc_device_protocol_device
     TRACE("[svc_device_event_protocol_device_callback] %u", input->device_id);
 
     // subscribe to the driver
-    ctt_input_subscribe(valiClient, &msg.base);
+    ctt_input_subscribe(g_valiClient, &msg.base);
 
     // get properties of the device
-    ctt_input_get_properties(valiClient, &msg.base, input->device_id);
+    ctt_input_get_properties(g_valiClient, &msg.base, input->device_id);
 }
 
 void svc_device_event_device_update_callback(struct svc_device_device_update_event* input)
@@ -252,11 +206,10 @@ int server_run(int eventIod)
 {
     struct ioset_event events[32];
     int                serverRunning = 1;
-    void*              dataBuffer = malloc(GRACHT_MAX_MESSAGE_SIZE);
     int                clientIod;
 
     // listen to client events as well
-    clientIod = gracht_client_iod(valiClient);
+    clientIod = gracht_client_iod(g_valiClient);
     ioset_ctrl(eventIod, IOSET_ADD, clientIod,
                &(struct ioset_event) {
                        .data.iod = clientIod,
@@ -276,15 +229,13 @@ int server_run(int eventIod)
         int num_events = ioset_wait(eventIod, &events[0], 32, 0);
         for (int i = 0; i < num_events; i++) {
             if (events[i].data.iod == clientIod) {
-                gracht_client_wait_message(valiClient, NULL, dataBuffer, 0);
+                gracht_client_wait_message(g_valiClient, NULL, 0);
             }
             else {
                 gracht_server_handle_event(events[i].data.iod, events[i].events);
             }
         }
     }
-
-    free(dataBuffer);
     return 0;
 }
 
@@ -295,7 +246,7 @@ int main(int argc, char **argv)
 {
     int eventIod;
 
-#ifndef VIOARR_TRACEMODE
+#if !defined(VIOARR_TRACEMODE)
     MollenOSEndBoot();
 #endif
 
@@ -315,17 +266,143 @@ int main(int argc, char **argv)
     }
 
     // add the protocols we would like to support
-    gracht_client_register_protocol(valiClient, &svc_device_client_protocol);
-    gracht_client_register_protocol(valiClient, &ctt_input_client_protocol);
-    
+    gracht_client_register_protocol(g_valiClient, &svc_device_client_protocol);
+    gracht_client_register_protocol(g_valiClient, &ctt_input_client_protocol);    
+
     // add the server protocols we support
-    gracht_server_register_protocol(&wm_core_server_protocol);
-    gracht_server_register_protocol(&wm_screen_server_protocol);
-    gracht_server_register_protocol(&wm_memory_server_protocol);
-    gracht_server_register_protocol(&wm_memory_pool_server_protocol);
-    gracht_server_register_protocol(&wm_buffer_server_protocol);
-    gracht_server_register_protocol(&wm_surface_server_protocol);
-    gracht_server_register_protocol(&wm_pointer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_core_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_screen_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_pool_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
 
     return server_run(eventIod);
 }
+#elif defined(_WIN32)
+
+int server_initialize(int* eventIodOut)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    
+    gracht_server_configuration_init(&config);
+
+
+
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        ERROR("error initializing server library %i", errno);
+        close(config.set_descriptor);
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        ERROR("error initializing server link %i", errno);
+        close(config.set_descriptor);
+    }
+
+    *eventIodOut = config.set_descriptor;
+    return status;
+}
+
+/*******************************************
+ * Entry Point
+ *******************************************/
+int main(int argc, char **argv)
+{
+    int eventIod;
+
+    int status = client_initialize();
+    if (status) {
+        return status;
+    }
+    
+    status = server_initialize(&eventIod);
+    if (status) {
+        return status;
+    }
+    
+    status = vioarr_engine_initialize();
+    if (status) {
+        return status;
+    }
+
+    // add the server protocols we support
+    gracht_server_register_protocol(g_valiServer, &wm_core_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_screen_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_pool_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+
+    return server_run(eventIod);
+}
+#else
+
+int server_initialize(void)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    
+    gracht_server_configuration_init(&config);
+
+    // Create the set descriptor we are listening to
+    gracht_server_configuration_set_aio_descriptor(&config, epoll_create(0));
+    if (config.set_descriptor < 0) {
+        ERROR("error creating event descriptor %i", errno);
+        return -1;
+    }
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        ERROR("error initializing server library %i", errno);
+        close(config.set_descriptor);
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        ERROR("error initializing server link %i", errno);
+        close(config.set_descriptor);
+    }
+    return status;
+}
+
+/*******************************************
+ * Entry Point
+ *******************************************/
+int main(int argc, char **argv)
+{
+    int status = server_initialize();
+    if (status) {
+        return status;
+    }
+    
+    status = vioarr_engine_initialize();
+    if (status) {
+        return status;
+    }
+    
+    // add the server protocols we support
+    gracht_server_register_protocol(g_valiServer, &wm_core_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_screen_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_memory_pool_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+    return gracht_server_main_loop(g_valiServer);
+}
+
+#endif

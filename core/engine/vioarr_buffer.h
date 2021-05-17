@@ -26,7 +26,7 @@
 #define __VIOARR_BUFFER_H__
 
 #include "vioarr_memory.h"
-#include "../protocols/wm_memory_pool_protocol.h"
+#include "wm_memory_pool_service.h"
 
 typedef struct vioarr_buffer vioarr_buffer_t;
 

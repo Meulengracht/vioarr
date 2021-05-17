@@ -35,8 +35,8 @@
 #include <stdatomic.h>
 #include <string.h>
 
-#include "../protocols/wm_surface_protocol_server.h"
-#include "../protocols/wm_buffer_protocol_server.h"
+#include "wm_surface_service_server.h"
+#include "wm_buffer_service_server.h"
 
 typedef struct vioarr_surface_properties {
     int corner_radius;
@@ -395,7 +395,7 @@ void vioarr_surface_maximize(vioarr_surface_t* surface)
     wm_surface_event_resize_single(surface->client, surface->id,
         vioarr_region_width(maximized), 
         vioarr_region_height(maximized),
-        no_edges);
+        WM_SURFACE_EDGE_NO_EDGES);
 }
 
 void vioarr_surface_restore_size(vioarr_surface_t* surface)
@@ -411,7 +411,7 @@ void vioarr_surface_restore_size(vioarr_surface_t* surface)
     wm_surface_event_resize_single(surface->client, surface->id,
         vioarr_region_width(surface->dimensions), 
         vioarr_region_height(surface->dimensions),
-        no_edges);
+        WM_SURFACE_EDGE_NO_EDGES);
 }
 
 int vioarr_surface_supports_input(vioarr_surface_t* surface, int x, int y)

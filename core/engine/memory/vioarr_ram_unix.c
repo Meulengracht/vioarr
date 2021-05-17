@@ -28,6 +28,8 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <stdatomic.h>
 
 typedef struct vioarr_memory_pool {
     int          client;
@@ -118,7 +120,7 @@ uint32_t vioarr_memory_pool_id(vioarr_memory_pool_t* pool)
 key_t vioarr_memory_pool_handle(vioarr_memory_pool_t* pool)
 {
     if (!pool) {
-        return UUID_INVALID;
+        return 0;
     }
     return pool->pool_key;
 }

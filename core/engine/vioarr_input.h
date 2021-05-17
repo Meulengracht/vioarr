@@ -25,7 +25,11 @@
 #ifndef __VIOARR_INPUT_H__
 #define __VIOARR_INPUT_H__
 
+#ifdef MOLLENOS
 #include <os/osdefs.h>
+#else
+typedef unsigned int UUId_t;
+#endif
 
 #define VIOARR_INPUT_POINTER  0
 #define VIOARR_INPUT_KEYBOARD 1

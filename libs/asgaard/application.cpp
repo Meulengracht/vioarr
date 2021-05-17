@@ -191,7 +191,6 @@ namespace Asgaard {
             throw ApplicationException("Initialize has been called twice", -1);
         }
         
-    
         // initialize the WSA library
         gracht_link_socket_setup();
 

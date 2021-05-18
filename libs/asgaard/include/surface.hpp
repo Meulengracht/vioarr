@@ -68,7 +68,7 @@ namespace Asgaard {
         const std::shared_ptr<Screen>& GetScreen() const { return m_screen; }
         
     public:
-        ASGAARD_API void ExternalEvent(enum ObjectEvent event, void* data = 0) override;
+        ASGAARD_API void ExternalEvent(const Event&) override;
         
     protected:
         virtual void OnResized(enum SurfaceEdges, int width, int height) { }

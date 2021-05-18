@@ -67,7 +67,7 @@ namespace Asgaard {
         }
     
     public:
-        void ExternalEvent(enum ObjectEvent event, void* data = 0) final;
+        void ExternalEvent(const Event&) final;
         
     private:
         std::shared_ptr<MemoryPool> m_memory;

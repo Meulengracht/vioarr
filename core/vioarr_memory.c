@@ -22,10 +22,10 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
-#include "protocols/wm_core_protocol_server.h"
-#include "protocols/wm_memory_protocol_server.h"
-#include "protocols/wm_memory_pool_protocol_server.h"
-#include "protocols/wm_buffer_protocol_server.h"
+#include "wm_core_service_server.h"
+#include "wm_memory_service_server.h"
+#include "wm_memory_pool_service_server.h"
+#include "wm_buffer_service_server.h"
 #include "engine/vioarr_memory.h"
 #include "engine/vioarr_buffer.h"
 #include "engine/vioarr_objects.h"

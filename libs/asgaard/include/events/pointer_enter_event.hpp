@@ -20,32 +20,28 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/application.hpp"
-#include "include/pointer.hpp"
-#include "include/surface.hpp"
-
-#include "wm_pointer_service_client.h"
+#include <string>
+#include "event.hpp"
 
 namespace Asgaard {
-    Pointer::Pointer(uint32_t id) : Object(id)
-    {
+    class PointerEnterEvent : public Event {
+    public:
+        PointerEnterEvent(const uint32_t pointerId, const int surfaceX, const int surfaceY) 
+        : Event(Event::Type::POINTER_ENTER)
+        , m_pointerId(pointerId)
+        , m_surfaceX(surfaceX)
+        , m_surfaceY(surfaceY)
+        { }
 
-    }
+        uint32_t PointerId() const { return m_pointerId; }
+        int      LocalX() const { return m_surfaceX; }
+        int      LocalY() const { return m_surfaceY; }
 
-    Pointer::~Pointer()
-    {
-
-    }
-
-    void Pointer::SetSurface(const std::shared_ptr<Surface>& surface, int xOffset, int yOffset)
-    {
-        uint32_t id = 0;
-        if (surface) {
-            id = surface->Id();
-        }
-
-        // calling with an id of 0 will result in clearing the pointer surface
-        wm_pointer_set_surface(APP.GrachtClient(), nullptr, Id(), id, xOffset, yOffset);
-    }
+    private:
+        uint32_t m_pointerId;
+        int      m_surfaceX;
+        int      m_surfaceY;
+    };
 }

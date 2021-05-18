@@ -25,6 +25,7 @@
 #include "include/exceptions/application_exception.h"
 #include "include/exceptions/invalid_argument_exception.h"
 #include "include/exceptions/out_of_range_exception.h"
+#include "include/events/event.hpp"
 #include "include/memory_pool.hpp"
 #include "include/memory_buffer.hpp"
 
@@ -101,12 +102,12 @@ void* Asgaard::MemoryBuffer::Buffer(int x, int y) {
     return pointer;
 }
 
-void Asgaard::MemoryBuffer::ExternalEvent(enum ObjectEvent event, void* data)
+void Asgaard::MemoryBuffer::ExternalEvent(const Event& event)
 {
-    if (event == ObjectEvent::BUFFER_RELEASE) {
+    if (event.GetType() == Event::Type::BUFFER_RELEASE) {
         Notify(static_cast<int>(Notification::REFRESHED));
         return;
     }
 
-    Object::ExternalEvent(event, data);
+    Object::ExternalEvent(event);
 }

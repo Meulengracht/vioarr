@@ -49,7 +49,7 @@ namespace Asgaard {
             Notify(static_cast<int>(Notification::DESTROY));
         };
 
-        virtual void ExternalEvent(const Event&) = 0;
+        virtual void ExternalEvent(const Event&);
         
     private:
         uint32_t m_id;

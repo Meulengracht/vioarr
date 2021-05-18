@@ -97,7 +97,7 @@ namespace Asgaard {
             return window;
         }
 
-        void ExternalEvent(enum ObjectEvent event, void* data = 0) override;
+        void ExternalEvent(const Event&) override;
         void Notification(Publisher*, int = 0, void* = 0) override;
         
     private:

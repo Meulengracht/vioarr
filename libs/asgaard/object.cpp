@@ -23,6 +23,8 @@
 
 #include "include/object.hpp"
 #include "include/error.hpp"
+#include "include/events/event.hpp"
+#include "include/events/error_event.hpp"
 #include "wm_core_service_client.h"
 
 using namespace Asgaard;
@@ -30,16 +32,16 @@ using namespace Asgaard;
 Object::Object(uint32_t id) : m_id(id) { }
 Object::~Object() { }
 
-void Object::ExternalEvent(enum ObjectEvent event, void* data) {
-    switch (event)
+void Object::ExternalEvent(const Event& event) {
+    switch (event.GetType())
     {
-        case ObjectEvent::CREATION: {
+        case Event::Type::CREATION: {
             Notify(static_cast<int>(Notification::CREATED));
         } break;
 
-        case ObjectEvent::ERROR: {
-            struct wm_core_error_event* error = (struct wm_core_error_event*)data;
-            Error appError(std::string(error->error_description), error->error_id);
+        case Event::Type::ERROR: {
+            const auto& error = static_cast<const ErrorEvent&>(event);
+            Error appError(error.Description(), error.Code());
             Notify(static_cast<int>(Notification::ERROR), &appError);
         } break;
         

@@ -22,16 +22,23 @@
  */
 
 #include "include/application.hpp"
-#include "include/key_event.hpp"
 #include "include/object_manager.hpp"
 #include "include/memory_buffer.hpp"
 #include "include/surface.hpp"
 
-#include "wm_core_protocol_client.h"
-#include "wm_screen_protocol_client.h"
-#include "wm_memory_protocol_client.h"
-#include "wm_surface_protocol_client.h"
-#include "wm_pointer_protocol_client.h"
+#include "include/events/surface_resize_event.hpp"
+#include "include/events/surface_focus_event.hpp"
+#include "include/events/pointer_enter_event.hpp"
+#include "include/events/pointer_leave_event.hpp"
+#include "include/events/pointer_move_event.hpp"
+#include "include/events/pointer_click_event.hpp"
+#include "include/events/key_event.hpp"
+
+#include "wm_core_service_client.h"
+#include "wm_screen_service_client.h"
+#include "wm_memory_service_client.h"
+#include "wm_surface_service_client.h"
+#include "wm_pointer_service_client.h"
 
 static enum Asgaard::Surface::SurfaceEdges GetSurfaceEdges(enum wm_surface_edge edges)
 {
@@ -81,68 +88,63 @@ namespace Asgaard {
         m_screen = screen;
     }
 
-    void Surface::ExternalEvent(enum ObjectEvent event, void* data)
+    void Surface::ExternalEvent(const Event& event)
     {
-        switch (event) {
-            case ObjectEvent::SURFACE_RESIZE: {
-                struct wm_surface_resize_event* event = 
-                    (struct wm_surface_resize_event*)data;
+        switch (event.GetType()) {
+            case Event::Type::SURFACE_RESIZE: {
+                const auto& resize = static_cast<const SurfaceResizeEvent&>(event);
                 
                 // When we get a resize event, the event is sent only to the parent surface
                 // which equals this instance. Now we have to invoke the RESIZE event for all
                 // registered children
-                OnResized(GetSurfaceEdges(event->edges), event->width, event->height);
-                m_dimensions.SetWidth(event->width);
-                m_dimensions.SetHeight(event->height);
+                OnResized(GetSurfaceEdges(resize.Edges()), resize.Width(), resize.Height());
+                m_dimensions.SetWidth(resize.Width());
+                m_dimensions.SetHeight(resize.Height());
             } break;
 
-            case ObjectEvent::SURFACE_FRAME: {
+            case Event::Type::SURFACE_FRAME: {
                 OnFrame();
             } break;
 
-            case ObjectEvent::KEY_EVENT: {
-                OnKeyEvent(KeyEvent((struct wm_keyboard_key_event*)data));
+            case Event::Type::KEY_EVENT: {
+                const auto& key = static_cast<const KeyEvent&>(event);
+                OnKeyEvent(key);
             } break;
 
-            case ObjectEvent::SURFACE_FOCUSED: {
-                struct wm_surface_focus_event* event = 
-                    (struct wm_surface_focus_event*)data;
-                OnFocus((bool)event->focus);
+            case Event::Type::SURFACE_FOCUSED: {
+                const auto& focus = static_cast<const SurfaceFocusEvent&>(event);
+                OnFocus(focus.Focus());
             } break;
 
-            case ObjectEvent::POINTER_ENTER: {
-                struct wm_pointer_enter_event* event = 
-                    (struct wm_pointer_enter_event*)data;
-                auto pointer = Asgaard::OM[event->pointer_id];
-                OnMouseEnter(std::dynamic_pointer_cast<Pointer>(pointer), event->surface_x, event->surface_y);
+            case Event::Type::POINTER_ENTER: {
+                const auto& enter = static_cast<const PointerEnterEvent&>(event);
+                auto pointer = Asgaard::OM[enter.PointerId()];
+                OnMouseEnter(std::dynamic_pointer_cast<Pointer>(pointer), enter.LocalX(), enter.LocalY());
             } break;
 
-            case ObjectEvent::POINTER_LEAVE: {
-                struct wm_pointer_leave_event* event = 
-                    (struct wm_pointer_leave_event*)data;
-                auto pointer = Asgaard::OM[event->pointer_id];
+            case Event::Type::POINTER_LEAVE: {
+                const auto& leave = static_cast<const PointerLeaveEvent&>(event);
+                auto pointer = Asgaard::OM[leave.PointerId()];
                 OnMouseLeave(std::dynamic_pointer_cast<Pointer>(pointer));
             } break;
 
-            case ObjectEvent::POINTER_MOVE: {
-                struct wm_pointer_move_event* event = 
-                    (struct wm_pointer_move_event*)data;
-                auto pointer = Asgaard::OM[event->pointer_id];
-                OnMouseMove(std::dynamic_pointer_cast<Pointer>(pointer), event->surface_x, event->surface_y);
+            case Event::Type::POINTER_MOVE: {
+                const auto& move = static_cast<const PointerMoveEvent&>(event);
+                auto pointer = Asgaard::OM[move.PointerId()];
+                OnMouseMove(std::dynamic_pointer_cast<Pointer>(pointer), move.LocalX(), move.LocalY());
             } break;
 
-            case ObjectEvent::POINTER_CLICK: {
-                struct wm_pointer_click_event* event = 
-                    (struct wm_pointer_click_event*)data;
-                auto pointer = Asgaard::OM[event->pointer_id];
+            case Event::Type::POINTER_CLICK: {
+                const auto& click = static_cast<const PointerClickEvent&>(event);
+                auto pointer = Asgaard::OM[click.PointerId()];
                 OnMouseClick(
                     std::dynamic_pointer_cast<Pointer>(pointer), 
-                    static_cast<enum Pointer::Buttons>(event->button),
-                    static_cast<bool>(event->pressed));
+                    static_cast<enum Pointer::Buttons>(click.Button()),
+                    click.Pressed());
             } break;
 
             default:
-                Object::ExternalEvent(event, data);
+                Object::ExternalEvent(event);
                 break;
         }
     }

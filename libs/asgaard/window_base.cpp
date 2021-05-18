@@ -30,10 +30,12 @@
 #include "include/memory_buffer.hpp"
 #include "include/pointer.hpp"
 
-#include "wm_core_protocol_client.h"
-#include "wm_screen_protocol_client.h"
-#include "wm_memory_protocol_client.h"
-#include "wm_surface_protocol_client.h"
+#include "include/events/surface_format_event.hpp"
+
+#include "wm_core_service_client.h"
+#include "wm_screen_service_client.h"
+#include "wm_memory_service_client.h"
+#include "wm_surface_service_client.h"
 
 static enum Asgaard::Surface::SurfaceEdges GetWindowEdges(enum wm_surface_edge edges)
 {
@@ -42,7 +44,7 @@ static enum Asgaard::Surface::SurfaceEdges GetWindowEdges(enum wm_surface_edge e
 
 static enum wm_surface_edge ToWindowEdges(enum Asgaard::Surface::SurfaceEdges edges)
 {
-    return no_edges;
+    return WM_SURFACE_EDGE_NO_EDGES;
 }
 
 namespace Asgaard {
@@ -106,7 +108,7 @@ namespace Asgaard {
     void WindowBase::RequestFullscreenMode(enum FullscreenMode mode)
     {
         wm_surface_request_fullscreen_mode(APP.GrachtClient(), nullptr, Id(), 
-            static_cast<wm_surface_fullscreen_mode>(mode));
+            static_cast<wm_fullscreen_mode>(mode));
     }
     
     void WindowBase::InitiateResize(const std::shared_ptr<Pointer>& pointer, enum SurfaceEdges edges)
@@ -161,17 +163,16 @@ namespace Asgaard {
         }
     }
     
-    void WindowBase::ExternalEvent(enum ObjectEvent event, void* data)
+    void WindowBase::ExternalEvent(const Event& event)
     {
-        switch (event)
+        switch (event.GetType())
         {
-            case ObjectEvent::SURFACE_FORMAT: {
-                struct wm_surface_format_event* event = 
-                    (struct wm_surface_format_event*)data;
-                m_supportedFormats.push_back((enum PixelFormat)event->format);
+            case Event::Type::SURFACE_FORMAT: {
+                const auto& format = static_cast<const SurfaceFormatEvent&>(event);
+                m_supportedFormats.push_back((enum PixelFormat)format.Format());
             } break;
             
-            case ObjectEvent::SYNC: {
+            case Event::Type::SYNC: {
                 OnCreated();
             } break;
             
@@ -180,6 +181,6 @@ namespace Asgaard {
         }
         
         // Run the base class events as well
-        Surface::ExternalEvent(event, data);
+        Surface::ExternalEvent(event);
     }
 }

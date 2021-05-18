@@ -7,6 +7,11 @@
         "vioarr_buffer.h": "c",
         "vioarr_manager.h": "c",
         "vioarr_input.h": "c",
-        "wm_core_service.h": "c"
+        "wm_core_service.h": "c",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "vioarr_surface.h": "c",
+        "glfw3.h": "c"
     }
 }

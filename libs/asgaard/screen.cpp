@@ -21,34 +21,41 @@
  *    graphical applications.
  */
 
+#include <algorithm>
 #include "include/application.hpp"
 #include "include/screen.hpp"
 #include "include/window_base.hpp"
-#include "wm_core_protocol_client.h"
-#include "wm_screen_protocol_client.h"
+#include "include/events/screen_properties_event.hpp"
+#include "include/events/screen_mode_event.hpp"
 
-static Asgaard::Screen::ScreenTransform ConvertProtocolTransform(enum wm_screen_transform transform)
+#include "wm_core_service_client.h"
+#include "wm_screen_service_client.h"
+
+static Asgaard::Screen::ScreenTransform ConvertProtocolTransform(enum wm_transform transform)
 {
     switch (transform)
     {
-        case no_transform:
+        case WM_TRANSFORM_NO_TRANSFORM:
             return Asgaard::Screen::NONE;
-        case rotate_90:
+        case WM_TRANSFORM_ROTATE_90:
             return Asgaard::Screen::ROTATE_90;
-        case rotate_180:
+        case WM_TRANSFORM_ROTATE_180:
             return Asgaard::Screen::ROTATE_180;
-        case rotate_270:
+        case WM_TRANSFORM_ROTATE_270:
             return Asgaard::Screen::ROTATE_270;
+
+        default:
+            return Asgaard::Screen::NONE;
     }
 }
 
-static Asgaard::Screen::ScreenMode::ModeFlags ConvertProtocolMode(enum wm_screen_mode_attributes attributes)
+static Asgaard::Screen::ScreenMode::ModeFlags ConvertProtocolMode(enum wm_mode_attributes attributes)
 {
     unsigned int screenMode = (unsigned int)Asgaard::Screen::ScreenMode::ModeFlags::NONE;
-    if (attributes & mode_current) {
+    if (attributes & WM_MODE_ATTRIBUTES_CURRENT) {
         screenMode |= (unsigned int)Asgaard::Screen::ScreenMode::ModeFlags::MODE_CURRENT;
     }
-    if (attributes & mode_preferred) {
+    if (attributes & WM_MODE_ATTRIBUTES_PREFERRED) {
         screenMode |= (unsigned int)Asgaard::Screen::ScreenMode::ModeFlags::MODE_PREFERRED;
     }
     return (Asgaard::Screen::ScreenMode::ModeFlags)screenMode;
@@ -119,41 +126,39 @@ namespace Asgaard {
         return m_modes;
     }
     
-    void Screen::ExternalEvent(enum ObjectEvent event, void* data)
+    void Screen::ExternalEvent(const Event& event)
     {
-        switch (event) {
-            case Object::ObjectEvent::SYNC: {
+        switch (event.GetType()) {
+            case Event::Type::SYNC: {
                 Notify(static_cast<int>(Notification::CREATED));
             } break;
             
-            case Object::ObjectEvent::SCREEN_PROPERTIES: {
-                struct wm_screen_screen_properties_event* properties = 
-                    (struct wm_screen_screen_properties_event*)data;
+            case Event::Type::SCREEN_PROPERTIES: {
+                const auto& properties = static_cast<const ScreenPropertiesEvent&>(event);
                 
                 // update stored information
-                m_positionX   = properties->x;
-                m_positionY   = properties->y;
-                m_scale       = properties->scale;
-                m_transform   = ConvertProtocolTransform(properties->transform);
+                m_positionX   = properties.X();
+                m_positionY   = properties.Y();
+                m_scale       = properties.Scale();
+                m_transform   = ConvertProtocolTransform(properties.Transform());
                 
                 // continue this charade and ask for modes, end with a sync
                 wm_screen_get_modes(APP.GrachtClient(), nullptr, Id());
                 wm_core_sync(APP.GrachtClient(), nullptr, Id());
             } break;
             
-            case Object::ObjectEvent::SCREEN_MODE: {
-                struct wm_screen_mode_event* mode = 
-                    (struct wm_screen_mode_event*)data;
+            case Event::Type::SCREEN_MODE: {
+                const auto& mode = static_cast<const ScreenModeEvent&>(event);
                 
                 std::unique_ptr<ScreenMode> screenMode( 
-                    new ScreenMode(ConvertProtocolMode(mode->flags), mode->resolution_x, 
-                        mode->resolution_y, mode->refresh_rate));
+                    new ScreenMode(ConvertProtocolMode(mode.Attributes()), mode.ResolutionX(), 
+                        mode.ResolutionY(), mode.RefreshRate()));
                 
                 m_modes.push_back(std::move(screenMode));
             } break;
             
             default:
-                Object::ExternalEvent(event, data);
+                Object::ExternalEvent(event);
                 break;
         }
     }

@@ -22,29 +22,20 @@
  */
 #pragma once
 
-#include "config.hpp"
-
-struct wm_keyboard_key_event;
+#include <string>
+#include "event.hpp"
 
 namespace Asgaard {
-    class ASGAARD_API KeyEvent {
+    class PointerLeaveEvent : public Event {
     public:
-        KeyEvent(struct wm_keyboard_key_event*);
-        
-        char          KeyAscii() const;
-        unsigned int  KeyUnicode() const;
-        unsigned char KeyCode() const;
-        bool          Pressed() const;
-        bool          IsRepeat() const;
+        PointerLeaveEvent(const uint32_t pointerId) 
+        : Event(Event::Type::POINTER_LEAVE)
+        , m_pointerId(pointerId)
+        { }
 
-        bool LeftControl() const;
-        bool RightControl() const;
-        bool Control() const;
-        
+        uint32_t PointerId() const { return m_pointerId; }
+
     private:
-        unsigned int  m_modifiers;
-        unsigned int  m_keyUnicode;
-        char          m_keyAscii;
-        unsigned char m_keyCode;
+        uint32_t m_pointerId;
     };
 }

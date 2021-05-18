@@ -20,32 +20,30 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/application.hpp"
-#include "include/pointer.hpp"
-#include "include/surface.hpp"
+#include <string>
+#include "event.hpp"
 
-#include "wm_pointer_service_client.h"
+#include "wm_core_service.h" // for wm_pointer_button
 
 namespace Asgaard {
-    Pointer::Pointer(uint32_t id) : Object(id)
-    {
+    class PointerClickEvent : public Event {
+    public:
+        PointerClickEvent(const uint32_t pointerId, const enum wm_pointer_button button, const bool pressed) 
+        : Event(Event::Type::POINTER_CLICK)
+        , m_pointerId(pointerId)
+        , m_button(button)
+        , m_pressed(pressed)
+        { }
 
-    }
+        uint32_t               PointerId() const { return m_pointerId; }
+        enum wm_pointer_button Button() const { return m_button; }
+        bool                   Pressed() const { return m_pressed; }
 
-    Pointer::~Pointer()
-    {
-
-    }
-
-    void Pointer::SetSurface(const std::shared_ptr<Surface>& surface, int xOffset, int yOffset)
-    {
-        uint32_t id = 0;
-        if (surface) {
-            id = surface->Id();
-        }
-
-        // calling with an id of 0 will result in clearing the pointer surface
-        wm_pointer_set_surface(APP.GrachtClient(), nullptr, Id(), id, xOffset, yOffset);
-    }
+    private:
+        uint32_t               m_pointerId;
+        enum wm_pointer_button m_button;
+        bool                   m_pressed;
+    };
 }

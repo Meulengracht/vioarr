@@ -27,7 +27,7 @@
 #include "vioarr_objects.h"
 #include "vioarr_surface.h"
 #include "vioarr_utils.h"
-#include "../protocols/wm_core_protocol_server.h"
+#include "wm_core_service_server.h"
 #include <ds/list.h>
 #include <stdatomic.h>
 #include <stdlib.h>

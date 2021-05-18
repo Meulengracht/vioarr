@@ -21,16 +21,15 @@
  *    graphical applications.
  */
  
-#include "include/key_event.hpp"
-#include "wm_keyboard_service_client.h"
+#include "include/events/key_event.hpp"
 #include <os/keycodes.h>
 
 namespace Asgaard {
-    KeyEvent::KeyEvent(struct wm_keyboard_key_event* event)
-        : m_modifiers(event->flags)
+    KeyEvent::KeyEvent(const uint8_t keycode, const uint16_t flags)
+        : m_modifiers(flags)
         , m_keyUnicode(0)
-        , m_keyAscii(TranslateKeyCode(event->keycode, event->flags))
-        , m_keyCode((unsigned char)event->keycode)
+        , m_keyAscii(TranslateKeyCode(keycode, flags))
+        , m_keyCode((unsigned char)keycode)
     {
         
     }

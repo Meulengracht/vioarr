@@ -84,7 +84,7 @@ namespace Asgaard {
         ASGAARD_API void Notification(Publisher*, int = 0, void* = 0) override;
 
     private:
-        ASGAARD_API void ExternalEvent(enum ObjectEvent event, void* data = 0) final;
+        ASGAARD_API void ExternalEvent(const Event&) final;
 
     private:
         std::vector<enum PixelFormat>     m_supportedFormats;

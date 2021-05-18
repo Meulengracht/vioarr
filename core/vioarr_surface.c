@@ -24,8 +24,8 @@
 
 //#define __TRACE
 
-#include "protocols/wm_surface_protocol_server.h"
-#include "protocols/wm_core_protocol_server.h"
+#include "wm_surface_service_server.h"
+#include "wm_core_service_server.h"
 #include "engine/vioarr_input.h"
 #include "engine/vioarr_surface.h"
 #include "engine/vioarr_screen.h"

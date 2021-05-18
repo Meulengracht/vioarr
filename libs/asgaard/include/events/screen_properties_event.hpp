@@ -20,32 +20,33 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/application.hpp"
-#include "include/pointer.hpp"
-#include "include/surface.hpp"
+#include <string>
+#include "event.hpp"
 
-#include "wm_pointer_service_client.h"
+#include "wm_core_service.h" // for wm_transform
 
 namespace Asgaard {
-    Pointer::Pointer(uint32_t id) : Object(id)
-    {
+    class ScreenPropertiesEvent : public Event {
+    public:
+        ScreenPropertiesEvent(const int x, const int y, const enum wm_transform transform, const int scale) 
+        : Event(Event::Type::SCREEN_PROPERTIES)
+        , m_x(x)
+        , m_y(y)
+        , m_transform(transform)
+        , m_scale(scale)
+        { }
 
-    }
+        int               X() const { return m_x; }
+        int               Y() const { return m_y; }
+        enum wm_transform Transform() const { return m_transform; }
+        int               Scale() const { return m_scale; }
 
-    Pointer::~Pointer()
-    {
-
-    }
-
-    void Pointer::SetSurface(const std::shared_ptr<Surface>& surface, int xOffset, int yOffset)
-    {
-        uint32_t id = 0;
-        if (surface) {
-            id = surface->Id();
-        }
-
-        // calling with an id of 0 will result in clearing the pointer surface
-        wm_pointer_set_surface(APP.GrachtClient(), nullptr, Id(), id, xOffset, yOffset);
-    }
+    private:
+        int               m_x;
+        int               m_y;
+        enum wm_transform m_transform;
+        int               m_scale;
+    };
 }

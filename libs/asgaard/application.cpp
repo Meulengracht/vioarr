@@ -21,8 +21,10 @@
  *    graphical applications.
  */
 
+#include <algorithm>
 #include <cstring>
 #include <errno.h>
+#include <type_traits>
 #include <gracht/client.h>
 #include "include/application.hpp"
 #include "include/pointer.hpp"
@@ -31,7 +33,20 @@
 #include "include/window_base.hpp"
 #include "include/exceptions/application_exception.h"
 #include "include/utils/descriptor_listener.hpp"
-#include <type_traits>
+
+// include events
+#include "include/events/error_event.hpp"
+#include "include/events/object_event.hpp"
+#include "include/events/screen_properties_event.hpp"
+#include "include/events/screen_mode_event.hpp"
+#include "include/events/surface_format_event.hpp"
+#include "include/events/surface_resize_event.hpp"
+#include "include/events/surface_focus_event.hpp"
+#include "include/events/pointer_enter_event.hpp"
+#include "include/events/pointer_leave_event.hpp"
+#include "include/events/pointer_move_event.hpp"
+#include "include/events/pointer_click_event.hpp"
+#include "include/events/key_event.hpp"
 
 #ifdef MOLLENOS
 #include <inet/socket.h>
@@ -298,6 +313,7 @@ namespace Asgaard {
         strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
         addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
 
+        gracht_link_socket_create(&link);
         gracht_link_socket_set_type(link, gracht_link_stream_based);
         gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
         gracht_link_socket_set_domain(link, AF_LOCAL);
@@ -367,15 +383,16 @@ namespace Asgaard {
     
     void Application::AddEventDescriptor(int iod, unsigned int events, const std::shared_ptr<Utils::DescriptorListener>& listener)
     {
+        struct epoll_event evt;
+
         if (m_ioset == -1) {
             throw ApplicationException("Initialize() must be called before AddEventDescriptor", -1);
         }
 
-        int status = epoll_ctl(m_ioset, EPOLL_CTL_ADD, iod,
-               &(struct epoll_event) {
-                    .events  = events,
-                    .data.fd = iod
-               });
+        evt.data.fd = iod;
+        evt.events = events;
+
+        int status = epoll_ctl(m_ioset, EPOLL_CTL_ADD, iod, &evt);
         if (status) {
             throw ApplicationException("ioset_ctrl failed to add event descriptor", status);
         }
@@ -417,23 +434,22 @@ namespace Asgaard {
         }
     }
 
-    void Application::ExternalEvent(const Event&)
+    void Application::ExternalEvent(const Event& event)
     {
-        switch (event) {
-            case ObjectEvent::CREATION: {
-                struct wm_core_object_event* event =
-                    (struct wm_core_object_event*)data;
-                
+        switch (event.GetType()) {
+            case Event::Type::CREATION: {
+                const auto& object = static_cast<const ObjectEvent&>(event);
+
                 // Handle new server objects
-                switch (event->type) {
+                switch (object.ObjectType()) {
                     case WM_OBJECT_TYPE_SCREEN: {
-                        auto screen = Asgaard::OM.CreateServerObject<Asgaard::Screen>(event->object_id);
+                        auto screen = Asgaard::OM.CreateServerObject<Asgaard::Screen>(object.ObjectId());
                         screen->Subscribe(this);
                         m_screens.push_back(screen);
                     } break;
 
                     case WM_OBJECT_TYPE_POINTER: {
-                        auto pointer = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(event->object_id);
+                        auto pointer = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(object.ObjectId());
                     } break;
                     
                     default:
@@ -441,10 +457,10 @@ namespace Asgaard {
                 }
                 
             }
-            case ObjectEvent::ERROR: {
-                Object::ExternalEvent(event, data);
+            case Event::Type::ERROR: {
+                Object::ExternalEvent(event);
             } break;
-            case ObjectEvent::SYNC: {
+            case Event::Type::SYNC: {
                 m_syncRecieved = true;
             } break;
             
@@ -470,9 +486,6 @@ namespace Asgaard {
         }
     }
 }
-
-// include events
-#include "include/events/error_event.hpp"
 
 // Protocol callbacks
 extern "C"
@@ -503,12 +516,12 @@ extern "C"
         auto object = Asgaard::OM[id];
         if (!object) {
             // Global error, this must be handled on application level
-            Asgaard::APP.ExternalEvent(ErrorEvent(errorCode, description));
+            Asgaard::APP.ExternalEvent(Asgaard::ErrorEvent(errorCode, description));
             return;
         }
         
         // publish error to object
-        object->ExternalEvent(ErrorEvent(errorCode, description));
+        object->ExternalEvent(Asgaard::ErrorEvent(errorCode, description));
     }
     
     void wm_core_event_object_invocation(gracht_client_t* client, const uint32_t id, const size_t handle, const enum wm_object_type type)
@@ -516,10 +529,10 @@ extern "C"
         switch (type) {
             // Handle new server objects
             case WM_OBJECT_TYPE_SCREEN: {
-                Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::CREATION, input);
+                Asgaard::APP.ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
             } break;
             case WM_OBJECT_TYPE_POINTER: {
-                Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::CREATION, input);
+                Asgaard::APP.ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
             } break;
             
             // Handle client completion objects
@@ -529,7 +542,7 @@ extern "C"
                     // log
                     return;
                 }
-                object->ExternalEvent(Asgaard::Object::ObjectEvent::CREATION, input);
+                object->ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
             } break;
         }
     }
@@ -544,7 +557,7 @@ extern "C"
         }
         
         // publish to object
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SCREEN_PROPERTIES, input);
+        object->ExternalEvent(Asgaard::ScreenPropertiesEvent(x, y, transform, scale));
     }
     
     void wm_screen_event_mode_invocation(gracht_client_t* client, const uint32_t id, const enum wm_mode_attributes attributes, const int resolutionX, const int resolutionY, const int refreshRate)
@@ -555,7 +568,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SCREEN_MODE, input);
+        object->ExternalEvent(Asgaard::ScreenModeEvent(attributes, resolutionX, resolutionY, refreshRate));
     }
     
     // SURFACE PROTOCOL EVENTS
@@ -567,7 +580,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_FORMAT, input);
+        object->ExternalEvent(Asgaard::SurfaceFormatEvent(format));
     }
     
     void wm_surface_event_frame_invocation(gracht_client_t* client, const uint32_t id)
@@ -578,7 +591,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_FRAME, input);
+        object->ExternalEvent(Asgaard::Event(Asgaard::Event::Type::SURFACE_FRAME));
     }
     
     void wm_surface_event_resize_invocation(gracht_client_t* client, const uint32_t id, const int width, const int height, const enum wm_surface_edge edges)
@@ -589,7 +602,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_RESIZE, input);
+        object->ExternalEvent(Asgaard::SurfaceResizeEvent(width, height, edges));
     }
 
     void wm_surface_event_focus_invocation(gracht_client_t* client, const uint32_t id, const uint8_t focus)
@@ -600,7 +613,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::SURFACE_FOCUSED, input);
+        object->ExternalEvent(Asgaard::SurfaceFocusEvent(static_cast<bool>(focus)));
     }
     
     // BUFFER PROTOCOL EVENTS
@@ -612,7 +625,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::BUFFER_RELEASE, input);
+        object->ExternalEvent(Asgaard::Event(Asgaard::Event::Type::BUFFER_RELEASE));
     }
 
     // POINTER PROTOCOL EVENTS
@@ -623,7 +636,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_ENTER, event);
+        object->ExternalEvent(Asgaard::PointerEnterEvent(pointerId, surfaceX, surfaceY));
     }
 
     void wm_pointer_event_leave_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId)
@@ -633,7 +646,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_LEAVE, event);
+        object->ExternalEvent(Asgaard::PointerLeaveEvent(pointerId));
     }
 
     void wm_pointer_event_move_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const int surfaceX, const int surfaceY)
@@ -644,7 +657,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_MOVE, event);
+        object->ExternalEvent(Asgaard::PointerEnterEvent(pointerId, surfaceX, surfaceY));
     }
 
     void wm_pointer_event_click_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const enum wm_pointer_button button, const uint8_t pressed)
@@ -654,7 +667,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::POINTER_CLICK, event);
+        object->ExternalEvent(Asgaard::PointerClickEvent(pointerId, button, static_cast<bool>(pressed)));
     }
 
     // KEYBOARD PROTOCOL EVENTS
@@ -666,7 +679,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::KEY_EVENT, event);
+        object->ExternalEvent(Asgaard::KeyEvent(keycode, flags));
     }
 }
 

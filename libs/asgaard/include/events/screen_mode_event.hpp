@@ -25,25 +25,28 @@
 #include <string>
 #include "event.hpp"
 
-#include "wm_core_service.h" // for wm_object_type
+#include "wm_core_service.h" // for wm_mode_attributes
 
 namespace Asgaard {
-    class ObjectEvent : public Event {
+    class ScreenModeEvent : public Event {
     public:
-        ObjectEvent(const uint32_t id, const size_t handle, const enum wm_object_type type) 
-        : Event(Event::Type::CREATION)
-        , m_objectId(id)
-        , m_objectType(type)
-        , m_handle(handle)
+        ScreenModeEvent(const enum wm_mode_attributes attributes, const int resolutionX, const int resolutionY, const int refreshRate) 
+        : Event(Event::Type::SCREEN_MODE)
+        , m_resolutionX(resolutionX)
+        , m_resolutionY(resolutionY)
+        , m_refreshRate(refreshRate)
+        , m_attributes(attributes)
         { }
 
-        uint32_t            ObjectId() const { return m_objectId; }
-        size_t              NativeHandle() const { return m_handle; }
-        enum wm_object_type ObjectType() const { return m_objectType; }
+        int                     ResolutionX() const { return m_resolutionX; }
+        int                     ResolutionY() const { return m_resolutionY; }
+        int                     RefreshRate() const { return m_refreshRate; }
+        enum wm_mode_attributes Attributes() const { return m_attributes; }
 
     private:
-        uint32_t            m_objectId;
-        enum wm_object_type m_objectType;
-        size_t              m_handle;
+        int                     m_resolutionX;
+        int                     m_resolutionY;
+        int                     m_refreshRate;
+        enum wm_mode_attributes m_attributes;
     };
 }

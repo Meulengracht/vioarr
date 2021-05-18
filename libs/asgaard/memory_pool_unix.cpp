@@ -26,11 +26,12 @@
 #include "include/exceptions/invalid_argument_exception.h"
 #include "include/memory_pool.hpp"
 
-#include "wm_core_protocol_client.h"
-#include "wm_memory_pool_protocol_client.h"
-#include "wm_memory_protocol_client.h"
+#include "wm_core_service_client.h"
+#include "wm_memory_pool_service_client.h"
+#include "wm_memory_service_client.h"
 
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
@@ -50,15 +51,11 @@ namespace Asgaard {
         m_shmFd = shmget(m_poolKey, size, IPC_CREAT | IPC_EXCL | S_IRUSR | S_IWUSR);
         if (m_shmFd == -1) {
             throw ApplicationException("MemoryPool::MemoryPool() failed to create a new memory pool", errno);
-            free(pool);
-            return -1;
         }
 
         m_memory = shmat(m_shmFd, 0, 0);
         if (m_memory == (void*)(-1)) {
             throw ApplicationException("MemoryPool::MemoryPool() failed to map the new memory pool", errno);
-            free(pool);
-            return -1;
         }
 
         wm_memory_create_pool(APP.GrachtClient(), nullptr, id, m_poolKey, size);

@@ -29,15 +29,15 @@
 #include <stdlib.h>
 
 // Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
+#include <glad.h>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <glad.h>
 #include "../vioarr_input.h"
 #include "../vioarr_renderer.h"
 #include "../vioarr_screen.h"
 #include "../vioarr_utils.h"
 #include "../vioarr_objects.h"
-#include "../../protocols/wm_screen_protocol_server.h"
+#include "wm_screen_service_server.h"
 #include <stdlib.h>
 
 typedef struct vioarr_screen {
@@ -60,10 +60,10 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 {
     vioarr_screen_t* screen;
-    int              x, y, width, height;
+    int              x, y, width, height, status;
 
     // Initialise GLFW
-    glewExperimental = true; // Needed for core profile
+    glewExperimental = 1; // Needed for core profile
     if (!glfwInit()) {
         vioarr_utils_error("Failed to initialize GLFW\n");
         return -1;
@@ -112,7 +112,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 
     // Set the newly created context as current for now. We must have one pretty quickly
     glfwMakeContextCurrent(screen->context); // Initialize GLEW
-    glewExperimental=true; // Needed in core profile
+    glewExperimental=1; // Needed in core profile
     if (glewInit() != GLEW_OK) {
         vioarr_utils_error("Failed to initialize GLEW\n");
         goto error;

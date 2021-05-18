@@ -22,8 +22,8 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
-#include "protocols/wm_screen_protocol_server.h"
-#include "protocols/wm_core_protocol_server.h"
+#include "wm_screen_service_server.h"
+#include "wm_core_service_server.h"
 #include "engine/vioarr_renderer.h"
 #include "engine/vioarr_screen.h"
 #include "engine/vioarr_surface.h"

@@ -108,4 +108,4 @@ add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
 
-add_subdirectory (core)
+#add_subdirectory (core)

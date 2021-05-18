@@ -91,7 +91,7 @@ elseif (APPLE)
     find_library (CoreVideo_LIBRARY CoreVideo)
     mark_as_advanced (COCOA_LIBRARY OpenGL_LIBRARY)
     set (APPLE_LIBS ${COCOA_LIBRARY} ${IOKit_LIBRARY} ${OpenGL_LIBRARY} ${CoreVideo_LIBRARY})
-    set (APPLE_LIBS ${APPLE_LIBS} ${GLFW3_LIBRARY} ${ASSIMP_LIBRARY})
+    set (APPLE_LIBS ${APPLE_LIBS} ${GLFW3_LIBRARY})
     set (LIBS ${LIBS} ${APPLE_LIBS})
 elseif (MOLLENOS)
     include_directories($ENV{VALI_APPLICATION_PATH}/include)
@@ -104,8 +104,8 @@ endif ()
 
 add_subdirectory (protocols)
 
-add_subdirectory (core)
-
 add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
+
+add_subdirectory (core)

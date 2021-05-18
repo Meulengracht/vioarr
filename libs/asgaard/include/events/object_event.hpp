@@ -26,15 +26,15 @@
 #include "event.hpp"
 
 namespace Asgaard {
-    class ErrorEvent : public Event {
+    class ObjectEvent : public Event {
     public:
         /**
          * Constructor (C++ STL string, int, int).
          *  @param errorCode Error number
          *  @param description The error message
          */
-        ErrorEvent(const int errorCode, const char* description) 
-        : Event(Event::Type::ERROR)
+        ObjectEvent(const size_t handle, const enum wm_object_type type) 
+        : Event(Event::Type::CREATION)
         , error_number(errorCode)
         , error_message(description)
         { }
@@ -43,7 +43,7 @@ namespace Asgaard {
         int         Code() const { return error_number; }
 
     private:
-        int         error_number;
+        size_t      error_number;
         std::string error_message;
     };
 }

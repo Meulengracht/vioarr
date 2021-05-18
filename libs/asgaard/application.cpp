@@ -417,7 +417,7 @@ namespace Asgaard {
         }
     }
 
-    void Application::ExternalEvent(enum ObjectEvent event, void* data)
+    void Application::ExternalEvent(const Event&)
     {
         switch (event) {
             case ObjectEvent::CREATION: {
@@ -471,6 +471,9 @@ namespace Asgaard {
     }
 }
 
+// include events
+#include "include/events/error_event.hpp"
+
 // Protocol callbacks
 extern "C"
 {
@@ -488,10 +491,10 @@ extern "C"
             }
             
             // publish to object
-            object->ExternalEvent(Asgaard::Object::ObjectEvent::SYNC);
+            object->ExternalEvent(Asgaard::Event(Asgaard::Event::Type::SYNC));
         }
         else {
-            Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::SYNC);
+            Asgaard::APP.ExternalEvent(Asgaard::Event(Asgaard::Event::Type::SYNC));
         }
     }
 
@@ -500,12 +503,12 @@ extern "C"
         auto object = Asgaard::OM[id];
         if (!object) {
             // Global error, this must be handled on application level
-            Asgaard::APP.ExternalEvent(Asgaard::Object::ObjectEvent::ERROR, input);
+            Asgaard::APP.ExternalEvent(ErrorEvent(errorCode, description));
             return;
         }
         
         // publish error to object
-        object->ExternalEvent(Asgaard::Object::ObjectEvent::ERROR, input);
+        object->ExternalEvent(ErrorEvent(errorCode, description));
     }
     
     void wm_core_event_object_invocation(gracht_client_t* client, const uint32_t id, const size_t handle, const enum wm_object_type type)

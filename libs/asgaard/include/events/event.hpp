@@ -24,6 +24,33 @@
 
 namespace Asgaard {
     class Event {
+    public:
+        enum class Type : int {
+            ERROR,
+            SYNC,
+            CREATION,
+            SCREEN_PROPERTIES,
+            SCREEN_MODE,
+            SURFACE_FORMAT,
+            SURFACE_RESIZE,
+            SURFACE_FRAME,
+            SURFACE_FOCUSED,
+            SURFACE_UNFOCUSED,
+            BUFFER_RELEASE,
+            KEY_EVENT,
+            POINTER_ENTER,
+            POINTER_LEAVE,
+            POINTER_MOVE,
+            POINTER_CLICK
+        };
 
+    public:
+        Event(Event::Type type) : m_type(type) { }
+        virtual ~Event() { }
+
+        const Event::Type GetType() const { return m_type; }
+
+    private:
+        Event::Type m_type;
     };
 }

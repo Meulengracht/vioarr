@@ -83,7 +83,7 @@ namespace Asgaard {
         const std::shared_ptr<Screen>& GetScreen() const    { return m_screens.front(); }
 
     public:
-        void ExternalEvent(enum ObjectEvent event, void* data = 0) override;
+        void ExternalEvent(const Event&) override;
         void Notification(Publisher*, int = 0, void* = 0) override;
 
     private:

@@ -23,31 +23,13 @@
 
 #include <cstdint>
 #include "config.hpp"
+#include "events/event.hpp"
 #include "utils/publisher.hpp"
 #include "utils/subscriber.hpp"
 
-namespace Asgaard {
+namespace Asgaard {    
     class Object : public Utils::Publisher, public Utils::Subscriber {
     public:
-        enum class ObjectEvent {
-            ERROR,
-            SYNC,
-            CREATION,
-            SCREEN_PROPERTIES,
-            SCREEN_MODE,
-            SURFACE_FORMAT,
-            SURFACE_RESIZE,
-            SURFACE_FRAME,
-            SURFACE_FOCUSED,
-            SURFACE_UNFOCUSED,
-            BUFFER_RELEASE,
-            KEY_EVENT,
-            POINTER_ENTER,
-            POINTER_LEAVE,
-            POINTER_MOVE,
-            POINTER_CLICK
-        };
-
         enum class Notification : int {
             CREATED = 0,
             ERROR,
@@ -67,7 +49,7 @@ namespace Asgaard {
             Notify(static_cast<int>(Notification::DESTROY));
         };
 
-        virtual void ExternalEvent(enum ObjectEvent event, void* data = 0);
+        virtual void ExternalEvent(const Event&) = 0;
         
     private:
         uint32_t m_id;

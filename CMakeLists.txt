@@ -108,4 +108,7 @@ add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
 
+add_subdirectory (apps/alumni)
+add_subdirectory (apps/heimdall)
+
 add_subdirectory (core)

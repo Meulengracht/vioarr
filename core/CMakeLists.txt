@@ -16,6 +16,7 @@ include_directories (
     ${CMAKE_BINARY_DIR}/protocols
     ${GRACHT_INSTALL_DIR}/include
     ${CMAKE_BINARY_DIR}/libs/glad/include/glad
+    ${PROJECT_SOURCE_DIR}/libs/freetype/include
 )
 
 if (WIN32)
@@ -43,7 +44,7 @@ elseif (MOLLENOS)
 endif ()
 
 # setup some configuration parameters for the build
-add_definitions(-DVIOARR_BACKEND_NANOVG)
+add_definitions(-DVIOARR_BACKEND_NANOVG -DNANOVG_GL3_IMPLEMENTATION -DFONS_USE_FREETYPE)
 
 # add the protocol sources that handles communication
 add_sources (

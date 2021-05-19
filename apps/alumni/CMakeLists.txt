@@ -12,6 +12,8 @@ macro (add_sources)
     endforeach()
 endmacro()
 
+include_directories (../../libs/asgaard/include)
+
 add_sources (
     main.cpp
     terminal.cpp
@@ -23,12 +25,17 @@ add_sources (
 
 if (MOLLENOS)
     add_sources (targets/resolver_vali.cpp)
+elseif (UNIX)
+    add_sources (targets/resolver_unix.cpp)
 elseif (WIN32)
     add_sources (targets/resolver_win32.cpp)
 endif ()
 
 # Configure primary executable target
 add_executable(alumni ${SRCS})
+target_link_libraries(alumni asgaard)
 if (MOLLENOS)
-  target_link_libraries(alumni asgaard static_libddk static_libgracht)
+    target_link_libraries(alumni static_libddk)
+elseif (UNIX)
+    target_link_libraries(alumni -lpthread)
 endif()

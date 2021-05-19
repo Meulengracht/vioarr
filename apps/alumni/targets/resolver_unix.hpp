@@ -23,21 +23,18 @@
 #pragma once
 
 #include <utils/descriptor_listener.hpp>
-#include <os/osdefs.h>
 #include "resolver_base.hpp"
+#include <unistd.h>
 #include <memory>
 #include <thread>
 
-class ResolverVali : public ResolverBase, public Asgaard::Utils::DescriptorListener {
-public:
-    ResolverVali(int stdoutDescriptor, int stderrDescriptor);
-    ~ResolverVali();
+#define PIPE_READ 0
+#define PIPE_WRITE 1
 
-    /**
-     * Due to how APP.AddEventDescriptor works we must call it after APP.Initialize, but this
-     * resolver is built before this.
-     */
-    void Setup(const std::shared_ptr<ResolverVali>&);
+class ResolverUnix : public ResolverBase, public Asgaard::Utils::DescriptorListener, public std::enable_shared_from_this<ResolverUnix> {
+public:
+    ResolverUnix(const int* stdoutFds, const int* stderrFds, const int* stdinFds);
+    ~ResolverUnix();
 
 public:
     bool HandleKeyCode(const Asgaard::KeyEvent&) override;
@@ -59,9 +56,9 @@ private:
 private:
     std::string m_profile;
     std::string m_currentDirectory;
-    UUId_t      m_application;
-    int         m_stdoutDescriptor;
-    int         m_stdinDescriptor;
-    int         m_stderrDescriptor;
+    pid_t       m_application;
+    int         m_stdoutFds[2];
+    int         m_stdinFds[2];
+    int         m_stderrFds[2];
     int         m_processEvent;
 };

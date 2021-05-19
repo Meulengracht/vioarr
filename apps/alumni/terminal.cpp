@@ -24,13 +24,20 @@
 #include <cassert>
 #include <cctype>
 #include <cmath>
+#include <cstdarg>
 
+#ifdef MOLLENOS
 #include <io.h>
 #include <ioset.h>
 #include <os/keycodes.h>
+#elif defined(_WIN32)
 
-#include <asgaard/object_manager.hpp>
-#include <asgaard/key_event.hpp>
+#else
+#include <unistd.h>
+#endif
+
+#include <object_manager.hpp>
+#include <events/key_event.hpp>
 #include "terminal.hpp"
 #include "terminal_line.hpp"
 #include "terminal_interpreter.hpp"
@@ -226,8 +233,6 @@ void Terminal::Print(const char* format, ...)
 /**
  * Window Handling Code
  */
-#define __TRACE
-#include <ddk/utils.h>
 void Terminal::DescriptorEvent(int iod, unsigned int events)
 {
     if (iod == m_stdoutDescriptor || iod == m_stderrDescriptor) {
@@ -240,7 +245,6 @@ void Terminal::DescriptorEvent(int iod, unsigned int events)
             // set zero terminator
             inputBuffer[bytesRead] = 0;
             Print("%s", &inputBuffer[0]);
-            TRACE("%s", &inputBuffer[0]);
             bytesRead = read(iod, &inputBuffer[0], sizeof(inputBuffer) - 1);
         }
     }
@@ -322,11 +326,11 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
         return;
     }
     
-    if (key.KeyCode() == VK_BACK) {
+    if (key.KeyCode() == VKC_BACK) {
         RemoveInput();
         RequestRedraw();
     }
-    else if (key.KeyCode() == VK_ENTER) {
+    else if (key.KeyCode() == VKC_ENTER) {
         std::string input = ClearInput(true);
         if (!m_resolver->Interpret(input)) {
             if (m_resolver->GetClosestMatch().length() != 0) {
@@ -335,24 +339,24 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
         }
         m_resolver->PrintCommandHeader();
     }
-    else if (key.KeyCode() == VK_UP) {
+    else if (key.KeyCode() == VKC_UP) {
         HistoryPrevious();
         RequestRedraw();
     }
-    else if (key.KeyCode() == VK_DOWN) {
+    else if (key.KeyCode() == VKC_DOWN) {
         HistoryNext();
         RequestRedraw();
     }
-    else if (key.KeyCode() == VK_LEFT) {
+    else if (key.KeyCode() == VKC_LEFT) {
         MoveCursorLeft();
         RequestRedraw();
     }
-    else if (key.KeyCode() == VK_RIGHT) {
+    else if (key.KeyCode() == VKC_RIGHT) {
         MoveCursorRight();
         RequestRedraw();
     }
-    else if (key.KeyAscii() != 0) {
-        AddInput(key.KeyAscii());
+    else if (key.Key() != 0) {
+        AddInput(static_cast<int>(key.Key()));
         RequestRedraw();
     }
 }

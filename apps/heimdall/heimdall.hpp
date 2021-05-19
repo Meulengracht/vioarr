@@ -127,11 +127,11 @@ private:
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
         ERROR("Heimdall::OnKeyEvent(keycode=%u", keyEvent.KeyCode());
-        if (keyEvent.KeyCode() == VK_F1 && !keyEvent.Pressed()) {
+        if (keyEvent.KeyCode() == VKC_F1 && !keyEvent.Pressed()) {
             UUId_t pid;
             ProcessSpawn("$bin/alumni.app", NULL, &pid);
         }
-        else if (keyEvent.KeyCode() == VK_LWIN && !keyEvent.Pressed()) {
+        else if (keyEvent.KeyCode() == VKC_LWIN && !keyEvent.Pressed()) {
             // Show 
         }
     }

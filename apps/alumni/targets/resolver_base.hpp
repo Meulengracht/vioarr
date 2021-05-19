@@ -22,7 +22,7 @@
  */
 #pragma once
 
-#include <asgaard/surface.hpp>
+#include <surface.hpp>
 #include <memory>
 #include <string>
 #include "../terminal_interpreter.hpp"

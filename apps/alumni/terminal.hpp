@@ -29,14 +29,14 @@
 #include <string>
 #include <list>
 
-#include <asgaard/application.hpp>
-#include <asgaard/window_base.hpp>
-#include <asgaard/memory_pool.hpp>
-#include <asgaard/memory_buffer.hpp>
-#include <asgaard/drawing/font.hpp>
-#include <asgaard/drawing/painter.hpp>
-#include <asgaard/drawing/color.hpp>
-#include <asgaard/utils/descriptor_listener.hpp>
+#include <application.hpp>
+#include <window_base.hpp>
+#include <memory_pool.hpp>
+#include <memory_buffer.hpp>
+#include <drawing/font.hpp>
+#include <drawing/painter.hpp>
+#include <drawing/color.hpp>
+#include <utils/descriptor_listener.hpp>
 
 #define ALUMNI_MARGIN_TOP   40
 #define ALUMNI_MARGIN_LEFT  10

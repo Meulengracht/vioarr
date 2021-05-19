@@ -21,9 +21,6 @@
  *   using freetype as the font renderer.
  */
 
-#include <io.h>
-#include <ioctl.h>
-#include <ioset.h>
 #include "heimdall.hpp"
 
 int main(int argc, char **argv)

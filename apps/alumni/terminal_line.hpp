@@ -22,9 +22,9 @@
  */
 #pragma once
 
-#include <asgaard/drawing/font.hpp>
-#include <asgaard/drawing/painter.hpp>
-#include <asgaard/drawing/color.hpp>
+#include <drawing/font.hpp>
+#include <drawing/painter.hpp>
+#include <drawing/color.hpp>
 #include <memory>
 #include <vector>
 #include <string>

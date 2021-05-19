@@ -48,8 +48,8 @@ static enum Asgaard::Surface::SurfaceEdges GetSurfaceEdges(enum wm_surface_edge 
 namespace Asgaard {
     Surface::Surface(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
         : Object(id)
-        , m_screen(nullptr)
         , m_dimensions(dimensions)
+        , m_screen(nullptr)
     {
         BindToScreen(screen, parent);
     }

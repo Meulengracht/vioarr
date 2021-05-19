@@ -100,4 +100,8 @@ static void vioarr_rwlock_w_unlock(vioarr_rwlock_t* lock)
     cnd_signal(&lock->signal);
 }
 
+
+#include <gracht/server.h>
+extern gracht_server_t* vioarr_get_server_handle(void);
+
 #endif //!__VIOARR_UTILS_H__

@@ -24,7 +24,7 @@
 #include "include/object_manager.hpp"
 #include "include/subsurface.hpp"
 
-#include "wm_surface_protocol_client.h"
+#include "wm_surface_service_client.h"
 
 namespace Asgaard {
     SubSurface::SubSurface(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)

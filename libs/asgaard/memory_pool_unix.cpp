@@ -77,7 +77,7 @@ namespace Asgaard {
             return nullptr;
         }
         
-        if (memoryOffset >= m_size) {
+        if ((size_t)memoryOffset >= m_size) {
             return nullptr;
         }
         

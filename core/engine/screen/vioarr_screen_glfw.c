@@ -28,9 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
 #include <glad.h>
-#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "../vioarr_input.h"
 #include "../vioarr_renderer.h"
@@ -63,10 +61,9 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     int              x, y, width, height, status;
 
     // Initialise GLFW
-    glewExperimental = 1; // Needed for core profile
     if (!glfwInit()) {
         vioarr_utils_error("Failed to initialize GLFW\n");
-        return -1;
+        return NULL;
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -111,15 +108,10 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     glfwSetInputMode(screen->context, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Set the newly created context as current for now. We must have one pretty quickly
-    glfwMakeContextCurrent(screen->context); // Initialize GLEW
-    glewExperimental=1; // Needed in core profile
-    if (glewInit() != GLEW_OK) {
-        vioarr_utils_error("Failed to initialize GLEW\n");
-        goto error;
-    }
+    glfwMakeContextCurrent(screen->context);
     
     vioarr_utils_trace("[vioarr] [screen] [create] loading gl extensions");
-    status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+    status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress, 0, 0);
     if (!status) {
         vioarr_utils_error("[vioarr] [initialize] failed to load gl extensions, code %i", status);
         goto error;
@@ -131,7 +123,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
         goto error;
     }
     
-    screen->id = vioarr_objects_create_server_object(screen, object_type_screen);
+    screen->id = vioarr_objects_create_server_object(screen, WM_OBJECT_TYPE_SCREEN);
     screen->first_mouse = 1;
 
     // create the default mouse and keyboard objects
@@ -164,12 +156,14 @@ void vioarr_screen_set_scale(vioarr_screen_t* screen, int scale)
     vioarr_renderer_set_scale(screen->renderer, scale);
 }
 
-void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_screen_transform transform)
+void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_transform transform)
 {
     if (!screen) {
         return;
     }
-    TRACE("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+
+    vioarr_utils_trace("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+    (void)transform;
 }
 
 vioarr_region_t* vioarr_screen_region(vioarr_screen_t* screen)
@@ -188,16 +182,16 @@ int vioarr_screen_scale(vioarr_screen_t* screen)
     return vioarr_renderer_scale(screen->renderer);
 }
 
-enum wm_screen_transform vioarr_screen_transform(vioarr_screen_t* screen)
+enum wm_transform vioarr_screen_transform(vioarr_screen_t* screen)
 {
     int rotation;
     
     if (!screen) {
-        return no_transform;
+        return WM_TRANSFORM_NO_TRANSFORM;
     }
     
     rotation = vioarr_renderer_rotation(screen->renderer);
-    return no_transform; // TODO
+    return WM_TRANSFORM_NO_TRANSFORM; // TODO
 }
 
 vioarr_renderer_t* vioarr_screen_renderer(vioarr_screen_t* screen)
@@ -215,13 +209,13 @@ int vioarr_screen_publish_modes(vioarr_screen_t* screen, int client)
     }
     
     // One hardcoded format
-    return wm_screen_event_mode_single(client, screen->id,
-        mode_current | mode_preferred,
+    return wm_screen_event_mode_single(vioarr_get_server_handle(), client, screen->id, 
+        WM_MODE_ATTRIBUTES_CURRENT | WM_MODE_ATTRIBUTES_PREFERRED,
         vioarr_region_width(screen->dimensions),
         vioarr_region_height(screen->dimensions), 60);
 }
 
-int vioarr_screen_valid(vioarr_screen_t* screen);
+int vioarr_screen_valid(vioarr_screen_t* screen)
 {
     return screen != NULL && glfwWindowShouldClose(screen->context) == 0;
 }

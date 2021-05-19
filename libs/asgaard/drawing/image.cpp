@@ -30,6 +30,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#if 0
 static std::string ExtendFilename(std::string& path, std::string& extension)
 {
     if (extension == "") {
@@ -60,6 +61,7 @@ static std::string ExtendFilename(std::string& path, std::string& extension)
         return path.substr(0, lastDotPos) + extension + fileExtension;
     }
 }
+#endif
 
 namespace Asgaard {
     namespace Drawing {

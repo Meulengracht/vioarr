@@ -79,5 +79,5 @@ service pointer (86) {
 }
 
 service keyboard (87) {
-    event key : (uint32 surfaceId, uint8 keycode, uint16 flags) = 1;
+    event key : (uint32 surfaceId, uint32 keycode, uint16 modifiers, bool pressed) = 1;
 }

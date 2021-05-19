@@ -28,7 +28,7 @@
 
 void ctt_input_event_properties_callback(struct ctt_input_properties_event* event)
 {
-    TRACE("[ctt_input_event_properties_callback] %u", event->device_type);
+    vioarr_utils_trace("[ctt_input_event_properties_callback] %u", event->device_type);
     vioarr_input_register(event->device_id,
         event->device_type == input_type_mouse ? 
             VIOARR_INPUT_POINTER : VIOARR_INPUT_KEYBOARD);
@@ -36,13 +36,13 @@ void ctt_input_event_properties_callback(struct ctt_input_properties_event* even
 
 void ctt_input_event_button_callback(struct ctt_input_button_event* event)
 {
-    TRACE("[ctt_input_event_button_callback] %u", event->key_code);
+    vioarr_utils_trace("[ctt_input_event_button_callback] %u", event->key_code);
     vioarr_input_button_event(event->device_id, (uint32_t)event->key_code, (uint32_t)event->modifiers);
 }
 
 void ctt_input_event_cursor_callback(struct ctt_input_cursor_event* event)
 {
-    TRACE("[ctt_input_event_button_callback] %i, %i, %i",
+    vioarr_utils_trace("[ctt_input_event_button_callback] %i, %i, %i",
         event->rel_x, event->rel_y, event->rel_z);
     vioarr_input_axis_event(event->device_id, event->rel_x, event->rel_y, event->rel_z);
 }

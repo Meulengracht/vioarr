@@ -48,6 +48,9 @@ static enum wm_pixel_format GetWmPixelFormat(enum Asgaard::PixelFormat format)
         case Asgaard::PixelFormat::X8B8G8R8: return WM_PIXEL_FORMAT_X8B8G8R8;
         case Asgaard::PixelFormat::R8G8B8A8: return WM_PIXEL_FORMAT_R8G8B8A8;
         case Asgaard::PixelFormat::B8G8R8A8: return WM_PIXEL_FORMAT_B8G8R8A8;
+
+        default:
+            return WM_PIXEL_FORMAT_A8R8G8B8;
     }
 }
 
@@ -77,7 +80,7 @@ Asgaard::MemoryBuffer::MemoryBuffer(uint32_t id, const std::shared_ptr<MemoryPoo
         throw ApplicationException("MemoryBuffer::MemoryBuffer() buffer pointer was null", EINVAL);
     }
 
-    if ((memoryOffset + (stride * height)) > memory->Size()) {
+    if ((size_t)(memoryOffset + (stride * height)) > memory->Size()) {
         throw ApplicationException("MemoryBuffer::MemoryBuffer() size too large would overrun the memory in the pool", EINVAL);
     }
     

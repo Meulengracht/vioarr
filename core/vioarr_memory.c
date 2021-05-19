@@ -32,69 +32,66 @@
 #include "engine/vioarr_utils.h"
 #include <errno.h>
 
-void wm_memory_create_pool_callback(struct gracht_recv_message* message, struct wm_memory_create_pool_args* input)
+void wm_memory_create_pool_invocation(struct gracht_message* message, const uint32_t poolId, const size_t handle, const int size)
 {
     vioarr_utils_trace("[wm_memory_create_pool_callback] client %i", message->client);
     vioarr_memory_pool_t* pool;
     int                   status;
     
-    status = vioarr_memory_create_pool(message->client, input->pool_id, input->system_handle, input->size, &pool);
+    status = vioarr_memory_create_pool(message->client, poolId, handle, size, &pool);
     if (status) {
-        wm_core_event_error_single(message->client, input->pool_id, status, "wm_memory: failed to create memory pool");
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, poolId, status, "wm_memory: failed to create memory pool");
         return;
     }
     
-    vioarr_objects_create_client_object(message->client, input->pool_id, pool, object_type_memory_pool);
-    wm_core_event_object_single(message->client, input->pool_id, vioarr_memory_pool_handle(pool), object_type_memory_pool);
+    vioarr_objects_create_client_object(message->client, poolId, pool, WM_OBJECT_TYPE_MEMORY_POOL);
+    wm_core_event_object_single(vioarr_get_server_handle(), message->client, poolId, vioarr_memory_pool_handle(pool), WM_OBJECT_TYPE_MEMORY_POOL);
 }
 
-void wm_memory_pool_create_buffer_callback(struct gracht_recv_message* message, struct wm_memory_pool_create_buffer_args* input)
+void wm_memory_pool_create_buffer_invocation(struct gracht_message* message, const uint32_t poolId, const uint32_t bufferId, const int offset, const int width, const int height, const int stride, const enum wm_pixel_format format, const unsigned int flags)
 {
     vioarr_utils_trace("[wm_memory_pool_create_buffer_callback] client %i", message->client);
-    vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, input->pool_id);
+    vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, poolId);
     vioarr_buffer_t*      buffer;
     int                   status;
     if (!pool) {
         vioarr_utils_error("wm_memory_pool_create_buffer_callback: pool not found");
-        wm_core_event_error_single(message->client, input->pool_id, ENOENT, "wm_memory: object does not exist");
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, poolId, ENOENT, "wm_memory: object does not exist");
         return;
     }
     
-    status = vioarr_buffer_create(input->buffer_id, pool, input->offset, 
-        input->width, input->height, input->stride, input->format, 
-        input->flags, &buffer);
+    status = vioarr_buffer_create(bufferId, pool, offset, 
+        width, height, stride, format, flags, &buffer);
     if (status) {
         vioarr_utils_error("wm_memory_pool_create_buffer_callback: failed to create memory buffer");
-        wm_core_event_error_single(message->client, input->pool_id, status, "wm_memory: failed to create memory buffer");
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, poolId, status, "wm_memory: failed to create memory buffer");
         return;
     }
     
-    vioarr_objects_create_client_object(message->client, input->buffer_id, buffer, object_type_buffer);
-    wm_core_event_object_single(message->client, input->buffer_id, UUID_INVALID, object_type_buffer);
+    vioarr_objects_create_client_object(message->client, bufferId, buffer, WM_OBJECT_TYPE_BUFFER);
+    wm_core_event_object_single(vioarr_get_server_handle(), message->client, bufferId, 0, WM_OBJECT_TYPE_BUFFER);
 }
 
-void wm_memory_pool_destroy_callback(struct gracht_recv_message* message, struct wm_memory_pool_destroy_args* input)
+void wm_memory_pool_destroy_invocation(struct gracht_message* message, const uint32_t id)
 {
     vioarr_utils_trace("[wm_memory_pool_destroy_callback] client %i", message->client);
-    vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, input->pool_id);
-    int                   status;
+    vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, id);
     if (!pool) {
         vioarr_utils_error("wm_memory_pool_destroy_callback: pool did not exist");
-        wm_core_event_error_single(message->client, input->pool_id, ENOENT, "wm_memory: object does not exist");
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_memory: object does not exist");
         return;
     }
     
     vioarr_memory_destroy_pool(pool);
 }
 
-void wm_buffer_destroy_callback(struct gracht_recv_message* message, struct wm_buffer_destroy_args* input)
+void wm_buffer_destroy_invocation(struct gracht_message* message, const uint32_t id)
 {
     vioarr_utils_trace("[wm_buffer_destroy_callback] client %i", message->client);
-    vioarr_buffer_t* buffer = vioarr_objects_get_object(message->client, input->buffer_id);
-    int              status;
+    vioarr_buffer_t* buffer = vioarr_objects_get_object(message->client, id);
     if (!buffer) {
         vioarr_utils_error("wm_buffer_destroy_callback: buffer did not exist");
-        wm_core_event_error_single(message->client, input->buffer_id, ENOENT, "wm_memory: object does not exist");
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_memory: object does not exist");
         return;
     }
     

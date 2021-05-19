@@ -23,27 +23,27 @@
 #pragma once
 
 #include "../config.hpp"
+#include "../keycodes.hpp"
 #include "event.hpp"
+#include <cstdint>
 
 namespace Asgaard {
     class ASGAARD_API KeyEvent : public Event {
     public:
-        KeyEvent(const uint8_t keycode, const uint16_t flags);
+        KeyEvent(const uint32_t keyCode, const uint16_t modifiers, bool pressed);
         
-        char          KeyAscii() const;
-        unsigned int  KeyUnicode() const;
-        unsigned char KeyCode() const;
+        uint32_t      Key() const;
+        enum VKeyCode KeyCode() const;
         bool          Pressed() const;
         bool          IsRepeat() const;
 
         bool LeftControl() const;
         bool RightControl() const;
         bool Control() const;
-        
     private:
-        unsigned int  m_modifiers;
-        unsigned int  m_keyUnicode;
-        char          m_keyAscii;
-        unsigned char m_keyCode;
+        uint32_t      m_key;
+        uint16_t      m_modifiers;
+        bool          m_pressed;
+        enum VKeyCode m_keyCode;
     };
 }

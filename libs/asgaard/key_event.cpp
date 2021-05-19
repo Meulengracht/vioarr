@@ -22,52 +22,54 @@
  */
  
 #include "include/events/key_event.hpp"
-#include <os/keycodes.h>
+
+namespace {
+    uint32_t TranslateKey(enum VKeyCode keyCode, const uint16_t modifiers)
+    {
+
+        return 0;
+    }
+}
 
 namespace Asgaard {
-    KeyEvent::KeyEvent(const uint8_t keycode, const uint16_t flags)
-        : m_modifiers(flags)
-        , m_keyUnicode(0)
-        , m_keyAscii(TranslateKeyCode(keycode, flags))
-        , m_keyCode((unsigned char)keycode)
+    KeyEvent::KeyEvent(const uint32_t keyCode, const uint16_t modifiers, bool pressed)
+        : Event(Event::Type::KEY_EVENT)
+        , m_key(TranslateKey(static_cast<enum VKeyCode>(keyCode), modifiers))
+        , m_modifiers(modifiers)
+        , m_pressed(pressed)
+        , m_keyCode(static_cast<enum VKeyCode>(keyCode))
     {
         
     }
     
-    char KeyEvent::KeyAscii() const
+    uint32_t KeyEvent::Key() const
     {
-        return m_keyAscii;
+        return m_key;
     }
     
-    unsigned int KeyEvent::KeyUnicode() const
-    {
-        return 0;
-    }
-    
-    unsigned char KeyEvent::KeyCode() const
+    enum VKeyCode KeyEvent::KeyCode() const
     {
         return m_keyCode;
     }
     
     bool KeyEvent::Pressed() const
     {
-        return (m_modifiers & VK_MODIFIER_RELEASED) == 0;
+        return m_pressed;
     }
-
 
     bool KeyEvent::IsRepeat() const
     {
-        return (m_modifiers & VK_MODIFIER_REPEATED) != 1;
+        return (m_modifiers & VKS_MODIFIER_REPEATED) == VKS_MODIFIER_REPEATED;
     }
 
     bool KeyEvent::LeftControl() const
     {
-        return (m_modifiers & VK_MODIFIER_LCTRL) == 0;
+        return (m_modifiers & VKS_MODIFIER_LCTRL) == 0;
     }
 
     bool KeyEvent::RightControl() const
     {
-        return (m_modifiers & VK_MODIFIER_RCTRL) == 0;
+        return (m_modifiers & VKS_MODIFIER_RCTRL) == 0;
     }
 
     bool KeyEvent::Control() const

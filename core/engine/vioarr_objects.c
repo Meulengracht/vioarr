@@ -123,7 +123,7 @@ int vioarr_objects_remove_object(int client, uint32_t id)
     
     list_remove(&objects, &object->link);
     if (id >= SERVER_ID_START) {
-        wm_core_event_object_all(id, object->handle, object->type);
+        wm_core_event_object_all(vioarr_get_server_handle(), id, object->handle, object->type);
     }
     free(object);
     return 0;
@@ -155,9 +155,9 @@ void vioarr_objects_remove_by_client(int client)
     // buffers
     // pools
     element_t* i;
-    CLEANUP_TYPE(object_type_surface, vioarr_surface_destroy)
-    CLEANUP_TYPE(object_type_buffer, vioarr_buffer_destroy)
-    CLEANUP_TYPE(object_type_memory_pool, vioarr_memory_destroy_pool)
+    CLEANUP_TYPE(WM_OBJECT_TYPE_SURFACE, vioarr_surface_destroy)
+    CLEANUP_TYPE(WM_OBJECT_TYPE_BUFFER, vioarr_buffer_destroy)
+    CLEANUP_TYPE(WM_OBJECT_TYPE_MEMORY_POOL, vioarr_memory_destroy_pool)
 }
 
 // publishes all server objects
@@ -166,7 +166,7 @@ void vioarr_objects_publish(int client)
     foreach(i, &objects) {
         vioarr_object_t* object = i->value;
         if (object->client == -1) {
-            wm_core_event_object_single(client, object->id, object->handle, object->type);
+            wm_core_event_object_single(vioarr_get_server_handle(), client, object->id, object->handle, object->type);
         }
     }
 }

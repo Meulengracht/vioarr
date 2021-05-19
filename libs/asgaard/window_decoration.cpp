@@ -102,7 +102,7 @@ namespace Asgaard {
 
         // left corner
         m_appIcon = OM.CreateClientObject<Asgaard::Widgets::Icon>(m_screen, this,
-            Rectangle(8, (int)(halfHeight - (ICON_SIZE / 2.0f)), ICON_SIZE, ICON_SIZE));
+            Rectangle(8, iconY, ICON_SIZE, ICON_SIZE));
         m_appIcon->Subscribe(this);
         m_appIcon->SetImage(appImage);
 

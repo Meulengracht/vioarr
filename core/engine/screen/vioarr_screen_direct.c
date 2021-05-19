@@ -90,7 +90,7 @@ static int get_screen_format(video_output_t* video)
                 video->GreenPosition    == supportedFormats[i].color_positions[1] &&
                 video->BluePosition     == supportedFormats[i].color_positions[2] &&
                 video->ReservedPosition == supportedFormats[i].color_positions[3]) {
-                TRACE("[get_screen_format] found supported format %s", supportedFormats[i].text);
+                vioarr_utils_trace("[get_screen_format] found supported format %s", supportedFormats[i].text);
                 return supportedFormats[i].osmesa_format;
             }
         }
@@ -192,7 +192,7 @@ void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_screen_transfo
     if (!screen) {
         return;
     }
-    TRACE("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+    vioarr_utils_trace("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
 }
 
 vioarr_region_t* vioarr_screen_region(vioarr_screen_t* screen)

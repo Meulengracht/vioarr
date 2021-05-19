@@ -26,8 +26,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// Include GLEW. Always include it before gl.h and glfw3.h, since it's a bit magic.
-#include <GL/glew.h>
+#include <glad.h>
 #include <GLFW/glfw3.h>
 
 #include "../vioarr_engine.h"
@@ -83,8 +82,7 @@ int vioarr_engine_y_maximum(void)
 static int vioarr_engine_setup_screens(void)
 {
     // glfwGetMonitors
-    GLFWMonitor*   primary;
-    int            x, y;
+    struct GLFWmonitor* primary;
     
     vioarr_utils_trace("vioarr_engine_setup_screens quering screen information");
     primary = glfwGetPrimaryMonitor();
@@ -113,4 +111,5 @@ static int vioarr_engine_update(void* context)
         vioarr_screen_frame(screen);
         glfwPollEvents();
     }
+    return 0;
 }

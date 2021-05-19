@@ -507,13 +507,13 @@ namespace Asgaard {
                     }
                     memset(destination->buffer, 0, destination->pitch * destination->rows);
         
-                    for (int i = 0; i < source->rows; i++) {
+                    for (unsigned int i = 0; i < source->rows; i++) {
                         int soffset = i * source->pitch;
                         int doffset = i * destination->pitch;
                         if (mono) {
                             unsigned char *srcp = source->buffer + soffset;
                             unsigned char *dstp = destination->buffer + doffset;
-                            int j;
+                            unsigned int j;
                             if (source->pixel_mode == FT_PIXEL_MODE_MONO) {
                                 for (j = 0; j < source->width; j += 8) {
                                     unsigned char c = *srcp++;
@@ -569,10 +569,10 @@ namespace Asgaard {
                             unsigned char *srcp = source->buffer + soffset;
                             unsigned char *dstp = destination->buffer + doffset;
                             unsigned char c;
-                            int j, k;
+                            unsigned int j, k;
                             for (j = 0; j < source->width; j += 8) {
                                 c = *srcp++;
-                                for (k = 0; k < 8; ++k) {
+                                for (k = 0; k < 8U; ++k) {
                                     if ((c & 0x80) >> 7) {
                                         *dstp++ = NUM_GRAYS - 1;
                                     }
@@ -587,10 +587,10 @@ namespace Asgaard {
                             unsigned char *srcp = source->buffer + soffset;
                             unsigned char *dstp = destination->buffer + doffset;
                             unsigned char c;
-                            int j, k;
+                            unsigned int j, k;
                             for (j = 0; j < source->width; j += 4) {
                                 c = *srcp++;
-                                for (k = 0; k < 4; ++k) {
+                                for (k = 0; k < 4U; ++k) {
                                     if ((c & 0xA0) >> 6) {
                                         *dstp++ = NUM_GRAYS * ((c & 0xA0) >> 6) / 3 - 1;
                                     }
@@ -605,10 +605,10 @@ namespace Asgaard {
                             unsigned char *srcp = source->buffer + soffset;
                             unsigned char *dstp = destination->buffer + doffset;
                             unsigned char c;
-                            int j, k;
+                            unsigned int j, k;
                             for (j = 0; j < source->width; j += 2) {
                                 c = *srcp++;
-                                for (k = 0; k < 2; ++k) {
+                                for (k = 0; k < 2U; ++k) {
                                     if ((c & 0xF0) >> 4) {
                                         *dstp++ = NUM_GRAYS * ((c & 0xF0) >> 4) / 15 - 1;
                                     }

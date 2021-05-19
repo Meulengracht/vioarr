@@ -36,7 +36,7 @@ namespace {
         unsigned int rb2 = (alpha * (colorB & 0xFF00FF)) >> 8;
         unsigned int g1  = ((0x100 - alpha) * (colorA & 0x00FF00)) >> 8;
         unsigned int g2  = (alpha * (colorB & 0x00FF00)) >> 8;
-        return ((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00) | (resultAlpha << 24);
+        return (((rb1 | rb2) & 0xFF00FF) + ((g1 | g2) & 0x00FF00)) | (resultAlpha << 24);
     }
 }
 
@@ -221,7 +221,7 @@ namespace Asgaard {
             
             unsigned int bgColor = m_fillColor.GetFormatted(m_canvas->Format());
             unsigned int fgColor = m_outlineColor.GetFormatted(m_canvas->Format());
-            for (int i = 0; i < text.length(); i++) {
+            for (size_t i = 0; i < text.length(); i++) {
                 unsigned int character = text[i];
                 
                 if (m_font->GetCharacterBitmap(character, bitmap)) {

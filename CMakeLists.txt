@@ -51,7 +51,7 @@ set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${LIBPNG_INSTALL_DIR}/
 
 set(LIBZIP_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/libzip")
 set(LIBZIP_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/libzip")
-set(LIBZIP_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${LIBZIP_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
+set(LIBZIP_CMAKE_ARGS -DLIBZIP_COMPILE_AS_PIC=ON -DCMAKE_INSTALL_PREFIX=${LIBZIP_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
 
 ExternalProject_Add(libzip_dl
   PREFIX ${LIBZIP_PREFIX}
@@ -108,4 +108,4 @@ add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
 
-#add_subdirectory (core)
+add_subdirectory (core)

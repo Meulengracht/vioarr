@@ -12,6 +12,15 @@
         "string": "cpp",
         "string_view": "cpp",
         "vioarr_surface.h": "c",
-        "glfw3.h": "c"
+        "glfw3.h": "c",
+        "wm_screen_service.h": "c",
+        "wm_screen_service_server.h": "c",
+        "wm_pointer_service_server.h": "c",
+        "wm_memory_pool_service_server.h": "c",
+        "wm_memory_service_server.h": "c",
+        "wm_buffer_service_server.h": "c",
+        "wm_core_service_server.h": "c",
+        "wm_surface_service_server.h": "c",
+        "nanovg.h": "c"
     }
 }

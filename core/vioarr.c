@@ -64,7 +64,6 @@ static const char* g_serverPath = "/tmp/vioarr";
 #include "engine/vioarr_objects.h"
 #include "engine/vioarr_utils.h"
 
-static gracht_client_t* g_valiClient = NULL;
 static gracht_server_t* g_valiServer = NULL;
 
 static void __gracht_handle_disconnect(int client)
@@ -99,7 +98,7 @@ static int __create_platform_link(void)
     gracht_link_socket_set_domain(link, AF_INET);
     gracht_link_socket_set_listen(link, 1);
     
-    return gracht_server_add_link(g_valiServer, link);
+    return gracht_server_add_link(g_valiServer, (struct gracht_link*)link);
 }
 #else
 static int __create_platform_link(void)
@@ -117,11 +116,13 @@ static int __create_platform_link(void)
     gracht_link_socket_set_domain(link, AF_LOCAL);
     gracht_link_socket_set_listen(link, 1);
 
-    return gracht_server_add_link(g_valiServer, link);
+    return gracht_server_add_link(g_valiServer, (struct gracht_link*)link);
 }
 #endif
 
 #if defined(MOLLENOS)
+static gracht_client_t* g_valiClient = NULL;
+
 int server_initialize(int* eventIodOut)
 {
     struct gracht_server_configuration config;
@@ -132,7 +133,7 @@ int server_initialize(int* eventIodOut)
     // Create the set descriptor we are listening to
     gracht_server_configuration_set_aio_descriptor(&config, ioset(0));
     if (config.set_descriptor < 0) {
-        ERROR("error creating event descriptor %i", errno);
+        vioarr_utils_error("error creating event descriptor %i", errno);
         return -1;
     }
 
@@ -141,14 +142,14 @@ int server_initialize(int* eventIodOut)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        ERROR("error initializing server library %i", errno);
+        vioarr_utils_error("error initializing server library %i", errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        ERROR("error initializing server link %i", errno);
+        vioarr_utils_error("error initializing server link %i", errno);
         close(config.set_descriptor);
     }
 
@@ -176,7 +177,7 @@ int client_initialize(void)
 void server_get_hid_devices(void)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(GetDeviceService());
-    TRACE("[server_get_hid_devices]");
+    vioarr_utils_trace("[server_get_hid_devices]");
 
     // subscribe to events from the device manager
     svc_device_subscribe(g_valiClient, &msg.base);
@@ -188,7 +189,7 @@ void server_get_hid_devices(void)
 void svc_device_event_protocol_device_callback(struct svc_device_protocol_device_event* input)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(input->driver_id);
-    TRACE("[svc_device_event_protocol_device_callback] %u", input->device_id);
+    vioarr_utils_trace("[svc_device_event_protocol_device_callback] %u", input->device_id);
 
     // subscribe to the driver
     ctt_input_subscribe(g_valiClient, &msg.base);
@@ -297,14 +298,14 @@ int server_initialize(int* eventIodOut)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        ERROR("error initializing server library %i", errno);
+        vioarr_utils_error("error initializing server library %i", errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        ERROR("error initializing server link %i", errno);
+        vioarr_utils_error("error initializing server link %i", errno);
         close(config.set_descriptor);
     }
 
@@ -357,7 +358,7 @@ int server_initialize(void)
     // Create the set descriptor we are listening to
     gracht_server_configuration_set_aio_descriptor(&config, epoll_create(0));
     if (config.set_descriptor < 0) {
-        ERROR("error creating event descriptor %i", errno);
+        vioarr_utils_error("error creating event descriptor %i", errno);
         return -1;
     }
 
@@ -366,14 +367,14 @@ int server_initialize(void)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        ERROR("error initializing server library %i", errno);
+        vioarr_utils_error("error initializing server library %i", errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        ERROR("error initializing server link %i", errno);
+        vioarr_utils_error("error initializing server link %i", errno);
         close(config.set_descriptor);
     }
     return status;
@@ -393,6 +394,10 @@ int main(int argc, char **argv)
     if (status) {
         return status;
     }
+
+    // not used
+    (void)argc;
+    (void)argv;
     
     // add the server protocols we support
     gracht_server_register_protocol(g_valiServer, &wm_core_server_protocol);

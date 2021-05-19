@@ -74,7 +74,7 @@ namespace Asgaard {
 
         void Icon::SetStateImage(IconState state, const Drawing::Image& image)
         {
-            auto requiredPoolSize = image.Stride() * image.Height() * static_cast<int>(IconState::COUNT);
+            size_t requiredPoolSize = image.Stride() * image.Height() * static_cast<int>(IconState::COUNT);
             if (!m_memory || requiredPoolSize > m_memory->Size()) {
                 if (m_memory) {
                     // migrate, todo

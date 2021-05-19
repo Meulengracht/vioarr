@@ -71,10 +71,6 @@ static const char* g_serverPath = "/tmp/vioarr";
 #include "wm_pointer_service_client.h"
 #include "wm_keyboard_service_client.h"
 
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Waddress-of-temporary"
-#pragma clang diagnostic ignored "-Wwritable-strings"
-
 namespace Asgaard {
     Application APP;
     
@@ -671,7 +667,7 @@ extern "C"
     }
 
     // KEYBOARD PROTOCOL EVENTS
-    void wm_keyboard_event_key_invocation(gracht_client_t* client, const uint32_t surfaceId, const uint8_t keycode, const uint16_t flags)
+    void wm_keyboard_event_key_invocation(gracht_client_t* client, const uint32_t surfaceId, const uint32_t keycode, const uint16_t modifiers, const uint8_t pressed)
     {
         auto object = Asgaard::OM[surfaceId];
         if (!object) {
@@ -679,8 +675,6 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::KeyEvent(keycode, flags));
+        object->ExternalEvent(Asgaard::KeyEvent(keycode, modifiers, static_cast<bool>(pressed)));
     }
 }
-
-#pragma clang diagnostic pop

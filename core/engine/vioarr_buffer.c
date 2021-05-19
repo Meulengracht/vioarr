@@ -24,6 +24,7 @@
 
 #include "vioarr_buffer.h"
 #include "vioarr_objects.h"
+#include <stdatomic.h>
 #include <stdlib.h>
 
 typedef struct vioarr_buffer {
@@ -42,7 +43,6 @@ int vioarr_buffer_create(uint32_t id, vioarr_memory_pool_t* pool, int poolIndex,
     unsigned int flags, vioarr_buffer_t** bufferOut)
 {
     vioarr_buffer_t* buffer;
-    size_t           size;
     
     // id is optional
     if (!pool || !bufferOut) {

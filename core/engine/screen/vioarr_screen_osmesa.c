@@ -248,7 +248,7 @@ void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_screen_transfo
     if (!screen) {
         return;
     }
-    TRACE("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+    vioarr_utils_trace("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
 }
 
 vioarr_region_t* vioarr_screen_region(vioarr_screen_t* screen)

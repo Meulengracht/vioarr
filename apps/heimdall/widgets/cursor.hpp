@@ -21,9 +21,9 @@
  */
 #pragma once
 
-#include <asgaard/memory_pool.hpp>
-#include <asgaard/memory_buffer.hpp>
-#include <asgaard/surface.hpp>
+#include <memory_pool.hpp>
+#include <memory_buffer.hpp>
+#include <surface.hpp>
 
 using namespace Asgaard;
 

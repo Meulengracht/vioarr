@@ -21,22 +21,26 @@
  */
 #pragma once
 
-#include <asgaard/application.hpp>
-#include <asgaard/window_base.hpp>
-#include <asgaard/memory_pool.hpp>
-#include <asgaard/memory_buffer.hpp>
-#include <asgaard/object_manager.hpp>
-#include <asgaard/key_event.hpp>
-#include <asgaard/drawing/painter.hpp>
-#include <asgaard/theming/theme_manager.hpp>
-#include <asgaard/theming/theme.hpp>
-#include <os/keycodes.h>
-#include <os/process.h>
+#include <application.hpp>
+#include <window_base.hpp>
+#include <memory_pool.hpp>
+#include <memory_buffer.hpp>
+#include <object_manager.hpp>
+#include <events/key_event.hpp>
+#include <drawing/painter.hpp>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
+#include <keycodes.h>
 
 #include "effects/guassian_blur.hpp"
 #include "widgets/cursor.hpp"
 
+#ifdef MOLLENOS
 #include <ddk/utils.h>
+#include <os/process.h>
+#else
+#include <unistd.h>
+#endif
 
 #define CURSOR_SIZE 16
 
@@ -126,10 +130,22 @@ private:
     
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
+#ifdef MOLLENOS
         ERROR("Heimdall::OnKeyEvent(keycode=%u", keyEvent.KeyCode());
+#endif
+
         if (keyEvent.KeyCode() == VKC_F1 && !keyEvent.Pressed()) {
+#ifdef MOLLENOS
             UUId_t pid;
             ProcessSpawn("$bin/alumni.app", NULL, &pid);
+#else
+            auto childPid = fork();
+            if (!childPid) {
+                char* argv[] = { "alumni", NULL };
+                auto  resultCode = execv("alumni", argv);
+                exit(resultCode);
+            }
+#endif
         }
         else if (keyEvent.KeyCode() == VKC_LWIN && !keyEvent.Pressed()) {
             // Show 

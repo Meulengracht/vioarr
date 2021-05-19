@@ -64,7 +64,7 @@ add_sources(
 )
 
 include_directories(
-    ${LIBPNG_INSTALL_DIR}/include
+    ${png_SOURCE_DIR}/include
     include
 )
 
@@ -81,7 +81,7 @@ if (FREETYPE_BUILD_SHARED)
     endif ()
 
     add_library(freetype SHARED ${SHARED_SRCS})
-    add_dependencies(freetype libpng_dl)
+    add_dependencies(freetype png)
     target_compile_definitions(freetype PUBLIC -DFT_SHARED_LIBRARY)
-    target_link_libraries(freetype libpng)
+    target_link_libraries(freetype png)
 endif ()

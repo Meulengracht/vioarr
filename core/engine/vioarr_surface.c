@@ -285,12 +285,12 @@ void vioarr_surface_set_buffer(vioarr_surface_t* surface, vioarr_buffer_t* conte
     if (content) {
         vioarr_buffer_acquire(content);
         resourceId = vioarr_renderer_create_image(vioarr_screen_renderer(surface->screen), content);
-        vioarr_utils_trace("[vioarr_surface_set_buffer] initialized new content %i 0x%llx", resourceId, content);
+        vioarr_utils_trace("[vioarr_surface_set_buffer] initialized new content %i 0x%p", resourceId, content);
     }
     
     vioarr_rwlock_w_lock(&surface->lock);
     if (PENDING_BACKBUFFER(surface).content) {
-        vioarr_utils_trace("[vioarr_surface_set_buffer] cleaning up previous %i 0x%llx",
+        vioarr_utils_trace("[vioarr_surface_set_buffer] cleaning up previous %i 0x%p",
             PENDING_BACKBUFFER(surface).resource_id,
             PENDING_BACKBUFFER(surface).content);
         vioarr_renderer_destroy_image(vioarr_screen_renderer(surface->screen), PENDING_BACKBUFFER(surface).resource_id);
@@ -416,8 +416,7 @@ void vioarr_surface_restore_size(vioarr_surface_t* surface)
 
 int vioarr_surface_supports_input(vioarr_surface_t* surface, int x, int y)
 {
-    vioarr_surface_t* itr;
-    int               inputSupported = 0;
+    int inputSupported = 0;
     if (!surface || !surface->visible) {
         return 0;
     }

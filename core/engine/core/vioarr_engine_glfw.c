@@ -29,6 +29,7 @@
 #include <glad.h>
 #include <GLFW/glfw3.h>
 
+#include "../vioarr_manager.h"
 #include "../vioarr_engine.h"
 #include "../vioarr_renderer.h"
 #include "../vioarr_screen.h"
@@ -44,7 +45,24 @@ static thrd_t           screen_thread;
 int vioarr_engine_initialize(void)
 {
     int status;
+
+    // initialize systems
+    vioarr_manager_initialize();
     
+    // Initialise GLFW
+    if (!glfwInit()) {
+        vioarr_utils_error("Failed to initialize GLFW\n");
+        return -1;
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
     vioarr_utils_trace("[vioarr] [initialize] initializing screens");
     status = vioarr_engine_setup_screens();
     if (status) {

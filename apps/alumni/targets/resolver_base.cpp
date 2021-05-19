@@ -46,7 +46,7 @@ bool ResolverBase::Help(const std::vector<std::string>&)
         return false;
     }
 
-    int longestCommand = 0;
+    auto longestCommand = 0U;
     for (auto& command : GetCommands()) {
         if (command->GetCommandText().size() > longestCommand) {
             longestCommand = command->GetCommandText().size();

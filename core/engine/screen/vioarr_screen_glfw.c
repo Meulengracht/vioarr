@@ -60,20 +60,6 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     vioarr_screen_t* screen;
     int              x, y, width, height, status;
 
-    // Initialise GLFW
-    if (!glfwInit()) {
-        vioarr_utils_error("Failed to initialize GLFW\n");
-        return NULL;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
     screen = malloc(sizeof(vioarr_screen_t));
     if (!screen) {
         goto error;
@@ -259,10 +245,10 @@ static void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoff
 
 static void glfw_mouse_key_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    vioarr_input_button_event(1, (uint32_t)button, (uint32_t)mods);
+    vioarr_input_button_event(1, (uint32_t)button, (uint32_t)mods, action == GLFW_PRESS ? 1 : 0);
 }
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    vioarr_input_button_event(2, (uint32_t)scancode, (uint32_t)mods);
+    vioarr_input_button_event(2, (uint32_t)scancode, (uint32_t)mods, action == GLFW_PRESS ? 1 : 0);
 }

@@ -22,7 +22,7 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
-#include <ds/list.h>
+#include <list.h>
 #include "vioarr_manager.h"
 #include "vioarr_surface.h"
 #include "vioarr_utils.h"
@@ -35,7 +35,7 @@ typedef struct vioarr_manager {
     vioarr_surface_t* focused;
 } vioarr_manager_t;
 
-static vioarr_manager_t g_manager = { { LIST_INIT, LIST_INIT, LIST_INIT, LIST_INIT }, RWLOCK_INIT, NULL };
+static vioarr_manager_t g_manager;
 
 static void* __surface_key(vioarr_surface_t* surface)
 {
@@ -44,16 +44,27 @@ static void* __surface_key(vioarr_surface_t* surface)
     return (void*)(uintptr_t)surfaceId;
 }
 
+void vioarr_manager_initialize(void)
+{
+    int i;
+
+    vioarr_rwlock_init(&g_manager.lock);
+    for (i = 0; i < SURFACE_LEVELS; i++) {
+        list_construct(&g_manager.surfaces[i]);
+    }
+    g_manager.focused = NULL;
+}
+
 void vioarr_manager_register_surface(vioarr_surface_t* surface)
 {
     if (!surface) {
-        ERROR("[vioarr_manager_register_surface] null parameters");
+        vioarr_utils_error("[vioarr_manager_register_surface] null parameters");
         return;
     }
 
     element_t* element = malloc(sizeof(element_t));
     if (!element) {
-        ERROR("[vioarr_manager_register_surface] out of memory");
+        vioarr_utils_error("[vioarr_manager_register_surface] out of memory");
         return;
     }
 

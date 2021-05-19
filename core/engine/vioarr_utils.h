@@ -60,7 +60,6 @@ typedef struct vioarr_rwlock {
     int   readers;
     cnd_t signal;
 } vioarr_rwlock_t;
-#define RWLOCK_INIT { MUTEX_INIT(mtx_plain), 0, COND_INIT }
 
 static void vioarr_rwlock_init(vioarr_rwlock_t* lock)
 {

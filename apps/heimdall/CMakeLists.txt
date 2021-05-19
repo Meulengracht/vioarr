@@ -1,11 +1,14 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set (GENERATED_SOURCES
-    hd_core_protocol_server.c
+    #hd_core_protocol_server.c
 )
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 
-include_directories (../../libs/asgaard/include)
+include_directories (
+    ${PROJECT_SOURCE_DIR}/libs/common/include
+    ${PROJECT_SOURCE_DIR}/libs/asgaard/include
+)
 
 # Configure primary executable target
 add_executable(heimdall
@@ -19,4 +22,7 @@ target_link_libraries(heimdall asgaard)
 
 if (MOLLENOS)
   target_link_libraries(heimdall static_libddk)
+elseif (UNIX)
+  target_link_libraries(heimdall -lpthread)
 endif()
+

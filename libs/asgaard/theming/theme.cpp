@@ -22,9 +22,9 @@
  */
 
 #include "../include/theming/theme.hpp"
-#include <libzip/ZipFile.h>
-#include <libzip/streams/memstream.h>
-#include <libzip/methods/Bzip2Method.h>
+#include <ZipFile.h>
+#include <streams/memstream.h>
+#include <methods/Bzip2Method.h>
 #include <fstream>
 
 struct membuf : std::streambuf

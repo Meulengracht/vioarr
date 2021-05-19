@@ -17,7 +17,26 @@ include_directories (
     ${GRACHT_INSTALL_DIR}/include
     ${CMAKE_BINARY_DIR}/libs/glad/include/glad
     ${PROJECT_SOURCE_DIR}/libs/freetype/include
+    ${PROJECT_SOURCE_DIR}/libs/common/include
 )
+
+set (GENERATED_SOURCES
+    ${CMAKE_BINARY_DIR}/protocols/wm_core_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_screen_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_memory_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_memory_pool_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_buffer_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_surface_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_pointer_service_server.c
+    ${CMAKE_BINARY_DIR}/protocols/wm_keyboard_service_server.c
+)
+
+if (MOLLENOS)
+    set (GENERATED_SOURCES ${GENERATED_SOURCES} hid_events_service_client.c)
+endif ()
+
+set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
+
 
 if (WIN32)
     add_sources (
@@ -48,6 +67,8 @@ add_definitions(-DVIOARR_BACKEND_NANOVG -DNANOVG_GL3_IMPLEMENTATION -DFONS_USE_F
 
 # add the protocol sources that handles communication
 add_sources (
+    ${GENERATED_SOURCES}
+
     vioarr.c
     vioarr_surface.c
     vioarr_screen.c
@@ -70,4 +91,9 @@ add_sources (
 )
 
 add_executable(vioarr ${SRCS})
-target_link_libraries(vioarr ${LIBS})
+add_dependencies(vioarr glad freetype)
+target_link_libraries(vioarr common gracht glad ${LIBS})
+
+if (MOLLENOS)
+  target_link_libraries(vioarr static_libddk)
+endif()

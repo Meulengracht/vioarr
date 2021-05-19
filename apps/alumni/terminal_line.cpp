@@ -30,8 +30,8 @@ TerminalLine::TerminalLine(const std::shared_ptr<Asgaard::Drawing::Font>& font, 
                    row * font->GetFontHeight()) + ALUMNI_MARGIN_TOP, 
                    initialCellCount * font->GetFontWidth(), 
                    font->GetFontHeight())
-    , m_row(row)
     , m_cells(initialCellCount)
+    , m_row(row)
 {
     Reset();
 }
@@ -72,7 +72,7 @@ void TerminalLine::Reset(const std::vector<TerminalCell>& cells)
 
 void TerminalLine::Resize(int cellCount)
 {
-    if (cellCount < m_cells.size()) {
+    if (cellCount < (int)m_cells.size()) {
         // shrinking, means we will spill cells
         // @todo
     }
@@ -106,7 +106,7 @@ bool TerminalLine::AddInput(int character, const Asgaard::Drawing::Color& color)
     struct Asgaard::Drawing::Font::CharInfo bitmap = { 0 };
     
     // return false if we are full
-    if (m_cursor == m_cells.size()) {
+    if (m_cursor == (int)m_cells.size()) {
         return false;
     }
     
@@ -143,7 +143,7 @@ bool TerminalLine::RemoveInput()
     int modifiedCursor = m_cursor - m_inputOffset;
     if (modifiedCursor != 0) {
         auto& cell = m_cells[m_cursor - 1];
-        if (m_cursor != m_text.length()) {
+        if (m_cursor != (int)m_text.length()) {
             // we were in between characters
             ShiftCellsLeft(m_cursor);
         }
@@ -203,7 +203,7 @@ void TerminalLine::ShowCursor()
 void TerminalLine::ShiftCellsRight(int index)
 {
     TerminalCell overflowCell = { 0 };
-    for (int i = index; i < m_cells.size(); i++) {
+    for (unsigned int i = index; i < m_cells.size(); i++) {
         auto& cell = m_cells[i];
         
         // do a swap?
@@ -223,7 +223,7 @@ void TerminalLine::ShiftCellsRight(int index)
 
 void TerminalLine::ShiftCellsLeft(int index)
 {
-    for (int i = (index + 1); i < m_cells.size(); i++) {
+    for (unsigned int i = (index + 1); i < m_cells.size(); i++) {
         auto& cell = m_cells[i];
         auto& previousCell = m_cells[i - 1];
         

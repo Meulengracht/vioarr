@@ -1,6 +1,5 @@
-/* ValiOS
- *
- * Copyright 2018, Philip Meulengracht
+/**
+ * Copyright 2021, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +15,13 @@
  * along with this program.If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * ValiOS - Application Framework (Asgaard)
+ * Application Framework (Vioarr)
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
-#pragma once
+
+#ifndef __COMMON_VKEYCODES_H__
+#define __COMMON_VKEYCODES_H__
 
 enum VKeyCode {
     VKC_INVALID              = 0x00,
@@ -197,3 +198,5 @@ enum VKeyState {
     VKS_MODIFIER_CAPSLOCK  = 0x100,
     VKS_MODIFIER_REPEATED  = 0x200
 };
+
+#endif //! __COMMON_VKEYCODES_H__

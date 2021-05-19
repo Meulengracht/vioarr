@@ -32,7 +32,7 @@
 #include <blend2d.h>
 #endif
 
-#include <ds/list.h>
+#include <list.h>
 #include "vioarr_buffer.h"
 #include "vioarr_renderer.h"
 #include "vioarr_screen.h"
@@ -41,6 +41,7 @@
 #include "vioarr_utils.h"
 #include <stdlib.h>
 #include <threads.h>
+#include <stdatomic.h>
 
 typedef struct vioarr_renderer {
 #ifdef VIOARR_BACKEND_NANOVG
@@ -59,6 +60,9 @@ typedef struct vioarr_renderer {
 #ifdef VIOARR_BACKEND_NANOVG
 static void opengl_initialize(int width, int height)
 {
+    (void)width;
+    (void)height;
+    
     // 0x28575A
     glClearColor(0.15f, 0.34f, 0.35f, 1.0f);
 }
@@ -87,7 +91,7 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
 	renderer->context = nvgCreateGL3(NVG_STENCIL_STROKES | NVG_DEBUG);
 #endif
     if (!renderer->context) {
-        ERROR("[vioarr_renderer_create] failed to create the nvg context");
+        vioarr_utils_error("[vioarr_renderer_create] failed to create the nvg context");
         free(renderer);
         return NULL;
     }
@@ -142,13 +146,14 @@ int vioarr_renderer_rotation(vioarr_renderer_t* renderer)
 int get_nvg_format(vioarr_buffer_t* buffer)
 {
     switch (vioarr_buffer_format(buffer)) {
-        case format_a8r8g8b8: return NVG_TEXTURE_RGBA;
-        case format_a8b8g8r8: return NVG_TEXTURE_BGRA;
-        case format_x8r8g8b8: return NVG_TEXTURE_RGBX;
-        case format_x8b8g8r8: return -1;
-        case format_r8g8b8a8: return NVG_TEXTURE_ARGB;
-        case format_b8g8r8a8: return NVG_TEXTURE_ABGR;
+        case WM_PIXEL_FORMAT_A8R8G8B8: return NVG_TEXTURE_RGBA;
+        case WM_PIXEL_FORMAT_A8B8G8R8: return NVG_TEXTURE_BGRA;
+        case WM_PIXEL_FORMAT_X8R8G8B8: return NVG_TEXTURE_RGBX;
+        case WM_PIXEL_FORMAT_X8B8G8R8: return -1;
+        case WM_PIXEL_FORMAT_R8G8B8A8: return NVG_TEXTURE_ARGB;
+        case WM_PIXEL_FORMAT_B8G8R8A8: return NVG_TEXTURE_ABGR;
     }
+    return -1;
 }
 
 int get_nvg_flags(vioarr_buffer_t* buffer)
@@ -156,13 +161,13 @@ int get_nvg_flags(vioarr_buffer_t* buffer)
     unsigned int bufferFlags = vioarr_buffer_flags(buffer);
     int          nvgFlags = 0;
 
-    if (bufferFlags & WM_MEMORY_POOL_CREATE_BUFFER_FLAGS_FLIP_Y) {
+    if (bufferFlags & 0x1) {
         nvgFlags |= NVG_IMAGE_FLIPY;
     }
 
     switch (vioarr_buffer_format(buffer)) {
-        case format_x8b8g8r8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
-        case format_x8r8g8b8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
+        case WM_PIXEL_FORMAT_X8R8G8B8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
+        case WM_PIXEL_FORMAT_X8B8G8R8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
         default: break;
     }
 

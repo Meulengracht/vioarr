@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.12)
+cmake_minimum_required (VERSION 3.14)
 
 project (Vioarr C CXX)
 
@@ -16,9 +16,10 @@ find_package (Python3 REQUIRED)
 
 # checkout dependencies that we need
 include(ExternalProject)
+include(FetchContent)
 
-set(GRACHT_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/gracht")
-set(GRACHT_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/gracht")
+set(GRACHT_PREFIX "${CMAKE_BINARY_DIR}/gracht")
+set(GRACHT_INSTALL_DIR "${CMAKE_BINARY_DIR}/gracht")
 set(GRACHT_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GRACHT_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
 
 ExternalProject_Add(gracht_dl
@@ -33,44 +34,21 @@ ExternalProject_Add(gracht_dl
 add_library(gracht SHARED IMPORTED GLOBAL)
 set_target_properties(gracht PROPERTIES IMPORTED_LOCATION ${GRACHT_INSTALL_DIR}/lib/${CMAKE_SHARED_MODULE_PREFIX}gracht${CMAKE_SHARED_LIBRARY_SUFFIX})
 
-set(LIBPNG_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/libpng")
-set(LIBPNG_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/libpng")
-set(LIBPNG_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${LIBPNG_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-
-ExternalProject_Add(libpng_dl
-  PREFIX ${LIBPNG_PREFIX}
+FetchContent_Declare(
+  png
   GIT_REPOSITORY https://github.com/umbrella-c/libpng.git
   GIT_TAG main
-  INSTALL_DIR ${LIBPNG_INSTALL_DIR}
-  CMAKE_ARGS ${LIBPNG_CMAKE_ARGS}
-  CONFIGURE_HANDLED_BY_BUILD ON
-  BUILD_BYPRODUCTS ${LIBPNG_INSTALL_DIR}/lib/${CMAKE_SHARED_MODULE_PREFIX}png${CMAKE_SHARED_LIBRARY_SUFFIX}
 )
-add_library(libpng SHARED IMPORTED GLOBAL)
-set_target_properties(libpng PROPERTIES IMPORTED_LOCATION ${LIBPNG_INSTALL_DIR}/lib/${CMAKE_SHARED_MODULE_PREFIX}png${CMAKE_SHARED_LIBRARY_SUFFIX})
+FetchContent_MakeAvailable(png)
 
-set(LIBZIP_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/libzip")
-set(LIBZIP_INSTALL_DIR "${CMAKE_CURRENT_BINARY_DIR}/libzip")
-set(LIBZIP_CMAKE_ARGS -DLIBZIP_COMPILE_AS_PIC=ON -DCMAKE_INSTALL_PREFIX=${LIBZIP_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-
-ExternalProject_Add(libzip_dl
-  PREFIX ${LIBZIP_PREFIX}
+FetchContent_Declare(
+  zip
   GIT_REPOSITORY https://github.com/umbrella-c/libzip.git
   GIT_TAG main
-  INSTALL_DIR ${LIBZIP_INSTALL_DIR}
-  CMAKE_ARGS ${LIBZIP_CMAKE_ARGS}
-  CONFIGURE_HANDLED_BY_BUILD ON
-  BUILD_BYPRODUCTS 
-    ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}bzip2${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}lzma${CMAKE_STATIC_LIBRARY_SUFFIX}
-    ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}zip${CMAKE_STATIC_LIBRARY_SUFFIX}
 )
-add_library(libbzip2 STATIC IMPORTED GLOBAL)
-set_target_properties(libbzip2 PROPERTIES IMPORTED_LOCATION ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}bzip2${CMAKE_STATIC_LIBRARY_SUFFIX})
-add_library(liblzma STATIC IMPORTED GLOBAL)
-set_target_properties(liblzma PROPERTIES IMPORTED_LOCATION ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}lzma${CMAKE_STATIC_LIBRARY_SUFFIX})
-add_library(libzip STATIC IMPORTED GLOBAL)
-set_target_properties(libzip PROPERTIES IMPORTED_LOCATION ${LIBZIP_INSTALL_DIR}/lib/${CMAKE_STATIC_LIBRARY_PREFIX}zip${CMAKE_STATIC_LIBRARY_SUFFIX})
+
+set(LIBZIP_COMPILE_AS_PIC ON CACHE INTERNAL "Build libzip with -fPIC enabled")
+FetchContent_MakeAvailable(zip)
 
 if (WIN32)
     set (LIBS glfw3 opengl32 freetype)
@@ -81,8 +59,8 @@ elseif (UNIX AND NOT APPLE)
     find_package (X11 REQUIRED)
 
     # the order of link libraries here is important
-    set (LIBS ${GLFW3_LIBRARY} X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL dl pthread freetype)
-    set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -ldl")
+    set (LIBS ${GLFW3_LIBRARY} X11 Xrandr Xinerama Xi Xxf86vm Xcursor GL m pthread freetype ${CMAKE_DL_LIBS})
+    set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -l${CMAKE_DL_LIBS}")
 elseif (APPLE)
     include_directories (/System/Library/Frameworks)
     find_library (COCOA_LIBRARY Cocoa)
@@ -104,6 +82,7 @@ endif ()
 
 add_subdirectory (protocols)
 
+add_subdirectory (libs/common)
 add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)

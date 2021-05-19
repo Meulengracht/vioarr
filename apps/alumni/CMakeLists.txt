@@ -12,7 +12,10 @@ macro (add_sources)
     endforeach()
 endmacro()
 
-include_directories (../../libs/asgaard/include)
+include_directories (
+    ${PROJECT_SOURCE_DIR}/libs/common/include
+    ${PROJECT_SOURCE_DIR}/libs/asgaard/include
+)
 
 add_sources (
     main.cpp

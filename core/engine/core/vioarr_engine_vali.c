@@ -27,6 +27,7 @@
 
 #include <ddk/video.h>
 #include <os/mollenos.h>
+#include "../vioarr_manager.h"
 #include "../vioarr_engine.h"
 #include "../vioarr_renderer.h"
 #include "../vioarr_screen.h"
@@ -43,6 +44,9 @@ static thrd_t           screen_thread;
 int vioarr_engine_initialize(void)
 {
     int status;
+    
+    // initialize systems
+    vioarr_manager_initialize();
     
     vioarr_utils_trace("[vioarr] [initialize] initializing screens");
     status = vioarr_engine_setup_screens();

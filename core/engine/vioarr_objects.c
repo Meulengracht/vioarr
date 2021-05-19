@@ -28,19 +28,19 @@
 #include "vioarr_surface.h"
 #include "vioarr_utils.h"
 #include "wm_core_service_server.h"
-#include <ds/list.h>
+#include <list.h>
 #include <stdatomic.h>
 #include <stdlib.h>
  
 #define SERVER_ID_START 0x80000000
 
 typedef struct vioarr_object {
-    int                      client;
-    uint32_t                 id;
-    enum wm_core_object_type type;
-    void*                    object;
-    UUId_t                   handle;
-    element_t                link;
+    int                 client;
+    uint32_t            id;
+    enum wm_object_type type;
+    void*               object;
+    mhandle_t           handle;
+    element_t           link;
 } vioarr_object_t;
  
 static _Atomic(uint32_t) object_id = ATOMIC_VAR_INIT(SERVER_ID_START);
@@ -51,7 +51,7 @@ static uint32_t vioarr_utils_get_object_id(void)
     return atomic_fetch_add(&object_id, 1);
 }
 
-void vioarr_objects_create_client_object(int client, uint32_t id, void* object, enum wm_core_object_type type)
+void vioarr_objects_create_client_object(int client, uint32_t id, void* object, enum wm_object_type type)
 {
     vioarr_object_t* resource;
     
@@ -69,7 +69,7 @@ void vioarr_objects_create_client_object(int client, uint32_t id, void* object, 
     list_append(&objects, &resource->link);
 }
 
-uint32_t vioarr_objects_create_server_object(void* object, enum wm_core_object_type type)
+uint32_t vioarr_objects_create_server_object(void* object, enum wm_object_type type)
 {
     vioarr_object_t* resource;
     
@@ -99,7 +99,7 @@ static vioarr_object_t* get_object(int client, uint32_t id)
             return object;
         }
     }
-    ERROR("[vioarr_objects_get_object] %i => %u object not found", client, id);
+    vioarr_utils_error("[vioarr_objects_get_object] %i => %u object not found", client, id);
     return NULL;
 }
 

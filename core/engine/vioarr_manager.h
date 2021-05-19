@@ -34,6 +34,7 @@ typedef struct vioarr_surface vioarr_surface_t;
  */
 #define SURFACE_LEVELS 4
 
+void              vioarr_manager_initialize(void);
 void              vioarr_manager_register_surface(vioarr_surface_t* surface);
 void              vioarr_manager_unregister_surface(vioarr_surface_t* surface);
 void              vioarr_manager_promote_cursor(vioarr_surface_t* surface);

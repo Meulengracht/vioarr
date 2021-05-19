@@ -23,8 +23,8 @@
 #pragma once
 
 #include "../config.hpp"
-#include "../keycodes.hpp"
 #include "event.hpp"
+#include <keycodes.h>
 #include <cstdint>
 
 namespace Asgaard {

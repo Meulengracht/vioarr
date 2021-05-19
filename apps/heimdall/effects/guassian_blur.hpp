@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <asgaard/drawing/image.hpp>
+#include <drawing/image.hpp>
 
 class GuassianBlurEffect
 {

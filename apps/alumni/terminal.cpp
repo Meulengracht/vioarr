@@ -180,7 +180,7 @@ void Terminal::HistoryNext()
 
 void Terminal::HistoryPrevious()
 {
-    auto historySize = static_cast<int>(m_history.size());
+    //auto historySize = static_cast<int>(m_history.size());
 
     // History must be longer than the number of rows
     if (m_historyIndex > m_rows) {

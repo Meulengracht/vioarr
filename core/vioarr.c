@@ -66,6 +66,11 @@ static const char* g_serverPath = "/tmp/vioarr";
 
 static gracht_server_t* g_valiServer = NULL;
 
+gracht_server_t* vioarr_get_server_handle(void)
+{
+    return g_valiServer;
+}
+
 static void __gracht_handle_disconnect(int client)
 {
     vioarr_objects_remove_by_client(client);
@@ -356,7 +361,7 @@ int server_initialize(void)
     gracht_server_configuration_init(&config);
 
     // Create the set descriptor we are listening to
-    gracht_server_configuration_set_aio_descriptor(&config, epoll_create(0));
+    gracht_server_configuration_set_aio_descriptor(&config, epoll_create1(0));
     if (config.set_descriptor < 0) {
         vioarr_utils_error("error creating event descriptor %i", errno);
         return -1;

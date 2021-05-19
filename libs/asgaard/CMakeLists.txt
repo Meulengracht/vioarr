@@ -16,7 +16,9 @@ endmacro()
 include_directories(
     ${CMAKE_BINARY_DIR}/protocols
     ${GRACHT_INSTALL_DIR}/include
-    ${LIBZIP_INSTALL_DIR}/include
+    ${zip_SOURCE_DIR}/src
+    ${zip_SOURCE_DIR}/src/extlibs
+    ${PROJECT_SOURCE_DIR}/libs/common/include
     ../freetype/include
 )
 
@@ -70,15 +72,16 @@ if (MOLLENOS)
 elseif (WIN32)
 
 elseif (UNIX)
+    add_definitions(-Wno-unused-function)
     add_sources (memory_pool_unix.cpp)
 endif ()
 
 add_library(asgaard SHARED ${GENERATED_SOURCES} ${SRCS})
-add_dependencies(asgaard libzip_dl wm_client_service)
+add_dependencies(asgaard zip wm_client_service)
 target_compile_definitions(asgaard PRIVATE
     -DASGAARD_BUILD -DASGAARD_THEME_PASSWORD=\"$ENV{VALI_CODE}\"
 )
-target_link_libraries(asgaard freetype gracht libbzip2 liblzma libzip)
+target_link_libraries(asgaard freetype gracht zip bzip2 lzma z)
 
 if (MOLLENOS)
   target_link_libraries(asgaard static_libddk)

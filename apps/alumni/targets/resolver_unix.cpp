@@ -217,13 +217,7 @@ bool ResolverUnix::CommandResolver(const std::string& Command, const std::vector
     std::string ProgramName = Command;
     std::string ProgramPath = "";
 
-    if (!EndsWith(ProgramName, ".app")) {
-        ProgramName += ".app";
-    }
-
-    // Guess the path of requested application, right now only working
-    // directory and $bin is supported. Should we support apps that don't have .app? ...
-    ProgramPath = "$bin/" + ProgramName;
+    ProgramPath = ProgramName;
     if (!IsProgramPathValid(ProgramPath)) {
         char TempBuffer[PATH_MAX] = { 0 };
         if (getcwd(&TempBuffer[0], PATH_MAX - 1) != nullptr) {

@@ -44,6 +44,6 @@ void ctt_input_event_cursor_callback(struct ctt_input_cursor_event* event)
 {
     vioarr_utils_trace("[ctt_input_event_button_callback] %i, %i, %i",
         event->rel_x, event->rel_y, event->rel_z);
-    vioarr_input_axis_event(event->device_id, event->rel_x, event->rel_y, event->rel_z);
+    vioarr_input_axis_event(event->device_id, event->rel_x, event->rel_y);
 }
  

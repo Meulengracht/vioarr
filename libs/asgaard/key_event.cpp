@@ -1,6 +1,5 @@
-/* ValiOS
- *
- * Copyright 2018, Philip Meulengracht
+/**
+ * Copyright 2021, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,10 +23,56 @@
 #include "include/events/key_event.hpp"
 
 namespace {
+    // Keymap when modifier SHIFT is present
+    static uint8_t g_asciiShiftKeyMap[VKC_KEYCOUNT] = {
+        0, ')', '!', '\"', '#', '$', '%', '^', '&', '*', '(', '*',
+        '+', '-', '-', ',', '/', 'A', 'B', 'C', 'D', 'E', 'F', 'G',
+        'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 
+        'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '`', '~', 0, '\t', '>', 
+        '<', ':', 0, '\n', 0, 0, '_', 0, ' ', '?', '|', '@', '+',
+        '{', '}', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    // Keymap when no modifier is present
+    static uint8_t g_asciiKeyMap[VKC_KEYCOUNT] = {
+        0, '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*',
+        '+', '-', '-', ',', '/', 'a', 'b', 'c', 'd', 'e', 'f', 'g',
+        'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 
+        't', 'u', 'v', 'w', 'x', 'y', 'z', '`', '`', 0, '\t', '.', 
+        ',', ';', 0, '\n', 0, 0, '-', 0, ' ', '/', '\\', '\'', '=',
+        '[', ']', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
     uint32_t TranslateKey(enum VKeyCode keyCode, const uint16_t modifiers)
     {
+        bool     shouldUpperCase = modifiers & (VKS_MODIFIER_LSHIFT | VKS_MODIFIER_RSHIFT);
+        uint32_t character;
 
-        return 0;
+        if (modifiers & VKS_MODIFIER_CAPSLOCK) {
+            if (shouldUpperCase != 0) {
+                shouldUpperCase = 0;
+            }
+            else {
+                shouldUpperCase = 1;
+            }
+        }
+
+        // Handle modifiers, caps lock negates shift as seen above
+        if (shouldUpperCase) {
+            character = g_asciiShiftKeyMap[keyCode];
+        }
+        else {
+            character = g_asciiKeyMap[keyCode];
+        }
+        return character;
     }
 }
 

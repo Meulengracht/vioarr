@@ -240,7 +240,7 @@ void vioarr_input_on_surface_destroy(vioarr_surface_t* surface)
     }
 }
 
-static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY, int z)
+static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY)
 {
     vioarr_surface_t* currentSurface = source->state.pointer.op_surface;
     vioarr_surface_t* surfaceAfterMove;
@@ -255,7 +255,6 @@ static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, in
     // update values before proceeding
     source->state.pointer.x += clampedX;
     source->state.pointer.y += clampedY;
-    source->state.pointer.z += z;
     if (source->state.pointer.surface) {
         vioarr_surface_move(source->state.pointer.surface, clampedX, clampedY);
     }
@@ -345,7 +344,7 @@ static void __move_mode_motion(vioarr_input_source_t* source, int clampedX, int 
     }
 }
 
-static void __grabbed_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY, int z)
+static void __grabbed_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY)
 {
     vioarr_surface_t* currentSurface = source->state.pointer.op_surface;
     vioarr_utils_trace("__grabbed_mode_motion()");
@@ -360,12 +359,9 @@ static void __grabbed_mode_motion(vioarr_input_source_t* source, int clampedX, i
         source->id,
         vioarr_surface_id(currentSurface),
         clampedX, clampedY);
-
-    // still store changes made to z axis
-    source->state.pointer.z += z;
 }
 
-void vioarr_input_axis_event(UUId_t deviceId, int x, int y, int z)
+void vioarr_input_axis_event(UUId_t deviceId, int x, int y)
 {
     vioarr_input_source_t* source = list_find_value(&g_inputDevices, (void*)(uintptr_t)deviceId);
     int                    clampedX = x;
@@ -383,7 +379,7 @@ void vioarr_input_axis_event(UUId_t deviceId, int x, int y, int z)
     else if (source->state.pointer.y + clampedY < vioarr_engine_y_minimum()) clampedY = source->state.pointer.y;
 
     if (source->state.pointer.mode == POINTER_MODE_NORMAL) {
-        __normal_mode_motion(source, clampedX, clampedY, z);
+        __normal_mode_motion(source, clampedX, clampedY);
     }
     else if (source->state.pointer.mode == POINTER_MODE_RESIZING) {
         __resize_mode_motion(source, clampedX, clampedY);
@@ -392,8 +388,14 @@ void vioarr_input_axis_event(UUId_t deviceId, int x, int y, int z)
         __move_mode_motion(source, clampedX, clampedY);
     }
     else if (source->state.pointer.mode == POINTER_MODE_GRABBED) {
-        __grabbed_mode_motion(source, clampedX, clampedY, z);
+        __grabbed_mode_motion(source, clampedX, clampedY);
     }
+}
+
+void vioarr_input_scroll_event(UUId_t deviceId, int horz, int vert)
+{
+    vioarr_utils_trace("vioarr_input_scroll_event(x=%i, y=%i)", horz, vert);
+    
 }
 
 static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, uint8_t pressed)

@@ -72,9 +72,9 @@ enum VKeyCode {
     VKC_Y                    = 0x29,
     VKC_Z                    = 0x2A,
 
-    VKC_TICK                 = 0x2B,
-    VKC_BACKTICK             = 0x2C,
-    VKC_BACK                 = 0x2D,
+    VKC_TICK                 = 0x2B, // `
+    VKC_BACKTICK             = 0x2C, // ´
+    VKC_BACK                 = 0x2D, // backspace
     VKC_TAB                  = 0x2E,
     VKC_DOT                  = 0x2F,
     VKC_COMMA                = 0x30,

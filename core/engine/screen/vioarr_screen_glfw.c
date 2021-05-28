@@ -37,10 +37,12 @@
 #include "../vioarr_objects.h"
 #include "wm_screen_service_server.h"
 #include <stdlib.h>
+#include <keycodes.h>
 
 typedef struct vioarr_screen {
     uint32_t           id;
     GLFWwindow*        context;
+    GLFWmonitor*       monitor;
     vioarr_region_t*   dimensions;
     vioarr_renderer_t* renderer;
 
@@ -68,6 +70,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 
     // get the size of the monitor
     glfwGetMonitorWorkarea(video, &x, &y, &width, &height);
+    screen->monitor = video;
 
     vioarr_utils_trace("[vioarr] [screen] [create] creating os_mesa context, version 3.3");
     screen->context = glfwCreateWindow(width, height, "Vioarr Window Manager", video, NULL);
@@ -190,15 +193,40 @@ vioarr_renderer_t* vioarr_screen_renderer(vioarr_screen_t* screen)
 
 int vioarr_screen_publish_modes(vioarr_screen_t* screen, int client)
 {
+    const GLFWvidmode* modes;
+    const GLFWvidmode* currentMode;
+    int                modeCount;
+    int                i;
+
     if (!screen) {
         return -1;
     }
+
+    currentMode = glfwGetVideoMode(screen->monitor);
+    modes       = glfwGetVideoModes(screen->monitor, &modeCount);
+    if (!modes || !currentMode) {
+        // One hardcoded format
+        return wm_screen_event_mode_single(vioarr_get_server_handle(), client, screen->id, 
+            WM_MODE_ATTRIBUTES_CURRENT | WM_MODE_ATTRIBUTES_PREFERRED,
+            vioarr_region_width(screen->dimensions),
+            vioarr_region_height(screen->dimensions), 
+            60
+        );
+    }
     
-    // One hardcoded format
-    return wm_screen_event_mode_single(vioarr_get_server_handle(), client, screen->id, 
-        WM_MODE_ATTRIBUTES_CURRENT | WM_MODE_ATTRIBUTES_PREFERRED,
-        vioarr_region_width(screen->dimensions),
-        vioarr_region_height(screen->dimensions), 60);
+    for (i = 0; i < modeCount; i++) {
+        unsigned int attribs = 0;
+        if (modes[i].width  == currentMode->width &&
+            modes[i].height == currentMode->height &&
+            modes[i].refreshRate == currentMode->refreshRate) {
+            attribs = WM_MODE_ATTRIBUTES_CURRENT | WM_MODE_ATTRIBUTES_PREFERRED;
+        }
+
+        wm_screen_event_mode_single(vioarr_get_server_handle(), client, screen->id, 
+            attribs, modes[i].width, modes[i].height, modes[i].refreshRate
+        );
+    }
+    return 0;
 }
 
 int vioarr_screen_valid(vioarr_screen_t* screen)
@@ -231,24 +259,150 @@ static void glfw_mouse_callback(GLFWwindow* window, double xpos, double ypos)
     screen->last_x = xpos;
     screen->last_y = ypos;
 
-    vioarr_input_axis_event(1, (int)xoffset, (int)yoffset, 0);    
+    vioarr_input_axis_event(1, (int)xoffset, (int)yoffset);    
 }
 
 static void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    // not used yet
     (void)window;
-    (void)xoffset;
-    (void)yoffset;
-    //vioarr_input_axis_event(1, (int)xoffset, (int)yoffset, 0);
+    vioarr_input_scroll_event(1, (int)xoffset, (int)yoffset);
 }
+
+/**
+ * Modifier conversion methods from GLFW => Asgaard
+ */
+#define VKC_KEYS_INVALID_4  VKC_INVALID, VKC_INVALID, VKC_INVALID, VKC_INVALID
+#define VKC_KEYS_INVALID_8  VKC_KEYS_INVALID_4, VKC_KEYS_INVALID_4
+#define VKC_KEYS_INVALID_16 VKC_KEYS_INVALID_8, VKC_KEYS_INVALID_8
+#define VKC_KEYS_INVALID_32 VKC_KEYS_INVALID_16, VKC_KEYS_INVALID_16
+static uint8_t asgaardKeyCodes[GLFW_KEY_LAST] = {
+    // the first 32 keys are invalid
+    VKC_KEYS_INVALID_32,
+
+    // Then some non-valid from 32-57
+    VKC_SPACE, VKC_APOSTROPHE, VKC_COMMA, VKC_SUBTRACT, VKC_DOT, VKC_SLASH,
+    VKC_0, VKC_1, VKC_2, VKC_3, VKC_4, VKC_5, VKC_6, VKC_7, VKC_8, VKC_9,
+
+    // 58, 60 is invalid
+    VKC_INVALID,
+    VKC_SEMICOLON,
+    VKC_INVALID,
+    VKC_EQUAL,
+    VKC_KEYS_INVALID_4,
+    VKC_A, VKC_B, VKC_C, VKC_D, VKC_E, VKC_F, VKC_G, VKC_H, VKC_I, VKC_J, VKC_K, 
+    VKC_L, VKC_M, VKC_N, VKC_O, VKC_P, VKC_Q, VKC_R, VKC_S, VKC_T, VKC_U, VKC_V, 
+    VKC_W, VKC_X, VKC_Y, VKC_Z,
+    VKC_LBRACKET,
+    VKC_BACKSLASH,
+    VKC_RBRACKET,
+    VKC_INVALID, VKC_INVALID, VKC_INVALID,
+    VKC_TICK,
+    
+    // invalid from 97-160, 65 keys
+    VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_32, VKC_INVALID,
+
+    // Non-Us codes 2
+    VKC_INVALID, VKC_INVALID,
+
+    // 162-256 invalid, 94 keys
+    VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_16, VKC_KEYS_INVALID_8,
+    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+
+    VKC_ESCAPE,
+    VKC_ENTER,
+    VKC_TAB,
+    VKC_BACK,
+    VKC_INSERT,
+    VKC_DELETE,
+    VKC_RIGHT,
+    VKC_LEFT,
+    VKC_DOWN,
+    VKC_UP,
+    VKC_PAGEUP,
+    VKC_PAGEDOWN,
+    VKC_HOME,
+    VKC_END,
+
+    // 11 invalids
+    VKC_KEYS_INVALID_8, VKC_INVALID, VKC_INVALID, VKC_INVALID,
+
+    VKC_CAPSLOCK,
+    VKC_SCROLL,
+    VKC_NUMLOCK,
+    VKC_PRINT,
+    VKC_PAUSE,
+
+    // 6 invalids
+    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+
+    VKC_F1, VKC_F2, VKC_F3, VKC_F4, VKC_F5, VKC_F6, VKC_F7, 
+    VKC_F8, VKC_F9, VKC_F10, VKC_F11, VKC_F12, VKC_F13, VKC_F14, 
+    VKC_F15, VKC_F16, VKC_F17, VKC_F18, VKC_F19, VKC_F20, 
+    VKC_F21, VKC_F22, VKC_F23, VKC_F24,
+
+    // 6 invalids
+    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+
+    // keypad keys
+    VKC_0, VKC_1, VKC_2, VKC_3, VKC_4, VKC_5, VKC_6, VKC_7, VKC_8, VKC_9,
+    VKC_DECIMAL, VKC_DIVIDE, VKC_MULTIPLY, VKC_SUBTRACT, VKC_ADD, VKC_ENTER,
+    VKC_EQUAL,
+
+    // 4 invalid keys
+    VKC_KEYS_INVALID_4,
+
+    VKC_LSHIFT,
+    VKC_LCONTROL,
+    VKC_LALT,
+    VKC_INVALID,
+    VKC_LWIN,
+    VKC_RSHIFT,
+    VKC_RCONTROL,
+    VKC_RALT,
+    VKC_RWIN,
+    VKC_APPS
+};
+
+static unsigned int convertModifiersToAsgaard(int action, int mods)
+{
+    unsigned int modifiers = 0;
+    if (mods & GLFW_MOD_SHIFT)     modifiers |= VKS_MODIFIER_LSHIFT;
+    if (mods & GLFW_MOD_CONTROL)   modifiers |= VKS_MODIFIER_LCTRL;
+    if (mods & GLFW_MOD_ALT)       modifiers |= VKS_MODIFIER_LALT;
+    if (mods & GLFW_MOD_CAPS_LOCK) modifiers |= VKS_MODIFIER_CAPSLOCK;
+    if (mods & GLFW_MOD_NUM_LOCK)  modifiers |= VKS_MODIFIER_NUMLOCK;
+    if (action & GLFW_REPEAT)      modifiers |= VKS_MODIFIER_REPEATED;
+    return modifiers;
+}
+
+static uint32_t asgaardMButtonCodes[GLFW_MOUSE_BUTTON_LAST + 1] = {
+    VKC_LBUTTON,
+    VKC_RBUTTON,
+    VKC_MBUTTON,
+    VKC_XBUTTON0,
+    VKC_XBUTTON1,
+    VKC_XBUTTON2,
+    VKC_XBUTTON3,
+    VKC_XBUTTON4
+};
 
 static void glfw_mouse_key_callback(GLFWwindow* window, int button, int action, int mods)
 {
-    vioarr_input_button_event(1, (uint32_t)button, (uint32_t)mods, action == GLFW_PRESS ? 1 : 0);
+    (void)window;
+    vioarr_input_button_event(1, 
+        asgaardMButtonCodes[button], 
+        convertModifiersToAsgaard(action, mods),
+        action == GLFW_RELEASE ? 0 : 1
+    );
 }
 
 static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    vioarr_input_button_event(2, (uint32_t)scancode, (uint32_t)mods, action == GLFW_PRESS ? 1 : 0);
+    (void)window;
+    (void)scancode;
+    vioarr_input_button_event(2, 
+        asgaardKeyCodes[key], 
+        convertModifiersToAsgaard(action, mods), 
+        action == GLFW_RELEASE ? 0 : 1
+    );
 }

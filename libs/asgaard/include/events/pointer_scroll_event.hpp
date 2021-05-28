@@ -1,6 +1,6 @@
 /* ValiOS
  *
- * Copyright 2021, Philip Meulengracht
+ * Copyright 2018, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,36 +22,26 @@
  */
 #pragma once
 
+#include <string>
+#include "event.hpp"
+
 namespace Asgaard {
-    class Event {
+    class PointerScrollEvent : public Event {
     public:
-        enum class Type : int {
-            ERROR,
-            SYNC,
-            CREATION,
-            SCREEN_PROPERTIES,
-            SCREEN_MODE,
-            SURFACE_FORMAT,
-            SURFACE_RESIZE,
-            SURFACE_FRAME,
-            SURFACE_FOCUSED,
-            SURFACE_UNFOCUSED,
-            BUFFER_RELEASE,
-            KEY_EVENT,
-            POINTER_ENTER,
-            POINTER_LEAVE,
-            POINTER_MOVE,
-            POINTER_CLICK,
-            POINTER_SCROLL
-        };
+        PointerScrollEvent(const uint32_t pointerId, const int horizontal, const int vertical) 
+        : Event(Event::Type::POINTER_SCROLL)
+        , m_pointerId(pointerId)
+        , m_horizontal(horizontal)
+        , m_vertical(vertical)
+        { }
 
-    public:
-        Event(Event::Type type) : m_type(type) { }
-        virtual ~Event() { }
-
-        const Event::Type GetType() const { return m_type; }
+        uint32_t PointerId() const { return m_pointerId; }
+        int      ChangeX() const { return m_horizontal; }
+        int      ChangeY() const { return m_vertical; }
 
     private:
-        Event::Type m_type;
+        uint32_t m_pointerId;
+        int      m_horizontal;
+        int      m_vertical;
     };
 }

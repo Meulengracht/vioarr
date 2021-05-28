@@ -76,6 +76,7 @@ service pointer (86) {
     event leave : (uint32 pointerId, uint32 surfaceId) = 5;
     event move : (uint32 pointerId, uint32 surfaceId, int surfaceX, int surfaceY) = 6;
     event click : (uint32 pointerId, uint32 surfaceId, pointer_button button, bool pressed) = 7;
+    event scroll : (uint32 pointerId, uint32 surfaceId, int horz, int vert) = 8;
 }
 
 service keyboard (87) {

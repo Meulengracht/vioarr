@@ -49,7 +49,7 @@ static uint16_t    g_portNo    = 55555;
 #include <sys/epoll.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-static const char* g_serverPath = "/tmp/vioarr";
+static const char* g_serverPath = "/tmp/vi-srv";
 #endif
 
 #include "wm_core_service_server.h"
@@ -110,6 +110,9 @@ static int __create_platform_link(void)
 {
     struct gracht_link_socket* link;
     struct sockaddr_un         addr = { 0 };
+
+    // delete any preexisting file
+    unlink(g_serverPath);
 
     addr.sun_family = AF_LOCAL;
     strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
@@ -363,7 +366,7 @@ int server_initialize(void)
     // Create the set descriptor we are listening to
     gracht_server_configuration_set_aio_descriptor(&config, epoll_create1(0));
     if (config.set_descriptor < 0) {
-        vioarr_utils_error("error creating event descriptor %i", errno);
+        vioarr_utils_error("error creating event descriptor %i\n", errno);
         return -1;
     }
 
@@ -372,14 +375,14 @@ int server_initialize(void)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        vioarr_utils_error("error initializing server library %i", errno);
+        vioarr_utils_error("error initializing server library %i\n", errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        vioarr_utils_error("error initializing server link %i", errno);
+        vioarr_utils_error("error initializing server link %i\n", errno);
         close(config.set_descriptor);
     }
     return status;

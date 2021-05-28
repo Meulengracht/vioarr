@@ -41,7 +41,8 @@ enum wm_surface_edge;
 void vioarr_input_register(UUId_t deviceId, int);
 void vioarr_input_unregister(UUId_t deviceId);
 void vioarr_input_on_surface_destroy(vioarr_surface_t* surface);
-void vioarr_input_axis_event(UUId_t deviceId, int x, int y, int z);
+void vioarr_input_axis_event(UUId_t deviceId, int x, int y);
+void vioarr_input_scroll_event(UUId_t deviceId, int horz, int vert);
 void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modifiers, uint8_t pressed);
 
 void vioarr_input_request_resize(vioarr_input_source_t* input, vioarr_surface_t* surface, enum wm_surface_edge);

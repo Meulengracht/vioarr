@@ -46,6 +46,7 @@
 #include "include/events/pointer_leave_event.hpp"
 #include "include/events/pointer_move_event.hpp"
 #include "include/events/pointer_click_event.hpp"
+#include "include/events/pointer_scroll_event.hpp"
 #include "include/events/key_event.hpp"
 
 #ifdef MOLLENOS
@@ -61,7 +62,7 @@ static uint16_t    g_portNo    = 55555;
 #include <sys/epoll.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-static const char* g_serverPath = "/tmp/vioarr";
+static const char* g_serverPath = "/tmp/vi-srv";
 #endif
 
 #include "wm_core_service_client.h"
@@ -664,6 +665,17 @@ extern "C"
         }
         
         object->ExternalEvent(Asgaard::PointerClickEvent(pointerId, button, static_cast<bool>(pressed)));
+    }
+
+    void wm_pointer_event_scroll_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const int horz, const int vert)
+    {
+        auto object = Asgaard::OM[surfaceId];
+        if (!object) {
+            // log
+            return;
+        }
+        
+        object->ExternalEvent(Asgaard::PointerScrollEvent(pointerId, horz, vert));
     }
 
     // KEYBOARD PROTOCOL EVENTS

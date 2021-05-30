@@ -42,7 +42,7 @@
 
 namespace Asgaard {
     WindowDecoration::WindowDecoration(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-        : WindowDecoration(id, screen, parent, dimensions, Drawing::FM.CreateFont("$sys/fonts/DejaVuSansMono.ttf", DECORATION_TEXT_SIZE)) { }
+        : WindowDecoration(id, screen, parent, dimensions, Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", DECORATION_TEXT_SIZE)) { }
 
     WindowDecoration::WindowDecoration(uint32_t id, 
         const std::shared_ptr<Screen>& screen,

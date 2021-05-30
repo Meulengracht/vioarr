@@ -86,3 +86,8 @@ target_link_libraries(asgaard freetype gracht zip bzip2 lzma z)
 if (MOLLENOS)
   target_link_libraries(asgaard static_libddk)
 endif()
+
+add_custom_command(TARGET asgaard POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    ${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:asgaard>
+)

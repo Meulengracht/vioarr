@@ -70,12 +70,11 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 
     // get the size of the monitor
     glfwGetMonitorWorkarea(video, &x, &y, &width, &height);
-    screen->monitor = video;
 
     vioarr_utils_trace("[vioarr] [screen] [create] creating os_mesa context, version 3.3");
     screen->context = glfwCreateWindow(width, height, "Vioarr Window Manager", video, NULL);
     if (!screen->context) {
-        vioarr_utils_error("Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+        vioarr_utils_error("Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version.\n");
         goto error;
     }
     
@@ -85,6 +84,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
         goto error;
     }
     
+    glfwGetFramebufferSize(screen->context, &width, &height);
     vioarr_region_add(screen->dimensions, 0, 0, width, height);
     
     glfwSetWindowUserPointer(screen->context, screen);
@@ -114,6 +114,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     
     screen->id = vioarr_objects_create_server_object(screen, WM_OBJECT_TYPE_SCREEN);
     screen->first_mouse = 1;
+    screen->monitor = video;
 
     // create the default mouse and keyboard objects
     vioarr_input_register(1, VIOARR_INPUT_POINTER);

@@ -44,36 +44,11 @@ static thrd_t           screen_thread;
 
 int vioarr_engine_initialize(void)
 {
-    int status;
-
     // initialize systems
     vioarr_manager_initialize();
     
-    // Initialise GLFW
-    if (!glfwInit()) {
-        vioarr_utils_error("Failed to initialize GLFW\n");
-        return -1;
-    }
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    vioarr_utils_trace("[vioarr] [initialize] initializing screens");
-    status = vioarr_engine_setup_screens();
-    if (status) {
-        vioarr_utils_error("[vioarr] [initialize] failed to initialize screens, code %i", status);
-        return status;
-    }
-    
-    // Spawn the renderer thread, this will update the screen at a 60 hz frequency
-    // and handle all redrawing
-    vioarr_utils_trace("[vioarr] [initialize] creating screen renderer thread");
-    return thrd_create(&screen_thread, vioarr_engine_update, primary_screen);
+    vioarr_utils_trace("[vioarr] [initialize] creating renderer thread");
+    return thrd_create(&screen_thread, vioarr_engine_update, NULL);
 }
 
 
@@ -122,12 +97,34 @@ static int vioarr_engine_setup_screens(void)
 
 static int vioarr_engine_update(void* context)
 {
-    vioarr_screen_t* screen = context;
+    int status;
+    (void)context;
+
+    // Initialise GLFW
+    if (!glfwInit()) {
+        vioarr_utils_error("Failed to initialize GLFW\n");
+        return -1;
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
+
+    vioarr_utils_trace("vioarr_engine_update initializing screens");
+    status = vioarr_engine_setup_screens();
+    if (status) {
+        vioarr_utils_error("vioarr_engine_update failed to initialize screens, code %i", status);
+        return status;
+    }
     
-    vioarr_utils_trace("[vioarr] [renderer_thread] started");
-    while (vioarr_screen_valid(screen)) {
-        vioarr_screen_frame(screen);
+    vioarr_utils_trace("vioarr_engine_update started");
+    while (vioarr_screen_valid(primary_screen)) {
         glfwPollEvents();
+        vioarr_screen_frame(primary_screen);
     }
     return 0;
 }

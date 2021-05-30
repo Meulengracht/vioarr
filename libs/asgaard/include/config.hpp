@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#if defined(WINDOWS) || defined(WIN32) || defined(MOLLENOS)
+#if defined(WINDOWS) || defined(_WIN32) || defined(MOLLENOS)
 #  ifdef ASGAARD_BUILD
 #    define ASGAARD_API __declspec(dllexport)
 #  else
@@ -31,4 +31,12 @@
 
 #ifndef ASGAARD_API
 #define ASGAARD_API
+#endif
+
+#if defined(MOLLENOS)
+#define DATA_DIRECTORY "$sys"
+#elif defined(_WIN32)
+#define DATA_DIRECTORY "."
+#else
+#define DATA_DIRECTORY "."
 #endif

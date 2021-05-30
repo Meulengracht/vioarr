@@ -415,6 +415,16 @@ int main(int argc, char **argv)
     gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+
+#ifdef VIOARR_LAUNCHER
+    pid_t childPid = fork();
+    if (!childPid) {
+        char* argv[] = { VIOARR_LAUNCHER, NULL };
+        int   resultCode = execv(VIOARR_LAUNCHER, argv);
+        exit(resultCode);
+    }
+#endif //VIOARR_LAUNCHER
+
     return gracht_server_main_loop(g_valiServer);
 }
 

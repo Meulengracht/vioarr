@@ -41,7 +41,7 @@
 
 int main(int argc, char **argv)
 {
-    std::string                             fontPath = "$sys/fonts/DejaVuSansMono.ttf";
+    std::string                             fontPath = DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf";
     std::shared_ptr<Asgaard::Drawing::Font> font     = Asgaard::Drawing::FM.CreateFont(fontPath, 12);
     Asgaard::Rectangle                      initialSize(0, 0, 600, 400);
 

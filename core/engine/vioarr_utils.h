@@ -48,10 +48,12 @@
 #include <stdio.h>
 #include <threads.h>
 
-#define vioarr_utils_trace(...) fprintf (stdout, __VA_ARGS__)
-#define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__)
+#define vioarr_utils_trace(...) fprintf (stdout, __VA_ARGS__); fflush(stdout)
+#define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__); fflush(stderr)
 #define ENTRY(...)
 #define EXIT(func)
+
+#define VIOARR_LAUNCHER "heimdall"
 
 #endif
 

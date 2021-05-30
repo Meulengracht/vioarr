@@ -64,6 +64,7 @@ void vioarr_objects_create_client_object(int client, uint32_t id, void* object, 
     resource->id     = id;
     resource->object = object;
     resource->type   = type;
+    resource->handle = 0;
     ELEMENT_INIT(&resource->link, (uintptr_t)resource->id, resource);
     
     list_append(&objects, &resource->link);
@@ -82,9 +83,13 @@ uint32_t vioarr_objects_create_server_object(void* object, enum wm_object_type t
     resource->id     = vioarr_utils_get_object_id();
     resource->object = object;
     resource->type   = type;
+    resource->handle = 0;
     ELEMENT_INIT(&resource->link, (uintptr_t)resource->id, resource);
-    
     list_append(&objects, &resource->link);
+
+    // publish the object
+    wm_core_event_object_all(vioarr_get_server_handle(), resource->id, 0, type);
+
     return resource->id;
 }
 

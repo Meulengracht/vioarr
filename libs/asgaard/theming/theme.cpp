@@ -129,7 +129,7 @@ Theme::~Theme()
 
 void Theme::InitializeTheme()
 {
-    m_loader = std::make_unique<ThemeLoader>("$themes/default.pak");
+    m_loader = std::make_unique<ThemeLoader>(DATA_DIRECTORY "themes/default.pak");
     
     // push paths
     m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CURSOR), "cursor16.png")); // 32, 40, 48

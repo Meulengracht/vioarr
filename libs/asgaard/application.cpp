@@ -330,8 +330,14 @@ namespace Asgaard {
         gracht_client_register_protocol(m_client, &wm_pointer_client_protocol);
         gracht_client_register_protocol(m_client, &wm_keyboard_client_protocol);
 
+        // connect the client
+        status = gracht_client_connect(m_client);
+        if (status) {
+            throw ApplicationException("failed to connect to gracht server", status);
+        }
+
         // Prepare the ioset to listen to multiple events
-        m_ioset = epoll_create(0);
+        m_ioset = epoll_create1(0);
         if (m_ioset <= 0) {
             throw ApplicationException("failed to initialize the ioset descriptor", errno);
         }
@@ -348,7 +354,7 @@ namespace Asgaard {
 
         // wait for initialization to complete
         while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_client, NULL, 0);
+            (void)gracht_client_wait_message(m_client, NULL, GRACHT_MESSAGE_BLOCK);
         }
     }
     
@@ -415,6 +421,7 @@ namespace Asgaard {
 
     bool Application::IsInitialized() const
     {
+        printf("IsInitialized::m_screenFound=%i, m_syncReceived=%i\n", m_screenFound, m_syncRecieved);
         return m_screenFound && m_syncRecieved;
     }
     

@@ -421,7 +421,6 @@ namespace Asgaard {
 
     bool Application::IsInitialized() const
     {
-        printf("IsInitialized::m_screenFound=%i, m_syncReceived=%i\n", m_screenFound, m_syncRecieved);
         return m_screenFound && m_syncRecieved;
     }
     

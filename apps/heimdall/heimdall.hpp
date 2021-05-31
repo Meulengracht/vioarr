@@ -86,7 +86,7 @@ private:
         };
 
         // Render the normal state
-        Drawing::Image background("$themes/backgrounds/bg.png");
+        Drawing::Image background(DATA_DIRECTORY "/themes/backgrounds/bg.png");
         renderImage(m_buffer, background);
         //blurImage(m_bufferBlurred, background);
     }

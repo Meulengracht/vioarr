@@ -55,18 +55,13 @@ ResolverUnix::ResolverUnix(const int* stdoutFds, const int* stderrFds, const int
     , m_processEvent(-1)
 {
     UpdateWorkingDirectory();
-
-    m_processEvent = eventfd(0, 0);
-    if (m_processEvent < 0) {
-        // throw
-    }
-
-    Asgaard::APP.AddEventDescriptor(m_processEvent, EPOLLIN, shared_from_this());
 }
 
 ResolverUnix::~ResolverUnix()
 {
-    close(m_processEvent);
+    if (m_processEvent != -1) {
+        close(m_processEvent);
+    }
 }
 
 void ResolverUnix::UpdateWorkingDirectory()
@@ -142,6 +137,15 @@ bool ResolverUnix::ExecuteProgram(const std::string& Program, const std::vector<
             }
             line += Arguments[i];
         }
+    }
+
+    if (m_processEvent == -1) {
+        m_processEvent = eventfd(0, 0);
+        if (m_processEvent < 0) {
+            // throw
+        }
+
+        Asgaard::APP.AddEventDescriptor(m_processEvent, EPOLLIN, shared_from_this());
     }
     
     // God i hate forking

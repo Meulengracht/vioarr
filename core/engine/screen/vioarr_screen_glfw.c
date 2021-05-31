@@ -59,8 +59,9 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 
 vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 {
-    vioarr_screen_t* screen;
-    int              x, y, width, height, status;
+    vioarr_screen_t*   screen;
+    int                status;
+    const GLFWvidmode* currentMode;
 
     screen = malloc(sizeof(vioarr_screen_t));
     if (!screen) {
@@ -69,10 +70,14 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     memset(screen, 0, sizeof(vioarr_screen_t));
 
     // get the size of the monitor
-    glfwGetMonitorWorkarea(video, &x, &y, &width, &height);
+    currentMode = glfwGetVideoMode(video);
+    glfwWindowHint(GLFW_RED_BITS, currentMode->redBits);
+    glfwWindowHint(GLFW_GREEN_BITS, currentMode->greenBits);
+    glfwWindowHint(GLFW_BLUE_BITS, currentMode->blueBits);
+    glfwWindowHint(GLFW_REFRESH_RATE, currentMode->refreshRate);
 
-    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] creating os_mesa context, version 3.3"));
-    screen->context = glfwCreateWindow(width, height, "Vioarr Window Manager", video, NULL);
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] creating gl context, version 3.3"));
+    screen->context = glfwCreateWindow(currentMode->width, currentMode->height, "Vioarr Window Manager", video, NULL);
     if (!screen->context) {
         vioarr_utils_error(VISTR("Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version.\n"));
         goto error;
@@ -84,8 +89,8 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
         goto error;
     }
     
-    glfwGetFramebufferSize(screen->context, &width, &height);
-    vioarr_region_add(screen->dimensions, 0, 0, width, height);
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] screen [%i, %i]"), currentMode->width, currentMode->height);
+    vioarr_region_add(screen->dimensions, 0, 0, currentMode->width, currentMode->height);
     
     glfwSetWindowUserPointer(screen->context, screen);
     glfwSetCursorPosCallback(screen->context, glfw_mouse_callback);
@@ -237,10 +242,8 @@ int vioarr_screen_valid(vioarr_screen_t* screen)
 
 void vioarr_screen_frame(vioarr_screen_t* screen)
 {
-    ENTRY("vioarr_screen_frame()");
     vioarr_renderer_render(screen->renderer);
     glfwSwapBuffers(screen->context);
-    EXIT("vioarr_screen_frame");
 }
 
 static void glfw_mouse_callback(GLFWwindow* window, double xpos, double ypos)

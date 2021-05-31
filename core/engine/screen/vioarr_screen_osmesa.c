@@ -302,7 +302,7 @@ int vioarr_screen_publish_modes(vioarr_screen_t* screen, int client)
 
 void vioarr_screen_frame(vioarr_screen_t* screen)
 {
-    ENTRY("vioarr_screen_frame()");
+    ENTRY(VISTR("vioarr_screen_frame()"));
     vioarr_renderer_render(screen->renderer);
 
 #ifndef VIOARR_TRACEMODE

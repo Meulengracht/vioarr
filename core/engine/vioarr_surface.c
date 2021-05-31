@@ -87,6 +87,7 @@ static void __cleanup_surface_properties(vioarr_surface_properties_t* properties
 static void __cleanup_surface_backbuffer(vioarr_screen_t* screen, vioarr_surface_backbuffer_t* backbuffer);
 static void __swap_properties(vioarr_surface_t* surface);
 static void __update_surface(vcontext_t* context, vioarr_surface_t* surface);
+static int  __swap_backbuffer(NVGcontext* context, vioarr_surface_t* surface);
 static void __refresh_content(vcontext_t* context, vioarr_surface_t* surface);
 static void __render_drop_shadow(vcontext_t* context, vioarr_surface_t* surface);
 static void __render_content(vcontext_t* context, vioarr_surface_t* surface);
@@ -264,7 +265,7 @@ static void __remove_child(vioarr_surface_t* surface, vioarr_surface_t* child)
     if (itr == child) {
         ACTIVE_PROPERTIES(surface).children = child->link;
     }
-    else {
+    else if (itr) {
         while (itr->link != child) {
             itr = itr->link;
         }
@@ -276,29 +277,20 @@ static void __remove_child(vioarr_surface_t* surface, vioarr_surface_t* child)
 
 void vioarr_surface_set_buffer(vioarr_surface_t* surface, vioarr_buffer_t* content)
 {
-    int resourceId = -1;
-
     if (!surface) {
         return;
     }
 
-    if (content) {
-        vioarr_buffer_acquire(content);
-        resourceId = vioarr_renderer_create_image(vioarr_screen_renderer(surface->screen), content);
-        vioarr_utils_trace(VISTR("[vioarr_surface_set_buffer] initialized new content %i 0x%p"), resourceId, content);
-    }
-    
     vioarr_rwlock_w_lock(&surface->lock);
     if (PENDING_BACKBUFFER(surface).content) {
-        vioarr_utils_trace(VISTR("[vioarr_surface_set_buffer] cleaning up previous %i 0x%p"),
-            PENDING_BACKBUFFER(surface).resource_id,
-            PENDING_BACKBUFFER(surface).content);
-        vioarr_renderer_destroy_image(vioarr_screen_renderer(surface->screen), PENDING_BACKBUFFER(surface).resource_id);
         vioarr_buffer_destroy(PENDING_BACKBUFFER(surface).content);
     }
+    if (content) {
+        vioarr_buffer_acquire(content);
+    }
 
-    PENDING_BACKBUFFER(surface).content = content;
-    PENDING_BACKBUFFER(surface).resource_id = resourceId;
+    PENDING_BACKBUFFER(surface).content     = content;
+    PENDING_BACKBUFFER(surface).resource_id = -1;
 
     surface->swap_backbuffers = 1;
     vioarr_rwlock_w_unlock(&surface->lock);
@@ -521,14 +513,7 @@ void vioarr_surface_commit(vioarr_surface_t* surface)
     }
 
     vioarr_rwlock_w_lock(&surface->lock);
-    if (surface->swap_backbuffers) {
-        surface->backbuffer_index ^= 1;
-        surface->swap_backbuffers = 0;
-    }
     __swap_properties(surface);
-    
-    // Determine other attributes about this surface. Is it visible?
-    surface->visible = ACTIVE_BACKBUFFER(surface).content != NULL;
     vioarr_rwlock_w_unlock(&surface->lock);
 }
 
@@ -642,7 +627,7 @@ void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)
     //    surface->id, vioarr_region_x(surface->dimensions),
     //    vioarr_region_y(surface->dimensions));
     vioarr_rwlock_r_lock(&surface->lock);
-    if (!surface->visible) {
+    if (!__swap_backbuffer(context, surface)) {
         vioarr_rwlock_r_unlock(&surface->lock);
         return;
     }
@@ -695,6 +680,70 @@ static void __update_surface(NVGcontext* context, vioarr_surface_t* surface)
         wm_surface_event_frame_single(vioarr_get_server_handle(), surface->client, surface->id);
     }
     //vioarr_utils_trace(VISTR("[__update_surface] is visible: %i"), surface->visible);
+}
+
+#ifdef VIOARR_BACKEND_NANOVG
+static int __nvg_flags(vioarr_buffer_t* buffer)
+{
+    unsigned int bufferFlags = vioarr_buffer_flags(buffer);
+    int          nvgFlags = 0;
+
+    if (bufferFlags & 0x1) {
+        nvgFlags |= NVG_IMAGE_FLIPY;
+    }
+
+    switch (vioarr_buffer_format(buffer)) {
+        case WM_PIXEL_FORMAT_X8R8G8B8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
+        case WM_PIXEL_FORMAT_X8B8G8R8: nvgFlags |= NVG_IMAGE_PREMULTIPLIED; break;
+        default: break;
+    }
+
+    return nvgFlags;
+}
+#endif
+
+/**
+ * Returns whether or not the surface is visible
+ */
+static int __swap_backbuffer(NVGcontext* context, vioarr_surface_t* surface)
+{
+    if (!surface->swap_backbuffers) {
+        return surface->visible;
+    }
+    surface->swap_backbuffers = 0;
+
+    // initialize the new content
+    if (PENDING_BACKBUFFER(surface).content) {
+#ifdef VIOARR_BACKEND_NANOVG
+        PENDING_BACKBUFFER(surface).resource_id = nvgCreateImageRGBA(context,
+            vioarr_buffer_width(PENDING_BACKBUFFER(surface).content), 
+            vioarr_buffer_height(PENDING_BACKBUFFER(surface).content),
+            __nvg_flags(PENDING_BACKBUFFER(surface).content), 
+            (const uint8_t*)vioarr_buffer_data(PENDING_BACKBUFFER(surface).content));
+#endif
+        if (PENDING_BACKBUFFER(surface).resource_id < 0) {
+            vioarr_utils_error(VISTR("__swap_backbuffer failed to initialize new backbuffer"));
+            return surface->visible;
+        }
+
+        surface->visible = 1;
+    }
+    else {
+        surface->visible = 0;
+    }
+    
+    // cleanup the old
+    if (ACTIVE_BACKBUFFER(surface).content) {
+#ifdef VIOARR_BACKEND_NANOVG
+        nvgDeleteImage(context, ACTIVE_BACKBUFFER(surface).resource_id);
+#endif
+        vioarr_buffer_destroy(ACTIVE_BACKBUFFER(surface).content);
+        ACTIVE_BACKBUFFER(surface).content = NULL;
+        ACTIVE_BACKBUFFER(surface).resource_id = -1;
+    }
+
+    surface->backbuffer_index ^= 1;
+    return surface->visible;
 }
 
 static void __refresh_content(NVGcontext* context, vioarr_surface_t* surface)

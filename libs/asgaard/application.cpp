@@ -490,6 +490,8 @@ namespace Asgaard {
     }
 }
 
+#include <iostream>
+
 // Protocol callbacks
 extern "C"
 {
@@ -692,6 +694,8 @@ extern "C"
             // log
             return;
         }
+
+        std::cout << "wm_keyboard_event_key_invocation" << std::endl;
         
         object->ExternalEvent(Asgaard::KeyEvent(keycode, modifiers, static_cast<bool>(pressed)));
     }

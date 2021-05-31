@@ -59,8 +59,8 @@
 #define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__)
 #define VISTR(str)              str "\n"
 
-#define ENTRY(...)
-#define EXIT(func)
+#define ENTRY(...)              fprintf (stdout, __VA_ARGS__)
+#define EXIT(func)              fprintf (stdout, func "\n")
 
 #define VIOARR_LAUNCHER "heimdall"
 

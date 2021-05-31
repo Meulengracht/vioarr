@@ -36,7 +36,7 @@
 
 void wm_surface_get_formats_invocation(struct gracht_message* message, const uint32_t id)
 {
-    ENTRY("wm_surface_get_formats_callback(client=%i, surface=%u)", message->client, id);
+    ENTRY(VISTR("wm_surface_get_formats_callback(client=%i, surface=%u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_get_formats_callback: failed to find surface"));
@@ -52,7 +52,7 @@ exit:
 
 void wm_surface_set_buffer_invocation(struct gracht_message* message, const uint32_t surfaceId, const uint32_t bufferId)
 {
-    ENTRY("wm_surface_set_buffer_callback(client=%i, surface=%u)", message->client, surfaceId);
+    ENTRY(VISTR("wm_surface_set_buffer_callback(client=%i, surface=%u)"), message->client, surfaceId);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, surfaceId);
     vioarr_buffer_t*  buffer  = vioarr_objects_get_object(message->client, bufferId);
     if (!surface) {
@@ -69,7 +69,7 @@ exit:
 
 void wm_surface_set_input_region_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y, const int width, const int height)
 {
-    ENTRY("wm_surface_set_input_region_callback(client=%i, surface=%u)", message->client, id);
+    ENTRY(VISTR("wm_surface_set_input_region_callback(client=%i, surface=%u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_set_input_region_callback: failed to find surface"));
@@ -85,7 +85,7 @@ exit:
 
 void wm_surface_request_fullscreen_mode_invocation(struct gracht_message* message, const uint32_t id, const enum wm_fullscreen_mode mode)
 {
-    ENTRY("wm_surface_request_fullscreen_mode(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_request_fullscreen_mode(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_request_fullscreen_mode: failed to find surface"));
@@ -117,7 +117,7 @@ exit:
 
 void wm_surface_request_level_invocation(struct gracht_message* message, const uint32_t id, const int level)
 {
-    ENTRY("wm_surface_request_level(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_request_level(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_request_level failed to find surface"));
@@ -133,7 +133,7 @@ exit:
 
 void wm_surface_request_frame_invocation(struct gracht_message* message, const uint32_t id)
 {
-    ENTRY("wm_surface_request_frame_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_request_frame_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_request_frame_callback: failed to find surface"));
@@ -149,7 +149,7 @@ exit:
 
 void wm_surface_invalidate_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y, const int width, const int height)
 {
-    ENTRY("wm_surface_invalidate_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_invalidate_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_invalidate_callback failed to find surface"));
@@ -165,7 +165,7 @@ exit:
 
 void wm_surface_set_transparency_invocation(struct gracht_message* message, const uint32_t id, const uint8_t set)
 {
-    ENTRY("wm_surface_set_transparency_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_set_transparency_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_set_transparency_callback: failed to find surface"));
@@ -181,7 +181,7 @@ exit:
 
 void wm_surface_set_drop_shadow_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y, const int width, const int height)
 {
-    ENTRY("wm_surface_set_drop_shadow_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_set_drop_shadow_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_set_drop_shadow_callback: failed to find surface"));
@@ -197,7 +197,7 @@ exit:
 
 void wm_surface_add_subsurface_invocation(struct gracht_message* message, const uint32_t parentId, const uint32_t childId, const int x, const int y)
 {
-    ENTRY("wm_surface_add_subsurface_callback(client %i, surface %u)", message->client, parentId);
+    ENTRY(VISTR("wm_surface_add_subsurface_callback(client %i, surface %u)"), message->client, parentId);
     vioarr_surface_t* parent_surface = vioarr_objects_get_object(message->client, parentId);
     vioarr_surface_t* child_surface  = vioarr_objects_get_object(message->client, childId);
     int               status;
@@ -227,7 +227,7 @@ exit:
 
 void wm_surface_resize_subsurface_invocation(struct gracht_message* message, const uint32_t id, const int width, const int height)
 {
-    ENTRY("wm_surface_resize_subsurface_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_resize_subsurface_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_resize_subsurface_callback failed to find surface"));
@@ -243,7 +243,7 @@ exit:
 
 void wm_surface_move_subsurface_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y)
 {
-    ENTRY("wm_surface_move_subsurface_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_move_subsurface_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_move_subsurface_callback: failed to find surface"));
@@ -259,7 +259,7 @@ exit:
 
 void wm_surface_commit_invocation(struct gracht_message* message, const uint32_t id)
 {
-    ENTRY("wm_surface_commit_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_commit_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_commit_callback: failed to find surface"));
@@ -275,7 +275,7 @@ exit:
 
 void wm_surface_resize_invocation(struct gracht_message* message, const uint32_t id, const uint32_t pointerId, const enum wm_surface_edge edges)
 {
-    ENTRY("wm_surface_resize_callback(client %i, pointer %u, surface %u)", message->client, pointerId, id);
+    ENTRY(VISTR("wm_surface_resize_callback(client %i, pointer %u, surface %u)"), message->client, pointerId, id);
     vioarr_surface_t*      surface = vioarr_objects_get_object(message->client, id);
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
@@ -298,7 +298,7 @@ exit:
 
 void wm_surface_move_invocation(struct gracht_message* message, const uint32_t id, const uint32_t pointerId)
 {
-    ENTRY("wm_surface_move_callback(client %i, pointer %u, surface %u)", message->client, pointerId, id);
+    ENTRY(VISTR("wm_surface_move_callback(client %i, pointer %u, surface %u)"), message->client, pointerId, id);
     vioarr_surface_t*      surface = vioarr_objects_get_object(message->client, id);
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
@@ -321,7 +321,7 @@ exit:
 
 void wm_surface_destroy_invocation(struct gracht_message* message, const uint32_t id)
 {
-    ENTRY("wm_surface_destroy_callback(client %i, surface %u)", message->client, id);
+    ENTRY(VISTR("wm_surface_destroy_callback(client %i, surface %u)"), message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
         vioarr_utils_error(VISTR("wm_surface_destroy_callback: failed to find surface"));

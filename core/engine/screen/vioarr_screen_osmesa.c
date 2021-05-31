@@ -145,14 +145,14 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     attributes[n++] = 3;
     attributes[n++] = 0;
    
-    vioarr_utils_trace("[vioarr] [screen] [create] creating os_mesa context, version 3.3");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] creating os_mesa context, version 3.3"));
     screen->context = OSMesaCreateContextAttribs(&attributes[0], NULL);
     if (!screen->context) {
         free(screen);
         return NULL;
     }
     
-    vioarr_utils_trace("[vioarr] [screen] [create] allocating screen resources");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] allocating screen resources"));
     screen->dimensions = vioarr_region_create();
     if (!screen->dimensions) {
         OSMesaDestroyContext(screen->context);
@@ -180,20 +180,20 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     status = OSMesaMakeCurrent(screen->context, screen->backbuffer, GL_UNSIGNED_BYTE,
         video->Width, video->Height);
     if (status == GL_FALSE) {
-        vioarr_utils_error("[vioarr] [initialize] failed to set the os_mesa context");
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to set the os_mesa context"));
         OSMesaDestroyContext(screen->context);
         free(screen->dimensions);
         free(screen);
         return NULL;
     }
     
-    vioarr_utils_trace("[vioarr] [screen] [create] loading gl extensions");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] loading gl extensions"));
     status = gladLoadGLLoader((GLADloadproc)OSMesaGetProcAddress, 3, 3);
     if (!status) {
         OSMesaDestroyContext(screen->context);
         free(screen->dimensions);
         free(screen);
-        vioarr_utils_error("[vioarr] [initialize] failed to load gl extensions, code %i", status);
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to load gl extensions, code %i"), status);
         return NULL;
     }
     
@@ -221,7 +221,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     screen->row_loops       = bytes_to_copy / bytes_step;
     screen->bytes_remaining = bytes_to_copy % bytes_step;
     
-    vioarr_utils_trace("[vioarr] [screen] [create] initializing renderer");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] initializing renderer"));
     screen->renderer = vioarr_renderer_create(screen);
     if (!screen->renderer) {
         OSMesaDestroyContext(screen->context);
@@ -248,7 +248,7 @@ void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_screen_transfo
     if (!screen) {
         return;
     }
-    vioarr_utils_trace("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+    vioarr_utils_trace(VISTR("[vioarr_screen_set_transform] FIXME: STUB FUNCTION"));
 }
 
 vioarr_region_t* vioarr_screen_region(vioarr_screen_t* screen)

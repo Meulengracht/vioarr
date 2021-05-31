@@ -48,16 +48,16 @@ int vioarr_engine_initialize(void)
     // initialize systems
     vioarr_manager_initialize();
     
-    vioarr_utils_trace("[vioarr] [initialize] initializing screens");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] initializing screens"));
     status = vioarr_engine_setup_screens();
     if (status) {
-        vioarr_utils_error("[vioarr] [initialize] failed to initialize screens, code %i", status);
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to initialize screens, code %i"), status);
         return status;
     }
     
     // Spawn the renderer thread, this will update the screen at a 60 hz frequency
     // and handle all redrawing
-    vioarr_utils_trace("[vioarr] [initialize] creating screen renderer thread");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating screen renderer thread"));
     return thrd_create(&screen_thread, vioarr_engine_update, primary_screen);
 }
 
@@ -87,21 +87,21 @@ static int vioarr_engine_setup_screens(void)
     video_output_t video;
     OsStatus_t     osStatus;
     
-    vioarr_utils_trace("[vioarr] [initialize] quering screen information");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] quering screen information"));
     // Get screens available from OS.
     osStatus = QueryDisplayInformation(&video);
     if (osStatus != OsSuccess) {
-        vioarr_utils_error("[vioarr] [initialize] failed to query screens, status %u", osStatus);
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to query screens, status %u"), osStatus);
         OsStatusToErrno(osStatus);
         return -1;
     }
     
-    vioarr_utils_trace("[vioarr] [initialize] creating primary screen object");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating primary screen object"));
     // Create the primary screen object. In the future we will support
     // multiple displays and also listen for screen hotplugs
     primary_screen = vioarr_screen_create(&video);
     if (!primary_screen) {
-        vioarr_utils_error("[vioarr] [initialize] failed to create primary screen object");
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to create primary screen object"));
         return -1;
     }
     return 0;
@@ -112,7 +112,7 @@ static int vioarr_engine_update(void* context)
     vioarr_screen_t* screen = context;
     clock_t start, end, diffMs;
     
-    vioarr_utils_trace("[vioarr] [renderer_thread] started");
+    vioarr_utils_trace(VISTR("[vioarr] [renderer_thread] started"));
     while (1) {
         start = clock();
         
@@ -122,7 +122,7 @@ static int vioarr_engine_update(void* context)
         diffMs = end - start;
         start  = end;
         
-        //vioarr_utils_trace("vioarr_engine_update update took %" PRIuIN "ms, next in %" PRIuIN "ms", 
+        //vioarr_utils_trace(VISTR("vioarr_engine_update update took %" PRIuIN "ms, next in %" PRIuIN "ms"), 
         //    diffMs, ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
         thrd_sleepex(ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
     }

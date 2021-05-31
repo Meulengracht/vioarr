@@ -104,7 +104,7 @@ static vioarr_object_t* get_object(int client, uint32_t id)
             return object;
         }
     }
-    vioarr_utils_error("[vioarr_objects_get_object] %i => %u object not found", client, id);
+    vioarr_utils_error(VISTR("[vioarr_objects_get_object] %i => %u object not found"), client, id);
     return NULL;
 }
 

@@ -58,13 +58,13 @@ void vioarr_manager_initialize(void)
 void vioarr_manager_register_surface(vioarr_surface_t* surface)
 {
     if (!surface) {
-        vioarr_utils_error("[vioarr_manager_register_surface] null parameters");
+        vioarr_utils_error(VISTR("[vioarr_manager_register_surface] null parameters"));
         return;
     }
 
     element_t* element = malloc(sizeof(element_t));
     if (!element) {
-        vioarr_utils_error("[vioarr_manager_register_surface] out of memory");
+        vioarr_utils_error(VISTR("[vioarr_manager_register_surface] out of memory"));
         return;
     }
 
@@ -81,7 +81,7 @@ void vioarr_manager_unregister_surface(vioarr_surface_t* surface)
     int        level;
 
     if (!surface) {
-        vioarr_utils_error("[vioarr_renderer_register_surface] null parameters");
+        vioarr_utils_error(VISTR("[vioarr_renderer_register_surface] null parameters"));
         return;
     }
 

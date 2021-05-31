@@ -32,18 +32,18 @@
 
 void wm_pointer_set_surface_invocation(struct gracht_message* message, const uint32_t pointerId, const uint32_t surfaceId, const int xOffset, const int yOffset)
 {
-    vioarr_utils_trace("[wm_pointer_set_surface_callback] client %i, pointer %u, surface %u",
+    vioarr_utils_trace(VISTR("[wm_pointer_set_surface_callback] client %i, pointer %u, surface %u"),
         message->client, pointerId, surfaceId);
     vioarr_surface_t*      surface = vioarr_objects_get_object(message->client, surfaceId);
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
     if (!surface) {
-        vioarr_utils_error("wm_pointer_set_surface_callback: surface did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_set_surface_callback: surface did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_surface: object does not exist");
         return;
     }
     if (!pointer) {
-        vioarr_utils_error("wm_pointer_set_surface_callback: pointer did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_set_surface_callback: pointer did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_pointer: object does not exist");
         return;
     }
@@ -53,18 +53,18 @@ void wm_pointer_set_surface_invocation(struct gracht_message* message, const uin
 
 void wm_pointer_grab_invocation(struct gracht_message* message, const uint32_t pointerId, const uint32_t surfaceId)
 {
-    vioarr_utils_trace("[wm_pointer_grab_callback] client %i, pointer %u, surface %u",
+    vioarr_utils_trace(VISTR("[wm_pointer_grab_callback] client %i, pointer %u, surface %u"),
         message->client, pointerId, surfaceId);
     vioarr_surface_t*      surface = vioarr_objects_get_object(message->client, surfaceId);
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
     if (!surface) {
-        vioarr_utils_error("wm_pointer_grab_callback: surface did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_grab_callback: surface did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_surface: object does not exist");
         return;
     }
     if (!pointer) {
-        vioarr_utils_error("wm_pointer_grab_callback: pointer did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_grab_callback: pointer did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_pointer: object does not exist");
         return;
     }
@@ -74,18 +74,18 @@ void wm_pointer_grab_invocation(struct gracht_message* message, const uint32_t p
 
 void wm_pointer_ungrab_invocation(struct gracht_message* message, const uint32_t pointerId, const uint32_t surfaceId)
 {
-    vioarr_utils_trace("[wm_pointer_ungrab_callback] client %i, pointer %u, surface %u",
+    vioarr_utils_trace(VISTR("[wm_pointer_ungrab_callback] client %i, pointer %u, surface %u"),
         message->client, pointerId, surfaceId);
     vioarr_surface_t*      surface = vioarr_objects_get_object(message->client, surfaceId);
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
     if (!surface) {
-        vioarr_utils_error("wm_pointer_ungrab_callback: surface did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_ungrab_callback: surface did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_surface: object does not exist");
         return;
     }
     if (!pointer) {
-        vioarr_utils_error("wm_pointer_ungrab_callback: pointer did not exist");
+        vioarr_utils_error(VISTR("wm_pointer_ungrab_callback: pointer did not exist"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_pointer: object does not exist");
         return;
     }

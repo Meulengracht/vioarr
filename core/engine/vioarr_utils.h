@@ -38,18 +38,27 @@
 
 #define vioarr_utils_trace TRACE
 #define vioarr_utils_error ERROR
+#define VISTR(str)         str
 #elif defined(_WIN32)
 #include <stdio.h>
 
 #define vioarr_utils_trace(...) fprintf (stdout, __VA_ARGS__)
 #define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__)
+#define VISTR(str)              str "\n"
+
+#define ENTRY(...)
+#define EXIT(func)
+
+#define VIOARR_LAUNCHER "heimdall.exe"
 
 #elif defined(__linux__)
 #include <stdio.h>
 #include <threads.h>
 
-#define vioarr_utils_trace(...) fprintf (stdout, __VA_ARGS__); fflush(stdout)
-#define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__); fflush(stderr)
+#define vioarr_utils_trace(...) fprintf (stdout, __VA_ARGS__)
+#define vioarr_utils_error(...) fprintf (stderr, __VA_ARGS__)
+#define VISTR(str)              str "\n"
+
 #define ENTRY(...)
 #define EXIT(func)
 

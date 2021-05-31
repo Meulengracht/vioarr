@@ -28,12 +28,12 @@
 
 void wm_core_sync_invocation(struct gracht_message* message, const uint32_t serial)
 {
-    vioarr_utils_trace("[wm_core_sync_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_core_sync_callback] client %i"), message->client);
     wm_core_event_sync_single(vioarr_get_server_handle(), message->client, serial);
 }
 
 void wm_core_get_objects_invocation(struct gracht_message* message)
 {
-    vioarr_utils_trace("[wm_core_get_objects_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_core_get_objects_callback] client %i"), message->client);
     vioarr_objects_publish(message->client);
 }

@@ -80,10 +80,10 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
     }
 
 #ifdef VIOARR_BACKEND_NANOVG
-    vioarr_utils_trace("[vioarr_renderer_create] initializing openGL");
+    vioarr_utils_trace(VISTR("[vioarr_renderer_create] initializing openGL"));
     opengl_initialize(width, height);
 
-    vioarr_utils_trace("[vioarr_renderer_create] creating nvg context");
+    vioarr_utils_trace(VISTR("[vioarr_renderer_create] creating nvg context"));
     mtx_init(&renderer->context_sync, mtx_plain);
 #ifdef __VIOARR_CONFIG_RENDERER_MSAA
 	renderer->context = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
@@ -91,7 +91,7 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
 	renderer->context = nvgCreateGL3(NVG_STENCIL_STROKES | NVG_DEBUG);
 #endif
     if (!renderer->context) {
-        vioarr_utils_error("[vioarr_renderer_create] failed to create the nvg context");
+        vioarr_utils_error(VISTR("[vioarr_renderer_create] failed to create the nvg context"));
         free(renderer);
         return NULL;
     }

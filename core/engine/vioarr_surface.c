@@ -204,7 +204,7 @@ void vioarr_surface_destroy(vioarr_surface_t* surface)
 
 int vioarr_surface_add_child(vioarr_surface_t* parent, vioarr_surface_t* child, int x, int y)
 {
-    vioarr_utils_trace("[vioarr_surface_add_child]");
+    vioarr_utils_trace(VISTR("[vioarr_surface_add_child]"));
     if (!parent || !child) {
         return -1;
     }
@@ -285,12 +285,12 @@ void vioarr_surface_set_buffer(vioarr_surface_t* surface, vioarr_buffer_t* conte
     if (content) {
         vioarr_buffer_acquire(content);
         resourceId = vioarr_renderer_create_image(vioarr_screen_renderer(surface->screen), content);
-        vioarr_utils_trace("[vioarr_surface_set_buffer] initialized new content %i 0x%p", resourceId, content);
+        vioarr_utils_trace(VISTR("[vioarr_surface_set_buffer] initialized new content %i 0x%p"), resourceId, content);
     }
     
     vioarr_rwlock_w_lock(&surface->lock);
     if (PENDING_BACKBUFFER(surface).content) {
-        vioarr_utils_trace("[vioarr_surface_set_buffer] cleaning up previous %i 0x%p",
+        vioarr_utils_trace(VISTR("[vioarr_surface_set_buffer] cleaning up previous %i 0x%p"),
             PENDING_BACKBUFFER(surface).resource_id,
             PENDING_BACKBUFFER(surface).content);
         vioarr_renderer_destroy_image(vioarr_screen_renderer(surface->screen), PENDING_BACKBUFFER(surface).resource_id);
@@ -451,7 +451,7 @@ vioarr_surface_t* vioarr_surface_at(vioarr_surface_t* surface, int x, int y, int
 {
     vioarr_surface_t* surfaceAt = NULL;
     vioarr_region_t*  region;
-    vioarr_utils_trace("vioarr_surface_at(surface=%u, x=%i, y=%i)", vioarr_surface_id(surface), x, y);
+    vioarr_utils_trace(VISTR("vioarr_surface_at(surface=%u, x=%i, y=%i)"), vioarr_surface_id(surface), x, y);
     if (!surface) {
         return NULL;
     }
@@ -483,7 +483,7 @@ vioarr_surface_t* vioarr_surface_at(vioarr_surface_t* surface, int x, int y, int
     }
     vioarr_rwlock_r_unlock(&surface->lock);
 
-    vioarr_utils_trace("vioarr_surface_at returns=%u", vioarr_surface_id(surfaceAt));
+    vioarr_utils_trace(VISTR("vioarr_surface_at returns=%u"), vioarr_surface_id(surfaceAt));
     return surfaceAt;
 }
 
@@ -638,7 +638,7 @@ void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)
         return;
     }
 
-    //vioarr_utils_trace("[vioarr_surface_render] %u [%i, %i]", 
+    //vioarr_utils_trace(VISTR("[vioarr_surface_render] %u [%i, %i]"), 
     //    surface->id, vioarr_region_x(surface->dimensions),
     //    vioarr_region_y(surface->dimensions));
     vioarr_rwlock_r_lock(&surface->lock);
@@ -666,7 +666,7 @@ void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)
 #endif
 
     if (ACTIVE_BACKBUFFER(surface).content) {
-        //vioarr_utils_trace("[vioarr_surface_render] rendering content");
+        //vioarr_utils_trace(VISTR("[vioarr_surface_render] rendering content"));
         if (!vioarr_region_is_zero(ACTIVE_PROPERTIES(surface).drop_shadow)) {
             __render_drop_shadow(context, surface);
         }
@@ -689,12 +689,12 @@ void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)
 
 static void __update_surface(NVGcontext* context, vioarr_surface_t* surface)
 {
-    //vioarr_utils_trace("[__update_surface]");
+    //vioarr_utils_trace(VISTR("[__update_surface]"));
     __refresh_content(context, surface);
     if (atomic_exchange(&surface->frame_requested, 0)) {
         wm_surface_event_frame_single(vioarr_get_server_handle(), surface->client, surface->id);
     }
-    //vioarr_utils_trace("[__update_surface] is visible: %i", surface->visible);
+    //vioarr_utils_trace(VISTR("[__update_surface] is visible: %i"), surface->visible);
 }
 
 static void __refresh_content(NVGcontext* context, vioarr_surface_t* surface)
@@ -715,7 +715,7 @@ static void __refresh_content(NVGcontext* context, vioarr_surface_t* surface)
 
 static void __swap_properties(vioarr_surface_t* surface)
 {
-    //vioarr_utils_trace("[__swap_properties]");
+    //vioarr_utils_trace(VISTR("[__swap_properties]"));
 
     // handle basic properties
     ACTIVE_PROPERTIES(surface).border_width  = PENDING_PROPERTIES(surface).border_width;

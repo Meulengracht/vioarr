@@ -145,7 +145,7 @@ void vioarr_input_set_surface(vioarr_input_source_t* input, vioarr_surface_t* su
 
 void vioarr_input_request_resize(vioarr_input_source_t* input, vioarr_surface_t* surface, enum wm_surface_edge edge)
 {
-    vioarr_utils_trace("vioarr_input_request_resize()");
+    vioarr_utils_trace(VISTR("vioarr_input_request_resize()"));
     if (!input || !surface) {
         return;
     }
@@ -166,7 +166,7 @@ void vioarr_input_request_resize(vioarr_input_source_t* input, vioarr_surface_t*
 
 void vioarr_input_request_move(vioarr_input_source_t* input, vioarr_surface_t* surface)
 {
-    vioarr_utils_trace("vioarr_input_request_move()");
+    vioarr_utils_trace(VISTR("vioarr_input_request_move()"));
     if (!input || !surface) {
         return;
     }
@@ -246,7 +246,7 @@ static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, in
     vioarr_surface_t* surfaceAfterMove;
     int               sendUpdates;
     int               localY, localX;
-    vioarr_utils_trace("__normal_mode_motion()");
+    vioarr_utils_trace(VISTR("__normal_mode_motion()"));
 
     // ... we currently do not use z
     surfaceAfterMove = vioarr_manager_surface_at(source->state.pointer.x + clampedX, source->state.pointer.y + clampedY, &localX, &localY);
@@ -262,14 +262,14 @@ static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, in
     // send leave event if the current is not null and not surfaceAfterMove
     if (currentSurface != surfaceAfterMove) {
         if (currentSurface) {
-            vioarr_utils_trace("__normal_mode_motion sending leave event to %i:%u",
+            vioarr_utils_trace(VISTR("__normal_mode_motion sending leave event to %i:%u"),
                 vioarr_surface_client(currentSurface), vioarr_surface_id(currentSurface));
             wm_pointer_event_leave_single(vioarr_get_server_handle(),
                 vioarr_surface_client(currentSurface),
                 source->id,
                 vioarr_surface_id(currentSurface));
         }
-        vioarr_utils_trace("__normal_mode_motion next active surface %i:%u",
+        vioarr_utils_trace(VISTR("__normal_mode_motion next active surface %i:%u"),
             vioarr_surface_client(surfaceAfterMove), vioarr_surface_id(surfaceAfterMove));
 
         // If the new surface does not support input, then we clear operating surface
@@ -281,7 +281,7 @@ static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, in
         source->state.pointer.op_surface = surfaceAfterMove;
 
         // send enter event
-        vioarr_utils_trace("__normal_mode_motion sending enter event to %i:%u",
+        vioarr_utils_trace(VISTR("__normal_mode_motion sending enter event to %i:%u"),
             vioarr_surface_client(surfaceAfterMove), vioarr_surface_id(surfaceAfterMove));
         wm_pointer_event_enter_single(vioarr_get_server_handle(),
                 vioarr_surface_client(surfaceAfterMove),
@@ -293,7 +293,7 @@ static void __normal_mode_motion(vioarr_input_source_t* source, int clampedX, in
 
     // send move event
     if (sendUpdates) {
-        vioarr_utils_trace("__normal_mode_motion sending move event to %i:%u",
+        vioarr_utils_trace(VISTR("__normal_mode_motion sending move event to %i:%u"),
                 vioarr_surface_client(surfaceAfterMove), vioarr_surface_id(surfaceAfterMove));
         
         // send move event with surface local coordinates
@@ -309,7 +309,7 @@ static void __resize_mode_motion(vioarr_input_source_t* source, int clampedX, in
 {
     vioarr_surface_t* currentSurface = source->state.pointer.op_surface;
     vioarr_region_t*  region = vioarr_surface_region(currentSurface);
-    vioarr_utils_trace("__resize_mode_motion()");
+    vioarr_utils_trace(VISTR("__resize_mode_motion()"));
 
     if (!clampedX && !clampedY) {
         return;
@@ -330,7 +330,7 @@ static void __resize_mode_motion(vioarr_input_source_t* source, int clampedX, in
 static void __move_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY)
 {
     vioarr_surface_t* currentSurface = source->state.pointer.op_surface;
-    vioarr_utils_trace("__move_mode_motion()");
+    vioarr_utils_trace(VISTR("__move_mode_motion()"));
 
     if (!clampedX && !clampedY) {
         return;
@@ -347,7 +347,7 @@ static void __move_mode_motion(vioarr_input_source_t* source, int clampedX, int 
 static void __grabbed_mode_motion(vioarr_input_source_t* source, int clampedX, int clampedY)
 {
     vioarr_surface_t* currentSurface = source->state.pointer.op_surface;
-    vioarr_utils_trace("__grabbed_mode_motion()");
+    vioarr_utils_trace(VISTR("__grabbed_mode_motion()"));
 
     // grabbed mode is a bit simpler, the mouse is bound to a surface and should never move
     // so we skip any forms of events except for the move event that should just send the relative
@@ -366,7 +366,7 @@ void vioarr_input_axis_event(UUId_t deviceId, int x, int y)
     vioarr_input_source_t* source = list_find_value(&g_inputDevices, (void*)(uintptr_t)deviceId);
     int                    clampedX = x;
     int                    clampedY = -y; // y is down
-    vioarr_utils_trace("vioarr_input_axis_event(x=%i, y=%i)", x, y);
+    vioarr_utils_trace(VISTR("vioarr_input_axis_event(x=%i, y=%i)"), x, y);
     
     if (!source) {
         return;
@@ -394,7 +394,7 @@ void vioarr_input_axis_event(UUId_t deviceId, int x, int y)
 
 void vioarr_input_scroll_event(UUId_t deviceId, int horz, int vert)
 {
-    vioarr_utils_trace("vioarr_input_scroll_event(x=%i, y=%i)", horz, vert);
+    vioarr_utils_trace(VISTR("vioarr_input_scroll_event(x=%i, y=%i)"), horz, vert);
     
 }
 
@@ -403,7 +403,7 @@ static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, 
     vioarr_surface_t* clickedSurface = source->state.pointer.op_surface;
     int               localX, localY;
     int               sendClick = 1;
-    vioarr_utils_trace("__normal_mode_click()");
+    vioarr_utils_trace(VISTR("__normal_mode_click()"));
 
     // get the current surface, check against current active one
     if (!clickedSurface) {
@@ -421,7 +421,7 @@ static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, 
     vioarr_manager_focus_surface(clickedSurface);
 
     if (sendClick) {
-        vioarr_utils_trace("__normal_mode_click clicked on surface %i:%u",
+        vioarr_utils_trace(VISTR("__normal_mode_click clicked on surface %i:%u"),
             vioarr_surface_client(clickedSurface), vioarr_surface_id(clickedSurface));
         wm_pointer_event_click_single(vioarr_get_server_handle(),
             vioarr_surface_client(clickedSurface),
@@ -433,7 +433,7 @@ static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, 
 
 static void vioarr_input_pointer_click(vioarr_input_source_t* source, uint32_t button, uint8_t pressed)
 {
-    vioarr_utils_trace("vioarr_input_pointer_click()");
+    vioarr_utils_trace(VISTR("vioarr_input_pointer_click()"));
     if (source->state.pointer.mode == POINTER_MODE_NORMAL ||
         source->state.pointer.mode == POINTER_MODE_GRABBED) {
         __normal_mode_click(source, button, pressed);
@@ -447,11 +447,11 @@ static void vioarr_input_pointer_click(vioarr_input_source_t* source, uint32_t b
 
 void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modifiers, uint8_t pressed)
 {
-    vioarr_utils_trace("vioarr_input_button_event()");
+    vioarr_utils_trace(VISTR("vioarr_input_button_event()"));
     vioarr_input_source_t* source = list_find_value(&g_inputDevices, (void*)(uintptr_t)deviceId);
     if (!source) {
         // should probably handle this or something
-        vioarr_utils_error("vioarr_input_button_event no input device found with deviceId %u", deviceId);
+        vioarr_utils_error(VISTR("vioarr_input_button_event no input device found with deviceId %u"), deviceId);
         return;
     }
 
@@ -463,7 +463,7 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
         // keyboard
         vioarr_surface_t* currentSurface = vioarr_manager_front_surface();
         if (currentSurface) {
-            vioarr_utils_trace("vioarr_input_button_event sending key to %i:%u",
+            vioarr_utils_trace(VISTR("vioarr_input_button_event sending key to %i:%u"),
                 vioarr_surface_client(currentSurface), vioarr_surface_id(currentSurface));
             wm_keyboard_event_key_single(vioarr_get_server_handle(),
                 vioarr_surface_client(currentSurface),
@@ -473,7 +473,7 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
                 pressed);
         }
         else {
-            vioarr_utils_error("vioarr_input_button_event no surface for key event");
+            vioarr_utils_error(VISTR("vioarr_input_button_event no surface for key event"));
         }
     }
 }

@@ -47,7 +47,7 @@ int vioarr_engine_initialize(void)
     // initialize systems
     vioarr_manager_initialize();
     
-    vioarr_utils_trace("[vioarr] [initialize] creating renderer thread");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating renderer thread"));
     return thrd_create(&screen_thread, vioarr_engine_update, NULL);
 }
 
@@ -77,19 +77,19 @@ static int vioarr_engine_setup_screens(void)
     // glfwGetMonitors
     struct GLFWmonitor* primary;
     
-    vioarr_utils_trace("vioarr_engine_setup_screens quering screen information");
+    vioarr_utils_trace(VISTR("vioarr_engine_setup_screens quering screen information"));
     primary = glfwGetPrimaryMonitor();
     if (!primary) {
-        vioarr_utils_error("vioarr_engine_setup_screens failed to get primary monitor information");
+        vioarr_utils_error(VISTR("vioarr_engine_setup_screens failed to get primary monitor information"));
         return -1;
     }
     
-    vioarr_utils_trace("[vioarr] [initialize] creating primary screen object");
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating primary screen object"));
     // Create the primary screen object. In the future we will support
     // multiple displays and also listen for screen hotplugs
     primary_screen = vioarr_screen_create(primary);
     if (!primary_screen) {
-        vioarr_utils_error("[vioarr] [initialize] failed to create primary screen object");
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to create primary screen object"));
         return -1;
     }
     return 0;
@@ -102,7 +102,7 @@ static int vioarr_engine_update(void* context)
 
     // Initialise GLFW
     if (!glfwInit()) {
-        vioarr_utils_error("Failed to initialize GLFW\n");
+        vioarr_utils_error(VISTR("Failed to initialize GLFW\n"));
         return -1;
     }
 
@@ -114,14 +114,14 @@ static int vioarr_engine_update(void* context)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-    vioarr_utils_trace("vioarr_engine_update initializing screens");
+    vioarr_utils_trace(VISTR("vioarr_engine_update initializing screens"));
     status = vioarr_engine_setup_screens();
     if (status) {
-        vioarr_utils_error("vioarr_engine_update failed to initialize screens, code %i", status);
+        vioarr_utils_error(VISTR("vioarr_engine_update failed to initialize screens, code %i"), status);
         return status;
     }
     
-    vioarr_utils_trace("vioarr_engine_update started");
+    vioarr_utils_trace(VISTR("vioarr_engine_update started"));
     while (vioarr_screen_valid(primary_screen)) {
         glfwPollEvents();
         vioarr_screen_frame(primary_screen);

@@ -40,7 +40,7 @@ static int g_spawnIndex = 0;
 
 void wm_screen_get_properties_invocation(struct gracht_message* message, const uint32_t id)
 {
-    vioarr_utils_trace("[wm_screen_get_properties_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_screen_get_properties_callback] client %i"), message->client);
     vioarr_screen_t* screen = vioarr_objects_get_object(-1, id);
     vioarr_region_t* region;
     
@@ -58,28 +58,28 @@ void wm_screen_get_properties_invocation(struct gracht_message* message, const u
 
 void wm_screen_get_modes_invocation(struct gracht_message* message, const uint32_t id)
 {
-    vioarr_utils_trace("[wm_screen_get_modes_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_screen_get_modes_callback] client %i"), message->client);
     vioarr_screen_t* screen = vioarr_objects_get_object(-1, id);
     int              status;
     if (!screen) {
-        vioarr_utils_error("wm_screen_get_modes_callback: screen was not found");
+        vioarr_utils_error(VISTR("wm_screen_get_modes_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_screen: object does not exist");
         return;
     }
     
     status = vioarr_screen_publish_modes(screen, message->client);
     if (status) {
-        vioarr_utils_error("wm_screen_get_modes_callback: failed to publish modes");
+        vioarr_utils_error(VISTR("wm_screen_get_modes_callback: failed to publish modes"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, status, "wm_screen: failed to publish modes");
     }
 }
 
 void wm_screen_set_scale_invocation(struct gracht_message* message, const uint32_t id, const int scale)
 {
-    vioarr_utils_trace("[wm_screen_set_scale_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_screen_set_scale_callback] client %i"), message->client);
     vioarr_screen_t* screen = vioarr_objects_get_object(-1, id);
     if (!screen) {
-        vioarr_utils_error("wm_screen_set_scale_callback: screen was not found");
+        vioarr_utils_error(VISTR("wm_screen_set_scale_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_screen: object does not exist");
         return;
     }
@@ -89,10 +89,10 @@ void wm_screen_set_scale_invocation(struct gracht_message* message, const uint32
 
 void wm_screen_set_transform_invocation(struct gracht_message* message, const uint32_t id, const enum wm_transform transform)
 {
-    vioarr_utils_trace("[wm_screen_set_transform_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_screen_set_transform_callback] client %i"), message->client);
     vioarr_screen_t* screen = vioarr_objects_get_object(-1, id);
     if (!screen) {
-        vioarr_utils_error("wm_screen_set_transform_callback: screen was not found");
+        vioarr_utils_error(VISTR("wm_screen_set_transform_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_screen: object does not exist");
         return;
     }
@@ -102,12 +102,12 @@ void wm_screen_set_transform_invocation(struct gracht_message* message, const ui
 
 void wm_screen_create_surface_invocation(struct gracht_message* message, const uint32_t screenId, const uint32_t surfaceId, const int width, const int height)
 {
-    vioarr_utils_trace("[wm_screen_create_surface_callback] client %i", message->client);
+    vioarr_utils_trace(VISTR("[wm_screen_create_surface_callback] client %i"), message->client);
     vioarr_screen_t*   screen = vioarr_objects_get_object(-1, screenId);
     vioarr_surface_t*  surface;
     int                status;
     if (!screen) {
-        vioarr_utils_error("wm_screen_create_surface_callback: screen was not found");
+        vioarr_utils_error(VISTR("wm_screen_create_surface_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, screenId, ENOENT, "wm_screen: object does not exist");
         return;
     }
@@ -117,7 +117,7 @@ void wm_screen_create_surface_invocation(struct gracht_message* message, const u
         g_spawnCoordinateY[g_spawnIndex % SPAWN_COORDINATES_COUNT], 
         width, height, &surface);
     if (status) {
-        vioarr_utils_error("wm_screen_create_surface_callback: failed to create surface");
+        vioarr_utils_error(VISTR("wm_screen_create_surface_callback: failed to create surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, screenId, status, "wm_screen: failed to create surface");
         return;
     }

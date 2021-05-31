@@ -71,14 +71,14 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     // get the size of the monitor
     glfwGetMonitorWorkarea(video, &x, &y, &width, &height);
 
-    vioarr_utils_trace("[vioarr] [screen] [create] creating os_mesa context, version 3.3");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] creating os_mesa context, version 3.3"));
     screen->context = glfwCreateWindow(width, height, "Vioarr Window Manager", video, NULL);
     if (!screen->context) {
-        vioarr_utils_error("Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version.\n");
+        vioarr_utils_error(VISTR("Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version.\n"));
         goto error;
     }
     
-    vioarr_utils_trace("[vioarr] [screen] [create] allocating screen resources");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] allocating screen resources"));
     screen->dimensions = vioarr_region_create();
     if (!screen->dimensions) {
         goto error;
@@ -99,14 +99,14 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     // Set the newly created context as current for now. We must have one pretty quickly
     glfwMakeContextCurrent(screen->context);
     
-    vioarr_utils_trace("[vioarr] [screen] [create] loading gl extensions");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] loading gl extensions"));
     status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress, 0, 0);
     if (!status) {
-        vioarr_utils_error("[vioarr] [initialize] failed to load gl extensions, code %i", status);
+        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to load gl extensions, code %i"), status);
         goto error;
     }
     
-    vioarr_utils_trace("[vioarr] [screen] [create] initializing renderer");
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] initializing renderer"));
     screen->renderer = vioarr_renderer_create(screen);
     if (!screen->renderer) {
         goto error;
@@ -152,7 +152,7 @@ void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_transform tran
         return;
     }
 
-    vioarr_utils_trace("[vioarr_screen_set_transform] FIXME: STUB FUNCTION");
+    vioarr_utils_trace(VISTR("[vioarr_screen_set_transform] FIXME: STUB FUNCTION"));
     (void)transform;
 }
 

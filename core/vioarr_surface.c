@@ -39,12 +39,12 @@ void wm_surface_get_formats_invocation(struct gracht_message* message, const uin
     ENTRY("wm_surface_get_formats_callback(client=%i, surface=%u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_get_formats_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_get_formats_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
     
-    vioarr_utils_error("[wm_surface_get_formats_callback] FIXME: STUB FUNCTION");
+    vioarr_utils_error(VISTR("[wm_surface_get_formats_callback] FIXME: STUB FUNCTION"));
 
 exit:
     EXIT("wm_surface_get_formats_callback");
@@ -56,7 +56,7 @@ void wm_surface_set_buffer_invocation(struct gracht_message* message, const uint
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, surfaceId);
     vioarr_buffer_t*  buffer  = vioarr_objects_get_object(message->client, bufferId);
     if (!surface) {
-        vioarr_utils_error("wm_surface_set_buffer_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_set_buffer_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, surfaceId, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -72,7 +72,7 @@ void wm_surface_set_input_region_invocation(struct gracht_message* message, cons
     ENTRY("wm_surface_set_input_region_callback(client=%i, surface=%u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_set_input_region_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_set_input_region_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -88,7 +88,7 @@ void wm_surface_request_fullscreen_mode_invocation(struct gracht_message* messag
     ENTRY("wm_surface_request_fullscreen_mode(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_request_fullscreen_mode: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_request_fullscreen_mode: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -120,7 +120,7 @@ void wm_surface_request_level_invocation(struct gracht_message* message, const u
     ENTRY("wm_surface_request_level(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_request_level failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_request_level failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -136,7 +136,7 @@ void wm_surface_request_frame_invocation(struct gracht_message* message, const u
     ENTRY("wm_surface_request_frame_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_request_frame_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_request_frame_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -152,7 +152,7 @@ void wm_surface_invalidate_invocation(struct gracht_message* message, const uint
     ENTRY("wm_surface_invalidate_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_invalidate_callback failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_invalidate_callback failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -168,7 +168,7 @@ void wm_surface_set_transparency_invocation(struct gracht_message* message, cons
     ENTRY("wm_surface_set_transparency_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_set_transparency_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_set_transparency_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -184,7 +184,7 @@ void wm_surface_set_drop_shadow_invocation(struct gracht_message* message, const
     ENTRY("wm_surface_set_drop_shadow_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_set_drop_shadow_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_set_drop_shadow_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -202,13 +202,13 @@ void wm_surface_add_subsurface_invocation(struct gracht_message* message, const 
     vioarr_surface_t* child_surface  = vioarr_objects_get_object(message->client, childId);
     int               status;
     if (!parent_surface) {
-        vioarr_utils_error("wm_surface_add_subsurface_callback: failed to find parent surface");
+        vioarr_utils_error(VISTR("wm_surface_add_subsurface_callback: failed to find parent surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, parentId, ENOENT, "wm_surface: parent object does not exist");
         goto exit;
     }
     
     if (!child_surface) {
-        vioarr_utils_error("wm_surface_add_subsurface_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_add_subsurface_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, childId, ENOENT, "wm_surface: child object does not exist");
         goto exit;
     }
@@ -230,7 +230,7 @@ void wm_surface_resize_subsurface_invocation(struct gracht_message* message, con
     ENTRY("wm_surface_resize_subsurface_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_resize_subsurface_callback failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_resize_subsurface_callback failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -246,7 +246,7 @@ void wm_surface_move_subsurface_invocation(struct gracht_message* message, const
     ENTRY("wm_surface_move_subsurface_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_move_subsurface_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_move_subsurface_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -262,7 +262,7 @@ void wm_surface_commit_invocation(struct gracht_message* message, const uint32_t
     ENTRY("wm_surface_commit_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_commit_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_commit_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
@@ -280,12 +280,12 @@ void wm_surface_resize_invocation(struct gracht_message* message, const uint32_t
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
     if (!surface) {
-        vioarr_utils_error("wm_surface_resize_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_resize_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
     if (!pointer) {
-        vioarr_utils_error("wm_surface_resize_callback: failed to find pointer");
+        vioarr_utils_error(VISTR("wm_surface_resize_callback: failed to find pointer"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_pointer: object does not exist");
         goto exit;
     }
@@ -303,12 +303,12 @@ void wm_surface_move_invocation(struct gracht_message* message, const uint32_t i
     vioarr_input_source_t* pointer = vioarr_objects_get_object(message->client, pointerId);
     
     if (!surface) {
-        vioarr_utils_error("wm_surface_move_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_move_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
     if (!pointer) {
-        vioarr_utils_error("wm_surface_move_callback: failed to find pointer");
+        vioarr_utils_error(VISTR("wm_surface_move_callback: failed to find pointer"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_pointer: object does not exist");
         goto exit;
     }
@@ -324,7 +324,7 @@ void wm_surface_destroy_invocation(struct gracht_message* message, const uint32_
     ENTRY("wm_surface_destroy_callback(client %i, surface %u)", message->client, id);
     vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
     if (!surface) {
-        vioarr_utils_error("wm_surface_destroy_callback: failed to find surface");
+        vioarr_utils_error(VISTR("wm_surface_destroy_callback: failed to find surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }

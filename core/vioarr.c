@@ -141,7 +141,7 @@ int server_initialize(int* eventIodOut)
     // Create the set descriptor we are listening to
     gracht_server_configuration_set_aio_descriptor(&config, ioset(0));
     if (config.set_descriptor < 0) {
-        vioarr_utils_error("error creating event descriptor %i", errno);
+        vioarr_utils_error(VISTR("error creating event descriptor %i"), errno);
         return -1;
     }
 
@@ -150,14 +150,14 @@ int server_initialize(int* eventIodOut)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        vioarr_utils_error("error initializing server library %i", errno);
+        vioarr_utils_error(VISTR("error initializing server library %i"), errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        vioarr_utils_error("error initializing server link %i", errno);
+        vioarr_utils_error(VISTR("error initializing server link %i"), errno);
         close(config.set_descriptor);
     }
 
@@ -185,7 +185,7 @@ int client_initialize(void)
 void server_get_hid_devices(void)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(GetDeviceService());
-    vioarr_utils_trace("[server_get_hid_devices]");
+    vioarr_utils_trace(VISTR("[server_get_hid_devices]"));
 
     // subscribe to events from the device manager
     svc_device_subscribe(g_valiClient, &msg.base);
@@ -197,7 +197,7 @@ void server_get_hid_devices(void)
 void svc_device_event_protocol_device_callback(struct svc_device_protocol_device_event* input)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(input->driver_id);
-    vioarr_utils_trace("[svc_device_event_protocol_device_callback] %u", input->device_id);
+    vioarr_utils_trace(VISTR("[svc_device_event_protocol_device_callback] %u"), input->device_id);
 
     // subscribe to the driver
     ctt_input_subscribe(g_valiClient, &msg.base);
@@ -306,14 +306,14 @@ int server_initialize(int* eventIodOut)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        vioarr_utils_error("error initializing server library %i", errno);
+        vioarr_utils_error(VISTR("error initializing server library %i"), errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        vioarr_utils_error("error initializing server link %i", errno);
+        vioarr_utils_error(VISTR("error initializing server link %i"), errno);
         close(config.set_descriptor);
     }
 
@@ -366,7 +366,7 @@ int server_initialize(void)
     // Create the set descriptor we are listening to
     gracht_server_configuration_set_aio_descriptor(&config, epoll_create1(0));
     if (config.set_descriptor < 0) {
-        vioarr_utils_error("error creating event descriptor %i\n", errno);
+        vioarr_utils_error(VISTR("error creating event descriptor %i\n"), errno);
         return -1;
     }
 
@@ -375,14 +375,14 @@ int server_initialize(void)
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        vioarr_utils_error("error initializing server library %i\n", errno);
+        vioarr_utils_error(VISTR("error initializing server library %i\n"), errno);
         close(config.set_descriptor);
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        vioarr_utils_error("error initializing server link %i\n", errno);
+        vioarr_utils_error(VISTR("error initializing server link %i\n"), errno);
         close(config.set_descriptor);
     }
     return status;

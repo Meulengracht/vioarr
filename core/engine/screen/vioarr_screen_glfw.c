@@ -417,7 +417,6 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 {
     (void)window;
     (void)scancode;
-    vioarr_utils_trace(VISTR("glfw_key_callback key=%u"), key);
     vioarr_input_button_event(2, 
         asgaardKeyCodes[key], 
         convertModifiersToAsgaard(action, mods), 

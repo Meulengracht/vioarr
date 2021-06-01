@@ -21,6 +21,7 @@
  *   using freetype as the font renderer.
  */
 
+#include <exception>
 #include <application.hpp>
 #include <events/key_event.hpp>
 #include <sys/epoll.h>
@@ -112,7 +113,7 @@ void ResolverUnix::WaitForProcess()
     int      exitCode = 0;
     uint64_t value;
 
-    wait(&exitCode);
+    waitpid(m_application, &exitCode, 0);
 
     value = exitCode;
     write(m_processEvent, &value, sizeof(uint64_t));
@@ -133,25 +134,33 @@ bool ResolverUnix::ExecuteProgram(const std::string& Program, const std::vector<
     }
 
     if (m_processEvent == -1) {
-        m_processEvent = eventfd(0, 0);
+        m_processEvent = eventfd(0, EFD_CLOEXEC | EFD_NONBLOCK);
         if (m_processEvent < 0) {
-            // throw
+            throw std::logic_error("m_processEvent failed to be created");
         }
 
-        Asgaard::APP.AddEventDescriptor(m_processEvent, EPOLLIN, shared_from_this());
+        Asgaard::APP.AddEventDescriptor(m_processEvent, 
+            EPOLLERR | EPOLLIN | EPOLLET, 
+            shared_from_this()
+        );
     }
     
     // God i hate forking
-    auto rrStdin  = m_stdinFds[PIPE_READ];
-    auto rrStdout = m_stdoutFds[PIPE_WRITE];
-    auto rrStderr = m_stderrFds[PIPE_WRITE];
     auto childPid = fork();
     if (!childPid) {
-        if (dup2(rrStdin, STDIN_FILENO)   == -1 ||
-            dup2(rrStdout, STDOUT_FILENO) == -1 ||
-            dup2(rrStderr, STDERR_FILENO) == -1) {
+        if (dup2(m_stdinFds[PIPE_READ], STDIN_FILENO)   == -1 ||
+            dup2(m_stdoutFds[PIPE_WRITE], STDOUT_FILENO) == -1 ||
+            dup2(m_stderrFds[PIPE_WRITE], STDERR_FILENO) == -1) {
             exit(errno);
         }
+        
+        // don't need those anymore
+        close(m_stdinFds[PIPE_READ]);
+        close(m_stdinFds[PIPE_WRITE]);
+        close(m_stdoutFds[PIPE_READ]);
+        close(m_stdoutFds[PIPE_WRITE]);
+        close(m_stderrFds[PIPE_READ]);
+        close(m_stderrFds[PIPE_WRITE]);
 
         auto resultCode = execl(Program.c_str(), line.c_str(), NULL);
         exit(resultCode);
@@ -165,8 +174,6 @@ bool ResolverUnix::ExecuteProgram(const std::string& Program, const std::vector<
     }
     return false;
 }
-
-#include <iostream>
 
 std::vector<std::string> ResolverUnix::GetDirectoryContents(const std::string& Path)
 {

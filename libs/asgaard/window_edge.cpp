@@ -115,7 +115,7 @@ namespace Asgaard {
 
     void WindowEdge::OnMouseMove(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
     {
-        if (m_lmbHold && !m_dragInOperation) {
+        if (m_lmbHold) {
             Notify(static_cast<int>(Notification::INITIATE_DRAG), 
                 reinterpret_cast<void*>(static_cast<intptr_t>(pointer->Id())));
             m_lmbHold = false;

@@ -337,7 +337,7 @@ namespace Asgaard {
         }
 
         // Prepare the ioset to listen to multiple events
-        m_ioset = epoll_create1(0);
+        m_ioset = epoll_create1(EPOLL_CLOEXEC);
         if (m_ioset <= 0) {
             throw ApplicationException("failed to initialize the ioset descriptor", errno);
         }
@@ -357,7 +357,7 @@ namespace Asgaard {
             (void)gracht_client_wait_message(m_client, NULL, GRACHT_MESSAGE_BLOCK);
         }
     }
-    
+
     int Application::Execute()
     {
         struct epoll_event events[8];

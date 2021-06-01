@@ -131,7 +131,7 @@ private:
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
 #ifdef MOLLENOS
-        ERROR("Heimdall::OnKeyEvent(keycode=%u", keyEvent.KeyCode());
+        ERROR("Heimdall::OnKeyEvent(keycode=%u)", keyEvent.KeyCode());
 #endif
 
         if (keyEvent.KeyCode() == VKC_F1 && !keyEvent.Pressed()) {

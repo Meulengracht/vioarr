@@ -304,6 +304,7 @@ void vioarr_screen_frame(vioarr_screen_t* screen)
 {
     ENTRY(VISTR("vioarr_screen_frame()"));
     vioarr_renderer_render(screen->renderer);
+    glFinish();
 
 #ifndef VIOARR_TRACEMODE
 #ifdef  VIOARR_REVERSE_FB_BLIT

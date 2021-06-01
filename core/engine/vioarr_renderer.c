@@ -55,24 +55,13 @@ typedef struct vioarr_renderer {
     int              rotation;
     atomic_uint      frame_count;
     float            pixel_ratio;
+    list_t           cleanup_list;
 } vioarr_renderer_t;
 
-#ifdef VIOARR_BACKEND_NANOVG
-static void opengl_initialize(int width, int height)
-{
-    (void)width;
-    (void)height;
-    
-    // 0x28575A
-    glClearColor(0.15f, 0.34f, 0.35f, 1.0f);
-}
-#endif
-
-vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
+vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen, int width, int height)
 {
     vioarr_renderer_t* renderer;
-    int                width  = vioarr_region_width(vioarr_screen_region(screen));
-    int                height = vioarr_region_height(vioarr_screen_region(screen));
+    int                screenWidth  = vioarr_region_width(vioarr_screen_region(screen));
     
     renderer = (vioarr_renderer_t*)malloc(sizeof(vioarr_renderer_t));
     if (!renderer) {
@@ -80,9 +69,6 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
     }
 
 #ifdef VIOARR_BACKEND_NANOVG
-    vioarr_utils_trace(VISTR("[vioarr_renderer_create] initializing openGL"));
-    opengl_initialize(width, height);
-
     vioarr_utils_trace(VISTR("[vioarr_renderer_create] creating nvg context"));
     mtx_init(&renderer->context_sync, mtx_plain);
 #ifdef __VIOARR_CONFIG_RENDERER_MSAA
@@ -100,10 +86,11 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen)
     renderer->screen      = screen;
     renderer->width       = width;
     renderer->height      = height;
-    renderer->pixel_ratio = (float)width / (float)height;
+    renderer->pixel_ratio = (float)width / (float)screenWidth;
     renderer->scale       = 1;
     renderer->rotation    = 0;
     renderer->frame_count = ATOMIC_VAR_INIT(0);
+    list_construct(&renderer->cleanup_list);
     
     return renderer;
 }
@@ -175,37 +162,21 @@ int get_nvg_flags(vioarr_buffer_t* buffer)
 }
 #endif
 
-int vioarr_renderer_create_image(vioarr_renderer_t* renderer, vioarr_buffer_t* buffer)
-{
-    int resourceId = -1;
-
-    if (!renderer) {
-        return -1;
-    }
-
-    if (!vioarr_buffer_data(buffer)) {
-        return -1;
-    }
-
-#ifdef VIOARR_BACKEND_NANOVG
-    mtx_lock(&renderer->context_sync);
-    resourceId = nvgCreateImageRGBA(renderer->context,
-            vioarr_buffer_width(buffer), vioarr_buffer_height(buffer),
-            get_nvg_flags(buffer), (const uint8_t*)vioarr_buffer_data(buffer));
-    mtx_unlock(&renderer->context_sync);
-#endif
-    return resourceId;
-}
-
 void vioarr_renderer_destroy_image(vioarr_renderer_t* renderer, int resourceId)
 {
+    element_t* item;
+
     if (!renderer) {
         return;
     }
 
+    item = malloc(sizeof(element_t));
+    item->key = renderer->context;
+    item->value = (void*)(int64_t)resourceId;
+
 #ifdef VIOARR_BACKEND_NANOVG
     mtx_lock(&renderer->context_sync);
-    nvgDeleteImage(renderer->context, resourceId);
+    list_append(&renderer->cleanup_list, item);
     mtx_unlock(&renderer->context_sync);
 #endif
 }
@@ -227,6 +198,13 @@ void vioarr_renderer_wait_frame(vioarr_renderer_t* renderer)
     }
 }
 
+static void cleanup_surface(element_t* item, void* context)
+{
+    (void)context;
+    nvgDeleteImage(item->key, (int)(int64_t)item->value);
+    free(item);
+}
+
 void vioarr_renderer_render(vioarr_renderer_t* renderer)
 {
     element_t*       i;
@@ -235,16 +213,25 @@ void vioarr_renderer_render(vioarr_renderer_t* renderer)
     int              level;
     
 #ifdef VIOARR_BACKEND_NANOVG
+    glViewport(0, 0, renderer->width, renderer->height);
+    glClearColor(0.15f, 0.34f, 0.35f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
     mtx_lock(&renderer->context_sync);
-    nvgBeginFrame(renderer->context, renderer->width, renderer->height, renderer->pixel_ratio);
+    nvgBeginFrame(renderer->context, 
+        vioarr_region_width(drawRegion), 
+        vioarr_region_height(drawRegion), 
+        renderer->pixel_ratio
+    );
 #endif
 
 #ifdef VIOARR_BACKEND_BLEND2D
     BLContextCore context;
     blContextInitAs(&context, img, NULL);
 #endif
+
+    // cleanup all resources queued before starting
+    list_clear(&renderer->cleanup_list, cleanup_surface, NULL);
 
     vioarr_manager_render_start(&surfaces);
     for (level = 0; level < SURFACE_LEVELS; level++) {
@@ -260,8 +247,6 @@ void vioarr_renderer_render(vioarr_renderer_t* renderer)
 #ifdef VIOARR_BACKEND_NANOVG
     nvgEndFrame(renderer->context);
     mtx_unlock(&renderer->context_sync);
-
-    glFinish();
 #endif
     atomic_fetch_add(&renderer->frame_count, 1);
 }

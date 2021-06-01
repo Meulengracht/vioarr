@@ -161,12 +161,13 @@ vioarr_surface_t* vioarr_manager_front_surface(void)
     vioarr_rwlock_r_lock(&g_manager.lock);
     front = g_manager.focused;
     if (!front) {
-        for (level = SURFACE_LEVELS - 2; level >= 0; level--) {
+        for (level = SURFACE_LEVELS - 2; level >= 0 && !front; level--) {
             // back element is front
-            element_t* element = list_back(&g_manager.surfaces[level]);
-            if (element) {
-                front = element->value;
-                break;
+            foreach_reverse(i, &g_manager.surfaces[level]) {
+                if (vioarr_surface_visible(i->value)) {
+                    front = i->value;
+                    break;
+                }
             }
         }
     }

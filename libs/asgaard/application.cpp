@@ -490,8 +490,6 @@ namespace Asgaard {
     }
 }
 
-#include <iostream>
-
 // Protocol callbacks
 extern "C"
 {
@@ -662,7 +660,7 @@ extern "C"
             return;
         }
         
-        object->ExternalEvent(Asgaard::PointerEnterEvent(pointerId, surfaceX, surfaceY));
+        object->ExternalEvent(Asgaard::PointerMoveEvent(pointerId, surfaceX, surfaceY));
     }
 
     void wm_pointer_event_click_invocation(gracht_client_t* client, const uint32_t pointerId, const uint32_t surfaceId, const enum wm_pointer_button button, const uint8_t pressed)
@@ -695,8 +693,6 @@ extern "C"
             return;
         }
 
-        std::cout << "wm_keyboard_event_key_invocation" << std::endl;
-        
         object->ExternalEvent(Asgaard::KeyEvent(keycode, modifiers, static_cast<bool>(pressed)));
     }
 }

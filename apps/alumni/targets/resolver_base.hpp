@@ -47,6 +47,7 @@ protected:
     virtual bool ChangeDirectory(const std::vector<std::string>&) = 0;
     bool Help(const std::vector<std::string>&);
     bool Exit(const std::vector<std::string>&);
+    void DirectoryPrinter(const std::vector<std::string>&);
 
 protected:
     std::shared_ptr<Terminal> m_terminal;

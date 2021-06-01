@@ -61,6 +61,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
 {
     vioarr_screen_t*   screen;
     int                status;
+    int                windowWidth, windowHeight, fbWidth, fbHeight;
     const GLFWvidmode* currentMode;
 
     screen = malloc(sizeof(vioarr_screen_t));
@@ -75,6 +76,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     glfwWindowHint(GLFW_GREEN_BITS, currentMode->greenBits);
     glfwWindowHint(GLFW_BLUE_BITS, currentMode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, currentMode->refreshRate);
+    glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
     vioarr_utils_trace(VISTR("[vioarr] [screen] [create] creating gl context, version 3.3"));
     screen->context = glfwCreateWindow(currentMode->width, currentMode->height, "Vioarr Window Manager", video, NULL);
@@ -89,8 +91,10 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
         goto error;
     }
     
-    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] screen [%i, %i]"), currentMode->width, currentMode->height);
-    vioarr_region_add(screen->dimensions, 0, 0, currentMode->width, currentMode->height);
+    glfwGetWindowSize(screen->context, &windowWidth, &windowHeight);
+    glfwGetFramebufferSize(screen->context, &fbWidth, &fbHeight);
+    vioarr_utils_trace(VISTR("[vioarr] [screen] [create] screen [%i, %i]"), windowWidth, windowHeight);
+    vioarr_region_add(screen->dimensions, 0, 0, windowWidth, windowHeight);
     
     glfwSetWindowUserPointer(screen->context, screen);
     glfwSetCursorPosCallback(screen->context, glfw_mouse_callback);
@@ -112,7 +116,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     }
     
     vioarr_utils_trace(VISTR("[vioarr] [screen] [create] initializing renderer"));
-    screen->renderer = vioarr_renderer_create(screen);
+    screen->renderer = vioarr_renderer_create(screen, fbWidth, fbHeight);
     if (!screen->renderer) {
         goto error;
     }
@@ -279,12 +283,21 @@ static void glfw_scroll_callback(GLFWwindow* window, double xoffset, double yoff
 #define VKC_KEYS_INVALID_8  VKC_KEYS_INVALID_4, VKC_KEYS_INVALID_4
 #define VKC_KEYS_INVALID_16 VKC_KEYS_INVALID_8, VKC_KEYS_INVALID_8
 #define VKC_KEYS_INVALID_32 VKC_KEYS_INVALID_16, VKC_KEYS_INVALID_16
-static uint8_t asgaardKeyCodes[GLFW_KEY_LAST] = {
+static uint8_t asgaardKeyCodes[GLFW_KEY_LAST + 1] = {
     // the first 32 keys are invalid
     VKC_KEYS_INVALID_32,
 
-    // Then some non-valid from 32-57
-    VKC_SPACE, VKC_APOSTROPHE, VKC_COMMA, VKC_SUBTRACT, VKC_DOT, VKC_SLASH,
+    VKC_SPACE, 
+
+    // invalid from 33-38
+    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+    
+    VKC_APOSTROPHE, 
+
+    // invalid from 40-43
+    VKC_KEYS_INVALID_4,
+    
+    VKC_COMMA, VKC_SUBTRACT, VKC_DOT, VKC_SLASH,
     VKC_0, VKC_1, VKC_2, VKC_3, VKC_4, VKC_5, VKC_6, VKC_7, VKC_8, VKC_9,
 
     // 58, 60 is invalid
@@ -292,23 +305,23 @@ static uint8_t asgaardKeyCodes[GLFW_KEY_LAST] = {
     VKC_SEMICOLON,
     VKC_INVALID,
     VKC_EQUAL,
-    VKC_KEYS_INVALID_4,
+    VKC_INVALID, VKC_INVALID, VKC_INVALID, // 3 invalid
     VKC_A, VKC_B, VKC_C, VKC_D, VKC_E, VKC_F, VKC_G, VKC_H, VKC_I, VKC_J, VKC_K, 
     VKC_L, VKC_M, VKC_N, VKC_O, VKC_P, VKC_Q, VKC_R, VKC_S, VKC_T, VKC_U, VKC_V, 
     VKC_W, VKC_X, VKC_Y, VKC_Z,
     VKC_LBRACKET,
     VKC_BACKSLASH,
     VKC_RBRACKET,
-    VKC_INVALID, VKC_INVALID, VKC_INVALID,
+    VKC_INVALID, VKC_INVALID,
     VKC_TICK,
     
-    // invalid from 97-160, 65 keys
-    VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_32, VKC_INVALID,
+    // invalid from 97-160, 63 keys
+    VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_16, VKC_KEYS_INVALID_8, VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID, VKC_INVALID,
 
     // Non-Us codes 2
     VKC_INVALID, VKC_INVALID,
 
-    // 162-256 invalid, 94 keys
+    // 163-255 invalid, 92 keys
     VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_32, VKC_KEYS_INVALID_16, VKC_KEYS_INVALID_8,
     VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
 
@@ -327,8 +340,8 @@ static uint8_t asgaardKeyCodes[GLFW_KEY_LAST] = {
     VKC_HOME,
     VKC_END,
 
-    // 11 invalids
-    VKC_KEYS_INVALID_8, VKC_INVALID, VKC_INVALID, VKC_INVALID,
+    // 10 invalids
+    VKC_KEYS_INVALID_8, VKC_INVALID, VKC_INVALID,
 
     VKC_CAPSLOCK,
     VKC_SCROLL,
@@ -336,24 +349,24 @@ static uint8_t asgaardKeyCodes[GLFW_KEY_LAST] = {
     VKC_PRINT,
     VKC_PAUSE,
 
-    // 6 invalids
-    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+    // 5 invalids
+    VKC_KEYS_INVALID_4, VKC_INVALID,
 
     VKC_F1, VKC_F2, VKC_F3, VKC_F4, VKC_F5, VKC_F6, VKC_F7, 
     VKC_F8, VKC_F9, VKC_F10, VKC_F11, VKC_F12, VKC_F13, VKC_F14, 
     VKC_F15, VKC_F16, VKC_F17, VKC_F18, VKC_F19, VKC_F20, 
     VKC_F21, VKC_F22, VKC_F23, VKC_F24,
 
-    // 6 invalids
-    VKC_KEYS_INVALID_4, VKC_INVALID, VKC_INVALID,
+    // 5 invalids
+    VKC_KEYS_INVALID_4, VKC_INVALID,
 
     // keypad keys
     VKC_0, VKC_1, VKC_2, VKC_3, VKC_4, VKC_5, VKC_6, VKC_7, VKC_8, VKC_9,
     VKC_DECIMAL, VKC_DIVIDE, VKC_MULTIPLY, VKC_SUBTRACT, VKC_ADD, VKC_ENTER,
     VKC_EQUAL,
 
-    // 4 invalid keys
-    VKC_KEYS_INVALID_4,
+    // 3 invalid keys
+    VKC_INVALID, VKC_INVALID, VKC_INVALID,
 
     VKC_LSHIFT,
     VKC_LCONTROL,
@@ -404,6 +417,7 @@ static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int act
 {
     (void)window;
     (void)scancode;
+    vioarr_utils_trace(VISTR("glfw_key_callback key=%u"), key);
     vioarr_input_button_event(2, 
         asgaardKeyCodes[key], 
         convertModifiersToAsgaard(action, mods), 

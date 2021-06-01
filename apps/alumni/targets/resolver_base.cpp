@@ -1,5 +1,4 @@
-/* MollenOS
- *
+/**
  * Copyright 2018, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
@@ -63,4 +62,46 @@ bool ResolverBase::Exit(const std::vector<std::string>&)
 {
     exit(EXIT_SUCCESS);
     return true;
+}
+
+void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEntries)
+{
+    auto longestEntry = 0U;
+    auto entireLength = 0U;
+    for (const auto& entry : directoryEntries) {
+        if (entry.size() > longestEntry) {
+            longestEntry = entry.size();
+        }
+        entireLength += entry.size();
+    }
+
+    // account for spaces
+    entireLength += std::min(1UL, directoryEntries.size()) - 1;
+
+    auto printEndOfLine = [&] (bool condition) {
+        if (condition) {
+            m_terminal->Print("\n");
+        }
+        else {
+            m_terminal->Print(" ");
+        }
+    };
+
+    // account for a space after each entry
+    if (m_terminal->GetNumberOfCellsPerLine() >= static_cast<int>(entireLength)) {
+        for (auto i = 0U; i < directoryEntries.size(); i++) {
+            m_terminal->Print("%s", directoryEntries[i].c_str());
+            printEndOfLine(i == directoryEntries.size() - 1);
+        }
+    }
+    else {
+        auto entriesPerLine = m_terminal->GetNumberOfCellsPerLine() / (longestEntry + 1);
+        for (auto i = 0U; i < directoryEntries.size(); i++) {
+            m_terminal->Print("%-*s", longestEntry, directoryEntries[i].c_str());
+            printEndOfLine(
+                (((i + 1) % entriesPerLine) == 0) || 
+                (i == (directoryEntries.size() - 1))
+            );
+        }
+    }
 }

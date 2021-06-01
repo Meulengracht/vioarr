@@ -123,8 +123,8 @@ static int vioarr_engine_update(void* context)
     
     vioarr_utils_trace(VISTR("vioarr_engine_update started"));
     while (vioarr_screen_valid(primary_screen)) {
-        glfwPollEvents();
         vioarr_screen_frame(primary_screen);
+        glfwPollEvents();
     }
     return 0;
 }

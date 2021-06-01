@@ -348,7 +348,6 @@ void vioarr_surface_set_level(vioarr_surface_t* surface, int level)
         return;
     }
 
-
     vioarr_rwlock_w_lock(&surface->lock);
     surface->level = level;
     vioarr_rwlock_w_unlock(&surface->lock);
@@ -613,6 +612,19 @@ int vioarr_surface_level(vioarr_surface_t* surface)
         return -1;
     }
     return surface->level;
+}
+
+int vioarr_surface_visible(vioarr_surface_t* surface)
+{
+    int visible;
+    if (!surface) {
+        return 0;
+    }
+
+    vioarr_rwlock_r_lock(&surface->lock);
+    visible = surface->visible;
+    vioarr_rwlock_r_unlock(&surface->lock);
+    return visible;
 }
 
 void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)

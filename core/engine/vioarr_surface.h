@@ -61,6 +61,7 @@ vioarr_screen_t*  vioarr_surface_screen(vioarr_surface_t*);
 vioarr_region_t*  vioarr_surface_region(vioarr_surface_t*);
 int               vioarr_surface_maximized(vioarr_surface_t*);
 int               vioarr_surface_level(vioarr_surface_t*);
+int               vioarr_surface_visible(vioarr_surface_t*);
 
 int  vioarr_surface_add_child(vioarr_surface_t*, vioarr_surface_t*, int, int);
 void vioarr_surface_set_position(vioarr_surface_t*, int, int);

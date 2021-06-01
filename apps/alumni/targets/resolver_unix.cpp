@@ -48,7 +48,7 @@ ResolverUnix::ResolverUnix(const int* stdoutFds, const int* stderrFds, const int
     : ResolverBase()
     , m_profile("philip")
     , m_currentDirectory("n/a")
-    , m_application(0)
+    , m_application(-1)
     , m_stdoutFds{stdoutFds[0], stdoutFds[1]}
     , m_stdinFds{stdinFds[0], stdinFds[1]}
     , m_stderrFds{stderrFds[0], stderrFds[1]}
@@ -79,7 +79,7 @@ void ResolverUnix::UpdateWorkingDirectory()
 
 bool ResolverUnix::HandleKeyCode(const Asgaard::KeyEvent& key)
 {
-    if (m_application >= 0) {
+    if (m_application > 0) {
         if (key.KeyCode() == VKC_C && !key.Pressed() && key.LeftControl()) {
             // send signal to terminate
             kill(m_application, SIGKILL);
@@ -97,7 +97,7 @@ bool ResolverUnix::HandleKeyCode(const Asgaard::KeyEvent& key)
 void ResolverUnix::PrintCommandHeader()
 {
     // Dont print the command header if an application is running
-    if (m_application == 0) {
+    if (m_application <= 0) {
         m_terminal->Print("\033[34m%s@%s~\033[39m ", m_profile.c_str(), m_currentDirectory.c_str());
     }
 }
@@ -109,7 +109,7 @@ void ResolverUnix::DescriptorEvent(int iod, unsigned int events)
         
         read(iod, &exitCode, sizeof(uint64_t));
         m_terminal->Print("process exitted with code %i\n", exitCode);
-        m_application = 0;
+        m_application = -1;
         PrintCommandHeader();
     }
 }
@@ -165,13 +165,15 @@ bool ResolverUnix::ExecuteProgram(const std::string& Program, const std::vector<
     }
     
     m_application = childPid;
-    if (m_application != 0) {
+    if (m_application > 0) {
         std::thread spawn(std::bind(&ResolverUnix::WaitForProcess, this));
         spawn.detach();
         return true;
     }
     return false;
 }
+
+#include <iostream>
 
 std::vector<std::string> ResolverUnix::GetDirectoryContents(const std::string& Path)
 {
@@ -184,6 +186,7 @@ std::vector<std::string> ResolverUnix::GetDirectoryContents(const std::string& P
         entry = readdir(dir);
         while (entry != NULL) {
             if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+                entry = readdir(dir);
                 continue;
             }
 
@@ -246,33 +249,8 @@ bool ResolverUnix::ListDirectory(const std::vector<std::string>& Arguments)
         path = Arguments[0];
     }
 
-    auto         directoryEntries = GetDirectoryContents(path);
-    unsigned int longestEntry = 0;
-    for (const auto& entry : directoryEntries) {
-        if (entry.size() > longestEntry) {
-            longestEntry = entry.size();
-        }
-    }
-
-    // account for a space after each entry
-    unsigned int entriesPerLine = m_terminal->GetNumberOfCellsPerLine() / (longestEntry + 1);
-    for (unsigned int i = 0; i < directoryEntries.size(); i++) {
-        // if all entries fit on one line, we don't pad
-        if (entriesPerLine >= directoryEntries.size()) {
-            m_terminal->Print("%s", directoryEntries[i].c_str());
-        }
-        else {
-            m_terminal->Print("%-*s", longestEntry, directoryEntries[i].c_str());
-        }
-
-        // if we reach the max entries per line or we are the last entry, we newline instead of space
-        if ((i != 0 && (i % entriesPerLine) == 0) || i == (directoryEntries.size() - 1)) {
-            m_terminal->Print("\n");
-        }
-        else {
-            m_terminal->Print(" ");
-        }
-    }
+    auto directoryEntries = GetDirectoryContents(path);
+    DirectoryPrinter(directoryEntries);
     return true;
 }
 

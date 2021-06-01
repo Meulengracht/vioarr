@@ -233,33 +233,7 @@ bool ResolverVali::ListDirectory(const std::vector<std::string>& Arguments)
     }
 
     auto directoryEntries = GetDirectoryContents(path);
-    int  longestEntry = 0;
-    for (const auto& entry : directoryEntries) {
-        if (entry.size() > longestEntry) {
-            longestEntry = entry.size();
-        }
-    }
-
-    // account for a space after each entry
-    int entriesPerLine = m_terminal->GetNumberOfCellsPerLine() / (longestEntry + 1);
-    TRACE("ResolverVali::ListDirectory entriesPerLine=%i, longestEntry=%i", entriesPerLine, longestEntry);
-    for (int i = 0; i < directoryEntries.size(); i++) {
-        // if all entries fit on one line, we don't pad
-        if (entriesPerLine >= directoryEntries.size()) {
-            m_terminal->Print("%s", directoryEntries[i].c_str());
-        }
-        else {
-            m_terminal->Print("%-*s", longestEntry, directoryEntries[i].c_str());
-        }
-
-        // if we reach the max entries per line or we are the last entry, we newline instead of space
-        if ((i != 0 && (i % entriesPerLine) == 0) || i == (directoryEntries.size() - 1)) {
-            m_terminal->Print("\n");
-        }
-        else {
-            m_terminal->Print(" ");
-        }
-    }
+    DirectoryPrinter(directoryEntries);
     return true;
 }
 

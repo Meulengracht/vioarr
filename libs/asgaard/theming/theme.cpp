@@ -133,6 +133,9 @@ void Theme::InitializeTheme()
     
     // push paths
     m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CURSOR), "cursor16.png")); // 32, 40, 48
+    m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CURSOR_BEAM), "cursor-i16.png")); // 32, 40, 48
+    m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CURSOR_ARROW_WE), "cursor-we16.png")); // 32, 40, 48
+    m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CURSOR_ARROW_ALL), "cursor-all16.png")); // 32, 40, 48
 
     m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_CLOSE), "close16.png")); // 20, 24, 32
     m_paths.insert(std::make_pair(static_cast<int>(Elements::IMAGE_MAXIMIZE), "max16.png")); // 20, 24, 32

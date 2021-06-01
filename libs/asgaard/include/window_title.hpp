@@ -51,6 +51,5 @@ namespace Asgaard {
 
     private:
         bool m_lmbHold;
-        bool m_dragInOperation;
     };
 }

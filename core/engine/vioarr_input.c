@@ -433,14 +433,12 @@ static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, 
 
 static void vioarr_input_pointer_click(vioarr_input_source_t* source, uint32_t button, uint8_t pressed)
 {
-    vioarr_utils_trace(VISTR("vioarr_input_pointer_click()"));
-    if (source->state.pointer.mode == POINTER_MODE_NORMAL ||
-        source->state.pointer.mode == POINTER_MODE_GRABBED) {
-        __normal_mode_click(source, button, pressed);
-    }
-    else {
-        if (button == 0 /* LMB */ && !pressed) {
-            __clear_state(source);
+    vioarr_utils_trace(VISTR("vioarr_input_pointer_click(button=%u, pressed=%u)"), button, pressed);
+    __normal_mode_click(source, button, pressed);
+    if (button == 0 /* LMB */ && !pressed) {
+        if (source->state.pointer.mode == POINTER_MODE_MOVING ||
+            source->state.pointer.mode == POINTER_MODE_RESIZING) {
+            source->state.pointer.mode = POINTER_MODE_NORMAL;
         }
     }
 }

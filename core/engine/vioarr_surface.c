@@ -442,7 +442,7 @@ vioarr_surface_t* vioarr_surface_at(vioarr_surface_t* surface, int x, int y, int
 {
     vioarr_surface_t* surfaceAt = NULL;
     vioarr_region_t*  region;
-    vioarr_utils_trace(VISTR("vioarr_surface_at(surface=%u, x=%i, y=%i)"), vioarr_surface_id(surface), x, y);
+    //vioarr_utils_trace(VISTR("vioarr_surface_at(surface=%u, x=%i, y=%i)"), vioarr_surface_id(surface), x, y);
     if (!surface) {
         return NULL;
     }
@@ -474,7 +474,7 @@ vioarr_surface_t* vioarr_surface_at(vioarr_surface_t* surface, int x, int y, int
     }
     vioarr_rwlock_r_unlock(&surface->lock);
 
-    vioarr_utils_trace(VISTR("vioarr_surface_at returns=%u"), vioarr_surface_id(surfaceAt));
+    //vioarr_utils_trace(VISTR("vioarr_surface_at returns=%u"), vioarr_surface_id(surfaceAt));
     return surfaceAt;
 }
 

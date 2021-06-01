@@ -30,10 +30,10 @@
 #include <drawing/painter.hpp>
 #include <theming/theme_manager.hpp>
 #include <theming/theme.hpp>
+#include <widgets/cursor.hpp>
 #include <keycodes.h>
 
 #include "effects/guassian_blur.hpp"
-#include "widgets/cursor.hpp"
 
 #ifdef MOLLENOS
 #include <ddk/utils.h>
@@ -65,7 +65,10 @@ private:
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
         
-        m_cursor = OM.CreateClientObject<HeimdallCursor>(m_screen, Rectangle(0, 0, CURSOR_SIZE, CURSOR_SIZE));
+        m_cursor = OM.CreateClientObject<Widgets::Cursor>(m_screen, 
+            Rectangle(0, 0, CURSOR_SIZE, CURSOR_SIZE), 
+            Theming::Theme::Elements::IMAGE_CURSOR
+        );
 
         // Now all objects are created, load and prepare resources
         LoadResources();
@@ -153,7 +156,7 @@ private:
     }
     
 private:
-    std::shared_ptr<MemoryPool>     m_memory;
-    std::shared_ptr<MemoryBuffer>   m_buffer;
-    std::shared_ptr<HeimdallCursor> m_cursor;
+    std::shared_ptr<MemoryPool>      m_memory;
+    std::shared_ptr<MemoryBuffer>    m_buffer;
+    std::shared_ptr<Widgets::Cursor> m_cursor;
 };

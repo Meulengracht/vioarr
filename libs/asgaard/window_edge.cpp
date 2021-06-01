@@ -110,18 +110,15 @@ namespace Asgaard {
     {
         if (button == Pointer::Buttons::LEFT) {
             m_lmbHold = pressed;
-            if (!m_lmbHold) {
-                m_dragInOperation = false;
-            }
         }
     }
 
     void WindowEdge::OnMouseMove(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
     {
         if (m_lmbHold && !m_dragInOperation) {
-            m_dragInOperation = true;
             Notify(static_cast<int>(Notification::INITIATE_DRAG), 
                 reinterpret_cast<void*>(static_cast<intptr_t>(pointer->Id())));
+            m_lmbHold = false;
         }
     }
 }

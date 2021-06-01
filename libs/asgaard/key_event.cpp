@@ -109,12 +109,12 @@ namespace Asgaard {
 
     bool KeyEvent::LeftControl() const
     {
-        return (m_modifiers & VKS_MODIFIER_LCTRL) == 0;
+        return (m_modifiers & VKS_MODIFIER_LCTRL) != 0;
     }
 
     bool KeyEvent::RightControl() const
     {
-        return (m_modifiers & VKS_MODIFIER_RCTRL) == 0;
+        return (m_modifiers & VKS_MODIFIER_RCTRL) != 0;
     }
 
     bool KeyEvent::Control() const

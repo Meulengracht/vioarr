@@ -35,6 +35,9 @@ namespace Asgaard {
             enum class Elements : int {
                 // Environment elements
                 IMAGE_CURSOR,
+                IMAGE_CURSOR_BEAM,
+                IMAGE_CURSOR_ARROW_WE,
+                IMAGE_CURSOR_ARROW_ALL,
 
                 // Window elements
                 IMAGE_CLOSE,

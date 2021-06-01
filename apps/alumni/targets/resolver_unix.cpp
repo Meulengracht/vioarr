@@ -37,13 +37,6 @@
 #include <linux/limits.h>
 #include <cstring>
 
-namespace {
-    static bool EndsWith(const std::string& String, const std::string& Suffix)
-    {
-        return String.size() >= Suffix.size() && 0 == String.compare(String.size() - Suffix.size(), Suffix.size(), Suffix);
-    }
-}
-
 ResolverUnix::ResolverUnix(const int* stdoutFds, const int* stderrFds, const int* stdinFds)
     : ResolverBase()
     , m_profile("philip")

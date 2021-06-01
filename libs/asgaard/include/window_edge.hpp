@@ -59,6 +59,5 @@ namespace Asgaard {
         std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
 
         bool m_lmbHold;
-        bool m_dragInOperation;
     };
 }

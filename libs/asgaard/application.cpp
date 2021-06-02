@@ -550,6 +550,14 @@ extern "C"
         }
     }
     
+    void wm_core_event_destroy_invocation(gracht_client_t* client, const uint32_t id)
+    {
+        auto object = Asgaard::OM[id];
+        if (object) {
+            object->Destroy();
+        }
+    }
+
     // SCREEN PROTOCOL EVENTS
     void wm_screen_event_properties_invocation(gracht_client_t* client, const uint32_t id, const int x, const int y, const enum wm_transform transform, const int scale)
     {

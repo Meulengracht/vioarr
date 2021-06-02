@@ -128,7 +128,7 @@ int vioarr_objects_remove_object(int client, uint32_t id)
     
     list_remove(&objects, &object->link);
     if (id >= SERVER_ID_START) {
-        wm_core_event_object_all(vioarr_get_server_handle(), id, object->handle, object->type);
+        wm_core_event_destroy_all(vioarr_get_server_handle(), id);
     }
     free(object);
     return 0;

@@ -13,8 +13,9 @@ service core (80) {
     func sync(uint32 serial) : () = 2;
 
     event sync : (uint32 serial) = 3;
-    event object : (uint32 id, ulong handle, object_type type) = 4;
-    event error : (uint32 id, int errorCode, string description) = 5;
+    event error : (uint32 id, int errorCode, string description) = 4;
+    event object : (uint32 id, ulong handle, object_type type) = 5;
+    event destroy : (uint32 id) = 6;
 }
 
 service screen (81) {

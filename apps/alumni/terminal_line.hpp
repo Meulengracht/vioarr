@@ -41,23 +41,52 @@ public:
 
     void Reset();
     void Reset(const std::vector<TerminalCell>&);
-    void Resize(int cellCount);
+    void Resize(int cellCount, std::vector<TerminalCell>& overflownCells);
+    void PrependCells(const std::vector<TerminalCell>& cells, std::vector<TerminalCell>& overflownCells);
+    int  AppendCells(const std::vector<TerminalCell>& cells);
     void Redraw(std::shared_ptr<Asgaard::MemoryBuffer>&);
 
+    /**
+     * @brief Adds user input to the line. The difference here is that input will move
+     * the cursor position as well.
+     * 
+     * @param character The character to print
+     * @return true  If the input could fit into the line
+     * @return false If the input did not fit, the input is at end of line
+     */
     bool AddInput(int character);
     bool AddInput(int character, const Asgaard::Drawing::Color& color);
     bool RemoveInput();
+    void SetInput(const std::string& input);
+
+    /**
+     * @brief Adds non-input text to the line, this text can not be changed by
+     * the cursor. 
+     * 
+     * @param character The character to print
+     * @return true  If the input could fit into the line
+     * @return false If the input did not fit, the input is at end of line
+     */
     bool AddCharacter(int character);
     bool AddCharacter(int character, const Asgaard::Drawing::Color& color);
 
-    void HideCursor();
-    void ShowCursor();
+    /**
+     * @brief Sets the cursor input position, new input will be written to this location
+     * instead of at end of line. 
+     * 
+     * @param position -1 to hide the cursor, otherwise it's the index of the line
+     */
+    void SetCursorPosition(int position = -1);
 
-    const std::vector<TerminalCell>& GetCells() const { return m_cells; } 
+    int GetCursorPosition() const { return m_cursor; }
+    int GetCurrentLength()  const { return m_text.size(); }
+    const std::vector<TerminalCell>& GetCells() const { return m_cells; }
 
 private:
     void ShiftCellsRight(int index);
     void ShiftCellsLeft(int index);
+    void RebuildText();
+    void Spill(int index, int count, std::vector<TerminalCell>&);
 
 private:
     std::shared_ptr<Asgaard::Drawing::Font> m_font;

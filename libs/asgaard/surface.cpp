@@ -31,6 +31,7 @@
 #include "include/events/pointer_enter_event.hpp"
 #include "include/events/pointer_leave_event.hpp"
 #include "include/events/pointer_move_event.hpp"
+#include "include/events/pointer_scroll_event.hpp"
 #include "include/events/pointer_click_event.hpp"
 #include "include/events/key_event.hpp"
 
@@ -132,6 +133,12 @@ namespace Asgaard {
                 const auto& move = static_cast<const PointerMoveEvent&>(event);
                 auto pointer = Asgaard::OM[move.PointerId()];
                 OnMouseMove(std::dynamic_pointer_cast<Pointer>(pointer), move.LocalX(), move.LocalY());
+            } break;
+
+            case Event::Type::POINTER_SCROLL: {
+                const auto& scroll = static_cast<const PointerScrollEvent&>(event);
+                auto pointer = Asgaard::OM[scroll.PointerId()];
+                OnMouseScroll(std::dynamic_pointer_cast<Pointer>(pointer), scroll.ChangeX(), scroll.ChangeY());
             } break;
 
             case Event::Type::POINTER_CLICK: {

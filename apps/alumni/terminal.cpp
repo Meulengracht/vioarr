@@ -71,7 +71,7 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
     }
 
     // show cursor
-    m_lines[0]->ShowCursor();
+    m_lines[0]->SetCursorPosition(0);
 
     // initialize text state
     m_textState.m_fgColor = m_textState.m_defaultFgColor = Asgaard::Drawing::Color(0xFF, 0xFF, 0xFF);
@@ -113,8 +113,7 @@ void Terminal::RemoveInput()
 std::string Terminal::ClearInput(bool newline)
 {
     auto command = m_command;
-    m_commandHistory.push_back(command);
-    m_command = "";
+    CommandHistoryAdd(command);
 
     m_inputLineIndexStart = m_inputLineIndexCurrent;
     if (newline) {
@@ -136,9 +135,9 @@ void Terminal::CommitLine()
         ScrollToLine(true);
     }
     else {
-        m_lines[m_inputLineIndexCurrent]->HideCursor();
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(-1);
         m_inputLineIndexCurrent++;
-        m_lines[m_inputLineIndexCurrent]->ShowCursor();
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(0);
     }
 }
 
@@ -146,9 +145,9 @@ void Terminal::UndoLine()
 {
     m_history.pop_back();
 
-    m_lines[m_inputLineIndexCurrent]->HideCursor();
+    m_lines[m_inputLineIndexCurrent]->SetCursorPosition(-1);
     m_inputLineIndexCurrent--;
-    m_lines[m_inputLineIndexCurrent]->ShowCursor();
+    m_lines[m_inputLineIndexCurrent]->SetCursorPosition(m_lines[m_inputLineIndexCurrent]->GetCurrentLength() + 1);
 }
 
 void Terminal::ScrollToLine(bool clearInput)
@@ -163,7 +162,7 @@ void Terminal::ScrollToLine(bool clearInput)
 
     if (clearInput) {
         m_lines[m_rows - 1]->Reset();
-        m_lines[m_rows - 1]->ShowCursor();
+        m_lines[m_rows - 1]->SetCursorPosition(0);
     }
 }
 
@@ -180,8 +179,6 @@ void Terminal::HistoryNext()
 
 void Terminal::HistoryPrevious()
 {
-    //auto historySize = static_cast<int>(m_history.size());
-
     // History must be longer than the number of rows
     if (m_historyIndex > m_rows) {
         m_historyIndex--;
@@ -189,14 +186,54 @@ void Terminal::HistoryPrevious()
     }
 }
 
+
+void Terminal::CommandHistoryPrevious()
+{
+    // Reset input
+    m_inputLineIndexCurrent = m_inputLineIndexStart;
+
+    // Load previous (if any)
+    if (m_commandIndex > 0) {
+        m_commandIndex--;
+        m_lines[m_inputLineIndexCurrent]->SetInput(m_commandHistory[m_commandIndex]);
+    }
+}
+
+void Terminal::CommandHistoryNext()
+{
+    // Reset input
+    m_inputLineIndexCurrent = m_inputLineIndexStart;
+
+    // Load next (if any)
+    if (m_commandIndex < static_cast<int>(m_commandHistory.size())) {
+        m_commandIndex++;
+        m_lines[m_inputLineIndexCurrent]->SetInput(m_commandHistory[m_commandIndex]);
+    }
+}
+
+void Terminal::CommandHistoryAdd(const std::string& command)
+{
+    if (command.size() > 0) {
+        m_commandHistory.push_back(command);
+        m_commandIndex = m_commandHistory.size();
+        m_command = "";
+    }
+}
+
 void Terminal::MoveCursorLeft()
 {
-
+    auto currentPosition = m_lines[m_inputLineIndexCurrent]->GetCursorPosition();
+    if (currentPosition != 0) {
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(currentPosition - 1);
+    }
 }
 
 void Terminal::MoveCursorRight()
 {
-
+    auto currentPosition = m_lines[m_inputLineIndexCurrent]->GetCursorPosition();
+    if (currentPosition < m_cellWidth) {
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(currentPosition + 1);
+    }
 }
 
 void Terminal::Print(const char* format, ...)
@@ -340,11 +377,21 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
         m_resolver->PrintCommandHeader();
     }
     else if (key.KeyCode() == VKC_UP) {
-        HistoryPrevious();
+        if (key.Control()) {
+            HistoryPrevious();
+        }
+        else {
+            CommandHistoryPrevious();
+        }
         RequestRedraw();
     }
     else if (key.KeyCode() == VKC_DOWN) {
-        HistoryNext();
+        if (key.Control()) {
+            HistoryNext();
+        }
+        else {
+            CommandHistoryNext();
+        }
         RequestRedraw();
     }
     else if (key.KeyCode() == VKC_LEFT) {
@@ -359,4 +406,18 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
         AddInput(static_cast<int>(key.Key()));
         RequestRedraw();
     }
+}
+
+void Terminal::OnResized(enum SurfaceEdges, int width, int height)
+{
+    // calculate new metrics
+    m_rows = ((height - ALUMNI_MARGIN_TOP) / m_font->GetFontHeight()) - 1;
+    m_cellWidth = (width - (ALUMNI_MARGIN_LEFT + ALUMNI_MARGIN_RIGHT)) / m_font->GetFontWidth();
+
+    // clear lines
+    m_lines.clear();
+    for (int i = 0; i < m_rows; i++) {
+        auto line = std::make_unique<TerminalLine>(m_font, i, m_cellWidth);
+    }
+    ScrollToLine(m_historyIndex == static_cast<int>(m_history.size()));
 }

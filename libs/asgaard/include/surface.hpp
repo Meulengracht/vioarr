@@ -77,6 +77,7 @@ namespace Asgaard {
         virtual void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) { }
         virtual void OnMouseLeave(const std::shared_ptr<Pointer>&) { }
         virtual void OnMouseMove(const std::shared_ptr<Pointer>&, int localX, int localY) { }
+        virtual void OnMouseScroll(const std::shared_ptr<Pointer>&, int scollX, int scrollY) { }
         virtual void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) { }
         virtual void OnKeyEvent(const KeyEvent&) { }
         

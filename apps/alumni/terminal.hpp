@@ -74,6 +74,9 @@ public:
     // History manipulation
     void HistoryPrevious();
     void HistoryNext();
+    void CommandHistoryPrevious();
+    void CommandHistoryNext();
+    void CommandHistoryAdd(const std::string& command);
 
     // Cursor manipulation
     void MoveCursorLeft();
@@ -86,6 +89,7 @@ protected:
     void OnCreated() override;
     void OnRefreshed(Asgaard::MemoryBuffer*) override;
     void OnKeyEvent(const Asgaard::KeyEvent&) override;
+    void OnResized(enum SurfaceEdges, int width, int height) override;
     
 private:
     void Redraw();
@@ -114,6 +118,7 @@ private:
     int                                               m_historyIndex;
     std::string                                       m_command;
     std::vector<std::string>                          m_commandHistory;
+    int                                               m_commandIndex;
     std::vector<std::unique_ptr<TerminalLine>>        m_lines;
     int                                               m_inputLineIndexStart;
     int                                               m_inputLineIndexCurrent;

@@ -59,27 +59,47 @@ void TerminalLine::Reset(const std::vector<TerminalCell>& cells)
     m_inputOffset = 0;
     m_cursor      = 0;
     m_dirty       = true;
+    RebuildText();
+}
 
-    // build text from cells
-    m_text.clear();
-    for (const auto& cell : m_cells) {
-        if (!cell.m_character) {
-            break;
-        } 
-        m_text.push_back(cell.m_character);
+void TerminalLine::Resize(int cellCount, std::vector<TerminalCell>& overflownCells)
+{
+    auto capacity = static_cast<int>(m_cells.size());
+
+    // if we reduce capacity, we must spill the cells that gets cut
+    if (cellCount < capacity) {
+        auto difference = capacity - cellCount;
+        Spill(cellCount, difference, overflownCells);
+    }
+
+    m_cells.resize(cellCount);
+}
+
+void TerminalLine::PrependCells(const std::vector<TerminalCell>& cells, std::vector<TerminalCell>& overflownCells)
+{
+    auto count = cells.size();
+    auto roomAvailable = m_cells.size() - m_text.size();
+    if (count > roomAvailable) {
+        auto difference = count - roomAvailable;
+        Spill(m_text.size() - difference, difference, overflownCells);
+    }
+
+    for (const auto& cell : cells) {
+        ShiftCellsRight(0);
+        m_cells[0] = cell;
     }
 }
 
-void TerminalLine::Resize(int cellCount)
+int TerminalLine::AppendCells(const std::vector<TerminalCell>& cells)
 {
-    if (cellCount < (int)m_cells.size()) {
-        // shrinking, means we will spill cells
-        // @todo
+    auto count = cells.size();
+    auto index = m_text.size();
+    auto roomAvailable = m_cells.size() - index;
+    auto cellsAppended = 0;
+    for (; cellsAppended < static_cast<int>(std::min(count, roomAvailable)); cellsAppended++, index++) {
+        m_cells[index] = cells[cellsAppended];
     }
-    else {
-        // growing, just extend our cell count
-        m_cells.resize(cellCount);
-    }
+    return cellsAppended;
 }
 
 bool TerminalLine::AddCharacter(int character)
@@ -157,45 +177,69 @@ bool TerminalLine::RemoveInput()
     return false;
 }
 
+void TerminalLine::SetInput(const std::string& input)
+{
+
+}
+
 void TerminalLine::Redraw(std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
 {
     if (m_dirty) {
         Asgaard::Drawing::Painter paint(buffer);
         int x = m_dimensions.X();
         int i = 0;
+
+        auto drawCell = [&] (const auto& cell, auto index) {
+            if (m_showCursor && m_cursor == index) {
+                paint.SetFillColor(0xFF, 0xFF, 0xFF);
+                paint.SetOutlineColor(0, 0, 0);
+                if (!cell.m_character) {
+                    paint.RenderFill(Asgaard::Rectangle(x, m_dimensions.Y(), m_font->GetFontWidth(), m_font->GetFontHeight()));
+                    return;
+                }
+            }
+            else {
+                if (!cell.m_character) {
+                    return;
+                }
+
+                paint.SetOutlineColor(cell.m_color);
+            }
+            paint.RenderCharacter(x, m_dimensions.Y(), cell.m_character);
+            if (m_showCursor && m_cursor == index) {
+                // restore the fill color to normal
+                paint.SetFillColor(0x7F, 0x0C, 0x35, 0x33);
+            }
+        };
         
         paint.SetFillColor(0x7F, 0x0C, 0x35, 0x33);
         paint.RenderFill(m_dimensions);
         
         paint.SetFont(m_font);
         for (const auto& cell : m_cells) {
-            if (!cell.m_character) {
-                break;
-            }
-
-            paint.SetOutlineColor(cell.m_color);
-            paint.RenderCharacter(x, m_dimensions.Y(), cell.m_character);
-
+            drawCell(cell, i);
             x += m_font->GetFontWidth();
             i++;
-        }
-        
-        if (m_showCursor) {
-            paint.SetFillColor(0xFF, 0xFF, 0xFF);
-            paint.RenderFill(Asgaard::Rectangle(x, m_dimensions.Y(), m_font->GetFontWidth(), m_font->GetFontHeight()));
         }
         m_dirty = false;
     }
 }
 
-void TerminalLine::HideCursor()
+void TerminalLine::SetCursorPosition(int position)
 {
-    m_showCursor = false;
-    m_dirty      = true;
-}
+    // handle hide of cursor
+    if (position == -1) {
+        m_showCursor = false;
+        m_dirty      = true;
+        return;
+    }
 
-void TerminalLine::ShowCursor()
-{
+    // handle bounds of the cursor
+    if (position < m_inputOffset) {
+        return;
+    }
+
+    m_cursor     = position;
     m_showCursor = true;
     m_dirty      = true;
 }
@@ -231,5 +275,28 @@ void TerminalLine::ShiftCellsLeft(int index)
         previousCell.m_color = cell.m_color;
 
         cell.m_character = 0;
+    }
+}
+
+void TerminalLine::RebuildText()
+{
+    // build text from cells
+    m_text.clear();
+    for (const auto& cell : m_cells) {
+        if (!cell.m_character) {
+            break;
+        } 
+        m_text.push_back(cell.m_character);
+    }
+}
+
+void TerminalLine::Spill(int index, int count, std::vector<TerminalCell>& storage)
+{
+    for (auto i = index; i < (index + count) && i < static_cast<int>(m_cells.size()); i++) {
+        const auto& cell = m_cells[i];
+        if (!cell.m_character) {
+            break;
+        }
+        storage.push_back(cell);
     }
 }

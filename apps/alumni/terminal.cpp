@@ -411,8 +411,18 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
 void Terminal::OnResized(enum SurfaceEdges, int width, int height)
 {
     // calculate new metrics
-    m_rows = ((height - ALUMNI_MARGIN_TOP) / m_font->GetFontHeight()) - 1;
-    m_cellWidth = (width - (ALUMNI_MARGIN_LEFT + ALUMNI_MARGIN_RIGHT)) / m_font->GetFontWidth();
+    auto rows = ((height - ALUMNI_MARGIN_TOP) / m_font->GetFontHeight()) - 1;
+    auto cols = (width - (ALUMNI_MARGIN_LEFT + ALUMNI_MARGIN_RIGHT)) / m_font->GetFontWidth();
+
+    // todo update buffer
+
+    if (rows == m_rows && cols == m_cellWidth) {
+        return;
+    }
+
+    // update stored metrics
+    m_rows = rows;
+    m_cellWidth = cols;
 
     // clear lines
     m_lines.clear();

@@ -36,11 +36,24 @@
 #include "../terminal.hpp"
 #include "resolver_unix.hpp"
 #include <linux/limits.h>
+#include <pwd.h>
 #include <cstring>
+
+namespace {
+    std::string ResolveProfileName()
+    {
+        auto* pw = getpwuid(geteuid());
+        if (pw)
+        {
+            return std::string(pw->pw_name);
+        }
+        return {};
+    }
+}
 
 ResolverUnix::ResolverUnix(const int* stdoutFds, const int* stderrFds, const int* stdinFds)
     : ResolverBase()
-    , m_profile("philip")
+    , m_profile(ResolveProfileName())
     , m_currentDirectory("n/a")
     , m_application(-1)
     , m_stdoutFds{stdoutFds[0], stdoutFds[1]}

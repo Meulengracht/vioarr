@@ -39,6 +39,7 @@
 #include "include/widgets/label.hpp"
 
 #define ICON_SIZE 16
+#define DECORATION_TEXT_SIZE  12
 
 namespace Asgaard {
     WindowDecoration::WindowDecoration(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
@@ -88,6 +89,7 @@ namespace Asgaard {
         SubSurface::Destroy();
     }
 
+
     void WindowDecoration::Initialize()
     {
         float halfHeight = (float)Dimensions().Height() / 2.0f;
@@ -115,8 +117,8 @@ namespace Asgaard {
                 Dimensions().Height()));
         m_appTitle->SetFont(m_appFont);
         m_appTitle->SetAnchors(Widgets::Label::Anchors::CENTER);
-        m_appTitle->SetBackgroundColor(DECORATION_FILL_COLOR);
-        m_appTitle->SetTextColor(DECORATION_TEXT_COLOR);
+        m_appTitle->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
+        m_appTitle->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
         m_appTitle->Subscribe(this);
         
         // right corner
@@ -165,7 +167,9 @@ namespace Asgaard {
     void WindowDecoration::Redraw()
     {
         Drawing::Painter paint(m_buffer);
-        paint.SetFillColor(DECORATION_FILL_COLOR);
+        
+        const auto theme = Theming::TM.GetTheme();
+        paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
         paint.RenderFill();
         
         MarkDamaged(Dimensions());

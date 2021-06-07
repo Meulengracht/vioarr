@@ -33,7 +33,7 @@
 #include <widgets/cursor.hpp>
 #include <keycodes.h>
 
-#include "effects/guassian_blur.hpp"
+#include "launcher/launcher_base.hpp"
 
 #ifdef MOLLENOS
 #include <ddk/utils.h>
@@ -82,16 +82,15 @@ private:
             painter.RenderImage(image);
         };
 
-        auto blurImage = [&](const auto& buffer, const auto& image) {
-            GuassianBlurEffect blurEffect;
-            auto blurredBackground = blurEffect.Apply(image, 3.0);
-            renderImage(buffer, blurredBackground);
-        };
-
         // Render the normal state
         Drawing::Image background(DATA_DIRECTORY "/themes/backgrounds/bg.png");
         renderImage(m_buffer, background);
-        //blurImage(m_bufferBlurred, background);
+        
+        // create the launcher
+        m_launcher = OM.CreateClientObject<LauncherBase>(m_screen, this, 
+            Rectangle(0, 0, m_screen->GetCurrentWidth(), m_screen->GetCurrentHeight()), 
+            background
+        );
     }
     
     void FinishSetup()
@@ -116,21 +115,6 @@ private:
         pointer->SetSurface(m_cursor);
     }
 
-    void OnMouseLeave(const std::shared_ptr<Pointer>&) override
-    {
-
-    }
-
-    void OnMouseMove(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override
-    {
-
-    }
-
-    void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override
-    {
-
-    }
-    
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
 #ifdef MOLLENOS
@@ -151,7 +135,7 @@ private:
 #endif
         }
         else if (keyEvent.KeyCode() == VKC_LWIN && !keyEvent.Pressed()) {
-            // Show 
+            m_launcher->Show();
         }
     }
     
@@ -159,4 +143,5 @@ private:
     std::shared_ptr<MemoryPool>      m_memory;
     std::shared_ptr<MemoryBuffer>    m_buffer;
     std::shared_ptr<Widgets::Cursor> m_cursor;
+    std::shared_ptr<LauncherBase>    m_launcher;
 };

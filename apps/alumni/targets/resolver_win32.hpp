@@ -22,12 +22,15 @@
  */
 #pragma once
 
-#include "alumni.hpp"
+#include <utils/descriptor_listener.hpp>
+#include "resolver_base.hpp"
+#include <memory>
+#include <thread>
 
-class CWin32Alumni : public CAlumni {
+class ResolverWin32 : public ResolverBase, public Asgaard::Utils::DescriptorListener {
 public:
-    CWin32Alumni(std::unique_ptr<CTerminal> Terminal, std::unique_ptr<CTerminalInterpreter> Interpreter);
-    ~CWin32Alumni() = default;
+    ResolverWin32(std::unique_ptr<CTerminal> Terminal, std::unique_ptr<CTerminalInterpreter> Interpreter);
+    ~ResolverWin32() = default;
 
     bool HandleKeyCode(unsigned int KeyCode, unsigned int Flags) override;
     void PrintCommandHeader() override;

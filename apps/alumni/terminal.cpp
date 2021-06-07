@@ -38,6 +38,8 @@
 
 #include <object_manager.hpp>
 #include <events/key_event.hpp>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
 #include "terminal.hpp"
 #include "terminal_line.hpp"
 #include "terminal_interpreter.hpp"
@@ -73,8 +75,11 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
     // show cursor
     m_lines[0]->SetCursorPosition(0);
 
+    // borrow colors from theme
+    const auto theme = Asgaard::Theming::TM.GetTheme();
+
     // initialize text state
-    m_textState.m_fgColor = m_textState.m_defaultFgColor = Asgaard::Drawing::Color(0xFF, 0xFF, 0xFF);
+    m_textState.m_fgColor = m_textState.m_defaultFgColor = theme->GetColor(Asgaard::Theming::Theme::Colors::DECORATION_TEXT);
     m_textState.m_bgColor = m_textState.m_defaultBgColor = Asgaard::Drawing::Color(0x7F, 0x0C, 0x35, 0x33);
 
     // initialize VT environment

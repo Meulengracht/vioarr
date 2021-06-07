@@ -26,8 +26,9 @@
 #include <sstream>
 #include "../terminal_interpreter.hpp"
 #include "../terminal.hpp"
-#include "alumni_win32.hpp"
+#include "resolver_win32.hpp"
 #include <windows.h>
+#include "dirent.h"
 
 namespace {
     int Vk2Ascii(unsigned int KeyCode, unsigned int ScanCode, int *Character)
@@ -48,34 +49,15 @@ CWin32Alumni::CWin32Alumni(std::unique_ptr<CTerminal> Terminal, std::unique_ptr<
 
 bool CWin32Alumni::HandleKeyCode(unsigned int KeyCode, unsigned int Flags)
 {
-    int Character;
-    if (KeyCode == VK_RETURN) {
-        if (!m_Interpreter->Interpret(m_Terminal->ClearInput(true))) {
-            if (m_Interpreter->GetClosestMatch().length() != 0) {
-                m_Terminal->Print("Command did not exist, did you mean %s?\n", m_Interpreter->GetClosestMatch().c_str());
-            }
-        }
-        PrintCommandHeader();
-    }
-    else if (KeyCode == VK_BACK) {
-        m_Terminal->RemoveInput();
-    }
-    else if (KeyCode == VK_LEFT) {
-        m_Terminal->MoveCursorLeft();
-    }
-    else if (KeyCode == VK_RIGHT) {
-        m_Terminal->MoveCursorRight();
-    }
-    else if (Vk2Ascii(KeyCode, (Flags >> 16) & 0xFF, &Character) != 0) {
-        m_Terminal->AddInput(Character);
-    }
     return true;
 }
 
 void CWin32Alumni::PrintCommandHeader()
 {
-    m_Terminal->Print("[%s | %s | 09/12/2018 - 13:00]\n", "Philip", "n/a");
-    m_Terminal->Print("$ ");
+    // Dont print the command header if an application is running
+    if (m_application <= 0) {
+        m_terminal->Print("\033[34m%s@%s~\033[39m ", m_profile.c_str(), m_currentDirectory.c_str());
+    }
 }
 
 bool CWin32Alumni::CommandResolver(const std::string&, const std::vector<std::string>&)

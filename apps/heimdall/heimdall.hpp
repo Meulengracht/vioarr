@@ -114,7 +114,7 @@ private:
         m_cursor->Show();
         pointer->SetSurface(m_cursor);
     }
-
+    
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
 #ifdef MOLLENOS
@@ -134,8 +134,8 @@ private:
             }
 #endif
         }
-        else if (keyEvent.KeyCode() == VKC_LWIN && !keyEvent.Pressed()) {
-            m_launcher->Show();
+        else if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {
+            m_launcher->Toggle();
         }
     }
     

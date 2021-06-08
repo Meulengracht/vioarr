@@ -98,7 +98,8 @@ void Terminal::AddInput(int character)
     m_command.push_back(character);
 
     if (!m_lines[m_inputLineIndexCurrent]->AddInput(character)) {
-        CommitLine(true);
+        CommitLine(true); // commit the line
+        m_lines[m_inputLineIndexCurrent]->AddInput(character); // add the input
     }
     else {
         ScrollToBottom(true);
@@ -116,7 +117,8 @@ void Terminal::RemoveInput()
     ScrollToBottom(true);
     if (!m_lines[m_inputLineIndexCurrent]->RemoveInput()) {
         if (m_inputLineIndexCurrent > m_inputLineIndexStart) {
-            UndoLine();
+            UndoLine(); // go one line back
+            m_lines[m_inputLineIndexCurrent]->RemoveInput(); // remove an input
         }
     }
 }
@@ -185,7 +187,7 @@ void Terminal::UndoLine()
 
     m_lines[m_inputLineIndexCurrent]->Reset();
     m_inputLineIndexCurrent--;
-    m_lines[m_inputLineIndexCurrent]->SetCursorPosition(m_lines[m_inputLineIndexCurrent]->GetCurrentLength() + 1);
+    m_lines[m_inputLineIndexCurrent]->SetCursorPosition(m_lines[m_inputLineIndexCurrent]->GetCurrentLength());
 }
 
 void Terminal::ScrollToLine(int line, bool keepInputLine)
@@ -242,6 +244,7 @@ void Terminal::CommandHistoryPrevious()
     // Load previous (if any)
     if (m_commandIndex > 0) {
         m_commandIndex--;
+        m_command = m_commandHistory[m_commandIndex];
         m_lines[m_inputLineIndexCurrent]->SetInput(m_commandHistory[m_commandIndex]);
     }
 }
@@ -252,8 +255,9 @@ void Terminal::CommandHistoryNext()
     m_inputLineIndexCurrent = m_inputLineIndexStart;
 
     // Load next (if any)
-    if (m_commandIndex < static_cast<int>(m_commandHistory.size())) {
+    if (m_commandIndex < (static_cast<int>(m_commandHistory.size()) - 1)) {
         m_commandIndex++;
+        m_command = m_commandHistory[m_commandIndex];
         m_lines[m_inputLineIndexCurrent]->SetInput(m_commandHistory[m_commandIndex]);
     }
 }

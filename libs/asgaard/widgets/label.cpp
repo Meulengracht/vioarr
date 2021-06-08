@@ -65,7 +65,7 @@ namespace Asgaard {
             // invoke base destroy
             SubSurface::Destroy();
         }
-            
+        
         void Label::SetBackgroundColor(const Drawing::Color& color)
         {
             m_fillColor = color;

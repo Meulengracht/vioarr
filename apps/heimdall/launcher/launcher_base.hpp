@@ -40,6 +40,7 @@ class LauncherBase : public SubSurface {
 public:
     LauncherBase(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions, const Drawing::Image& background)
         : SubSurface(id, screen, parent, dimensions)
+        , m_isShown(false)
     {
         LoadResources(background);
         //LoadApplications();
@@ -49,17 +50,17 @@ public:
         Destroy();
     }
 
-    void Show()
+    void Toggle()
     {
-        SetBuffer(m_buffer);
-        ApplyChanges();
-    }
-
-    void Hide()
-    {
-        std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);
-        SetBuffer(empty);
-        ApplyChanges();
+        if (!m_isShown) {
+            SetBuffer(m_buffer);
+            ApplyChanges();
+        }
+        else {
+            std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);
+            SetBuffer(empty);
+            ApplyChanges();
+        }
     }
 
     void Destroy() override
@@ -126,7 +127,7 @@ private:
         m_registeredApps.push_back(terminal);
         m_registeredApps.push_back(doom);
     }
-
+    
 private:
     std::shared_ptr<Asgaard::MemoryPool>              m_memory;
     std::shared_ptr<Asgaard::MemoryBuffer>            m_buffer;
@@ -134,4 +135,5 @@ private:
     std::shared_ptr<Widgets::Label>                   m_appTitle;
     std::shared_ptr<LauncherInfoSearch>               m_infoSearch;
     std::vector<std::shared_ptr<LauncherApplication>> m_registeredApps;
+    bool m_isShown;
 };

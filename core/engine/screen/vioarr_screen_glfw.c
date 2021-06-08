@@ -355,7 +355,7 @@ static uint8_t asgaardKeyCodes[GLFW_KEY_LAST + 1] = {
     VKC_F1, VKC_F2, VKC_F3, VKC_F4, VKC_F5, VKC_F6, VKC_F7, 
     VKC_F8, VKC_F9, VKC_F10, VKC_F11, VKC_F12, VKC_F13, VKC_F14, 
     VKC_F15, VKC_F16, VKC_F17, VKC_F18, VKC_F19, VKC_F20, 
-    VKC_F21, VKC_F22, VKC_F23, VKC_F24,
+    VKC_F21, VKC_F22, VKC_F23, VKC_F24, VKC_INVALID,
 
     // 5 invalids
     VKC_KEYS_INVALID_4, VKC_INVALID,
@@ -371,7 +371,6 @@ static uint8_t asgaardKeyCodes[GLFW_KEY_LAST + 1] = {
     VKC_LSHIFT,
     VKC_LCONTROL,
     VKC_LALT,
-    VKC_INVALID,
     VKC_LWIN,
     VKC_RSHIFT,
     VKC_RCONTROL,

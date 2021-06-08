@@ -188,12 +188,12 @@ void TerminalLine::SetInput(const std::string& input)
             cell.m_character = 0;
         }
         m_text.erase(m_inputOffset, std::string::npos);
-        m_cursor = m_text.size() + 1;
+        m_cursor = m_text.size();
         m_dirty = true;
     }
 
     auto charsToFill = std::min(input.size(), (m_cells.size() - m_inputOffset));
-    for (auto i = m_inputOffset; i < m_cells.size(); i++) {
+    for (auto i = 0; i < charsToFill; i++) {
         AddInput(input[i]);
     }
 }

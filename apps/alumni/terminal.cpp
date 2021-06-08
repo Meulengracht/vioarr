@@ -81,7 +81,7 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
 
     // initialize text state
     m_textState.m_fgColor = m_textState.m_defaultFgColor = theme->GetColor(Asgaard::Theming::Theme::Colors::DECORATION_TEXT);
-    m_textState.m_bgColor = m_textState.m_defaultBgColor = Asgaard::Drawing::Color(0x7F, 0x0C, 0x35, 0x33);
+    m_textState.m_bgColor = m_textState.m_defaultBgColor = theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL);
 
     // initialize VT environment
     InitializeVT();
@@ -358,7 +358,8 @@ void Terminal::PrepareBuffer()
 {
     Asgaard::Drawing::Painter paint(m_buffer);
     
-    paint.SetFillColor(0x7F, 0x0C, 0x35, 0x33);
+    const auto theme = Asgaard::Theming::TM.GetTheme();
+    paint.SetFillColor(theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL));
     paint.RenderFill();
 }
 

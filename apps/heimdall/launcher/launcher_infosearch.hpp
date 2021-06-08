@@ -72,7 +72,7 @@ private:
             auto label = OM.CreateClientObject<Widgets::Label>(m_screen, this, Rectangle(x, y, w, h));
             label->SetFont(m_font);
             label->SetAnchors(anchors);
-            label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
+            label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
             label->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
             return label;
         };
@@ -99,7 +99,7 @@ private:
             Drawing::Painter paint(m_buffer);
             
             // render background
-            paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
+            paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
             paint.RenderFill();
 
             // render input box

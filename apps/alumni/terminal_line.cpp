@@ -23,6 +23,8 @@
 
 #include "terminal_line.hpp"
 #include "terminal.hpp"
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
 
 TerminalLine::TerminalLine(const std::shared_ptr<Asgaard::Drawing::Font>& font, int row, int initialCellCount)
     : m_font(font)
@@ -199,6 +201,7 @@ void TerminalLine::SetInput(const std::string& input)
 void TerminalLine::Redraw(std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
 {
     if (m_dirty) {
+        const auto theme = Asgaard::Theming::TM.GetTheme();
         Asgaard::Drawing::Painter paint(buffer);
         int x = m_dimensions.X();
         int i = 0;
@@ -222,11 +225,11 @@ void TerminalLine::Redraw(std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
             paint.RenderCharacter(x, m_dimensions.Y(), cell.m_character);
             if (m_showCursor && m_cursor == index) {
                 // restore the fill color to normal
-                paint.SetFillColor(0x7F, 0x0C, 0x35, 0x33);
+                paint.SetFillColor(theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL));
             }
         };
         
-        paint.SetFillColor(0x7F, 0x0C, 0x35, 0x33);
+        paint.SetFillColor(theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL));
         paint.RenderFill(m_dimensions);
         
         paint.SetFont(m_font);

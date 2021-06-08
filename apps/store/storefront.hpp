@@ -21,69 +21,82 @@
  */
 #pragma once
 
-#include <subsurface.hpp>
+#include <application.hpp>
+#include <window_base.hpp>
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
+#include <object_manager.hpp>
+#include <events/key_event.hpp>
 #include <drawing/painter.hpp>
-#include <widgets/label.hpp>
-#include <widgets/icon.hpp>
-#include <memory>
-#include <string>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
+#include <widgets/cursor.hpp>
+#include <keycodes.h>
+
+#ifdef MOLLENOS
+#include <ddk/utils.h>
+#include <os/process.h>
+#else
+#include <unistd.h>
+#endif
+
+#define CURSOR_SIZE 16
 
 using namespace Asgaard;
 
-class LauncherApplication : public SubSurface {
+class Storefront final : public WindowBase {
 public:
-    LauncherApplication(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions) 
-        : SubSurface(id, screen, parent, dimensions)
+    Storefront(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+        : WindowBase(id, screen, dimensions) { }
+    
+    ~Storefront()
     {
-        LoadResources();
-        FinishSetup();
+        // Override destroy
     }
-
-    ~LauncherApplication() {
-        Destroy();
-    }
-
-    void Destroy() override
-    {
-        SubSurface::Destroy();
-    }
-
+    
 private:
-    void LoadResources()
+    void OnCreated() override
     {
-        // this box is fixed, so we allocate just enough in this case
-        auto screenSize = Dimensions().Width() * Dimensions().Height() * 4;
+        auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
         m_memory = MemoryPool::Create(this, screenSize);
 
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
-
-        const auto theme = Theming::TM.GetTheme();
-        auto renderBackground = [&] {
-            Drawing::Painter paint(m_buffer);
-            paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
-            paint.RenderFill();
-        };
-
-        // create labels
-
-        // load font
-
-        renderBackground();
+        
+        // Now all objects are created, load and prepare resources
+        LoadResources();
+        FinishSetup();
     }
 
+    void LoadResources()
+    {
+        
+    }
+    
     void FinishSetup()
     {
+        MarkInputRegion(Dimensions());
         SetBuffer(m_buffer);
+        MarkDamaged(Dimensions());
         ApplyChanges();
     }
     
+    void OnRefreshed(MemoryBuffer* buffer) override
+    {
+        // nothing to do
+    }
+
+    void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override
+    {
+        
+    }
+
+    void OnKeyEvent(const KeyEvent& keyEvent) override
+    {
+        
+    }
+    
 private:
-    std::shared_ptr<Asgaard::MemoryPool>   m_memory;
-    std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
-    std::shared_ptr<Drawing::Font>         m_font;
-    std::shared_ptr<Widgets::Label>        m_label;
-    std::shared_ptr<Widgets::Icon>         m_icon;
+    std::shared_ptr<MemoryPool>      m_memory;
+    std::shared_ptr<MemoryBuffer>    m_buffer;
 };

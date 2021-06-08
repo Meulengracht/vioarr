@@ -71,6 +71,7 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
     for (int i = 0; i < m_rows; i++) {
         m_lines.push_back(std::make_unique<TerminalLine>(font, i, m_cellWidth));
     }
+    m_temporaryLine = std::make_unique<TerminalLine>(font, 0, m_cellWidth);
 
     // show cursor
     m_lines[0]->SetCursorPosition(0);
@@ -97,7 +98,10 @@ void Terminal::AddInput(int character)
     m_command.push_back(character);
 
     if (!m_lines[m_inputLineIndexCurrent]->AddInput(character)) {
-        CommitLine();
+        CommitLine(true);
+    }
+    else {
+        ScrollToBottom(true);
     }
 }
 
@@ -109,39 +113,68 @@ void Terminal::RemoveInput()
     }
     m_command.erase(m_command.size() - 1, 1);
 
+    ScrollToBottom(true);
     if (!m_lines[m_inputLineIndexCurrent]->RemoveInput()) {
-        // uh todo, we should skip to prev line
-        return;
+        if (m_inputLineIndexCurrent > m_inputLineIndexStart) {
+            UndoLine();
+        }
     }
 }
 
-std::string Terminal::ClearInput(bool newline)
+std::string Terminal::ClearInput()
 {
     auto command = m_command;
-    CommandHistoryAdd(command);
 
+    CommandHistoryAdd(command);
+    CommitLine(true);
+
+    // reset current to be start
     m_inputLineIndexStart = m_inputLineIndexCurrent;
-    if (newline) {
-        CommitLine();
-    }
-    else {
-        m_lines[m_inputLineIndexCurrent]->Reset();
-    }
     return command;
 }
 
-void Terminal::CommitLine()
+void Terminal::CommitLine(bool isInput)
 {
     m_history.push_back(std::make_shared<TerminalLineHistory>(m_lines[m_inputLineIndexCurrent]));
     m_historyIndex = m_history.size();
 
+    /**
+     * When we commit a new line we need to handle both overflow, current input
+     * and the fact that we keep track of input line count. This adds a lot of complexity
+     * to the current state.
+     * Lets take an example with 5 lines
+     * 
+     * m_rows = 5
+     * 
+     * 0. philip@path~ ls                             ClearInput => m_inputLineIndexStart=0, m_inputLineIndexCurrent=0
+     * 1. file0 file1 file2 file3                     CommitLine => m_inputLineIndexStart=1, m_inputLineIndexCurrent=1
+     * 2. philip@path~ echo test                      ClearInput => m_inputLineIndexStart=2, m_inputLineIndexCurrent=2
+     * 3. test                                        CommitLine => m_inputLineIndexStart=3, m_inputLineIndexCurrent=3
+     * 4. philip@path~ test test test test test test  ClearInput => m_inputLineIndexStart=4, m_inputLineIndexCurrent=4
+     * 
+     * Before committing the last line, the current state of m_inputLineIndexStart/m_inputLineIndexCurrent
+     * should be that they should be equal, otherwise ScrollToLine will calculate wrong values. The last line
+     * will trigger ScrollToLine(true), due to m_inputLineIndexCurrent == m_rows - 1.
+     * 
+     */
+
     // Are we at the end?
     if (m_inputLineIndexCurrent == m_rows - 1) {
-        ScrollToLine(true);
+        /**
+         * If we are end of screen, we need to take into account whether or not
+         * the input is multilined, then we need to reduce the inputLineIndexStart
+         */
+        if (isInput) {
+            m_inputLineIndexStart--;
+        }
+        ScrollToLine(m_historyIndex, true);
     }
     else {
         m_lines[m_inputLineIndexCurrent]->SetCursorPosition(-1);
         m_inputLineIndexCurrent++;
+        if (!isInput) {
+            m_inputLineIndexStart++;
+        }
         m_lines[m_inputLineIndexCurrent]->SetCursorPosition(0);
     }
 }
@@ -150,24 +183,33 @@ void Terminal::UndoLine()
 {
     m_history.pop_back();
 
-    m_lines[m_inputLineIndexCurrent]->SetCursorPosition(-1);
+    m_lines[m_inputLineIndexCurrent]->Reset();
     m_inputLineIndexCurrent--;
     m_lines[m_inputLineIndexCurrent]->SetCursorPosition(m_lines[m_inputLineIndexCurrent]->GetCurrentLength() + 1);
 }
 
-void Terminal::ScrollToLine(bool clearInput)
+void Terminal::ScrollToLine(int line, bool keepInputLine)
 {
     // If clear input is given, we need the last row free
-    auto numInputLines = (m_inputLineIndexCurrent - m_inputLineIndexStart) + 1;
-    auto clearCount    = m_rows - (clearInput ? numInputLines : 0);
-    auto historyStart  = m_historyIndex - clearCount;
+    auto clearCount    = m_rows - (keepInputLine ? 1 : 0);
+    auto historyStart  = line - clearCount;
     for (int i = 0; i < clearCount; i++, historyStart++) {
         m_lines[i]->Reset(m_history[historyStart]->GetCells());
     }
 
-    if (clearInput) {
+    if (keepInputLine) {
         m_lines[m_rows - 1]->Reset();
         m_lines[m_rows - 1]->SetCursorPosition(0);
+    }
+}
+
+void Terminal::ScrollToBottom(bool keepInputLine)
+{
+    // History must be longer than the number of rows - 1
+    auto historySize = static_cast<int>(m_history.size());
+    if (historySize > m_rows && m_historyIndex < historySize) {
+        m_historyIndex = historySize;
+        ScrollToLine(m_historyIndex, keepInputLine);
     }
 }
 
@@ -178,7 +220,7 @@ void Terminal::HistoryNext()
     // History must be longer than the number of rows - 1
     if (historySize > m_rows && m_historyIndex < historySize) {
         m_historyIndex++;
-        ScrollToLine(m_historyIndex == historySize);
+        ScrollToLine(m_historyIndex, m_historyIndex == historySize);
     }
 }
 
@@ -187,7 +229,7 @@ void Terminal::HistoryPrevious()
     // History must be longer than the number of rows
     if (m_historyIndex > m_rows) {
         m_historyIndex--;
-        ScrollToLine(false);
+        ScrollToLine(m_historyIndex, false);
     }
 }
 
@@ -253,7 +295,7 @@ void Terminal::Print(const char* format, ...)
 
     for (i = 0; i < PRINTBUFFER_SIZE && m_printBuffer[i]; i++) {
         if (m_printBuffer[i] == '\n') {
-            CommitLine();
+            CommitLine(false);
         }
         else if (m_printBuffer[i] == '\033') { // 0x1B
             auto charsConsumed = ParseVTEscapeCode(&m_printBuffer[i]);
@@ -264,7 +306,7 @@ void Terminal::Print(const char* format, ...)
         }
         else {
             if (!m_lines[m_inputLineIndexCurrent]->AddCharacter(m_printBuffer[i], m_textState.m_fgColor)) {
-                CommitLine();
+                CommitLine(false);
                 i--;
             }
         }
@@ -373,7 +415,7 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
         RequestRedraw();
     }
     else if (key.KeyCode() == VKC_ENTER) {
-        std::string input = ClearInput(true);
+        std::string input = ClearInput();
         if (!m_resolver->Interpret(input)) {
             if (m_resolver->GetClosestMatch().length() != 0) {
                 Print("Command did not exist, did you mean %s?\n", m_resolver->GetClosestMatch().c_str());
@@ -434,5 +476,5 @@ void Terminal::OnResized(enum SurfaceEdges, int width, int height)
     for (int i = 0; i < m_rows; i++) {
         auto line = std::make_unique<TerminalLine>(m_font, i, m_cellWidth);
     }
-    ScrollToLine(m_historyIndex == static_cast<int>(m_history.size()));
+    ScrollToLine(m_historyIndex, m_historyIndex == static_cast<int>(m_history.size()));
 }

@@ -179,7 +179,21 @@ bool TerminalLine::RemoveInput()
 
 void TerminalLine::SetInput(const std::string& input)
 {
+    // clear input, then add
+    if (m_text.size() > m_inputOffset) {
+        for (auto i = m_inputOffset; i < m_cells.size(); i++) {
+            auto& cell = m_cells[i];
+            cell.m_character = 0;
+        }
+        m_text.erase(m_inputOffset, std::string::npos);
+        m_cursor = m_text.size() + 1;
+        m_dirty = true;
+    }
 
+    auto charsToFill = std::min(input.size(), (m_cells.size() - m_inputOffset));
+    for (auto i = m_inputOffset; i < m_cells.size(); i++) {
+        AddInput(input[i]);
+    }
 }
 
 void TerminalLine::Redraw(std::shared_ptr<Asgaard::MemoryBuffer>& buffer)

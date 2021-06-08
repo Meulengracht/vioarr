@@ -67,7 +67,7 @@ public:
     void RequestRedraw();
 
     // Input manipulation
-    std::string ClearInput(bool newline);
+    std::string ClearInput();
     void RemoveInput();
     void AddInput(int character);
     
@@ -94,9 +94,10 @@ protected:
 private:
     void Redraw();
     void PrepareBuffer();
-    void CommitLine();
+    void CommitLine(bool isInput);
     void UndoLine();
-    void ScrollToLine(bool clearInput);
+    void ScrollToLine(int line, bool keepInputLine);
+    void ScrollToBottom(bool keepInputLine);
 
     void   InitializeVT();
     size_t ParseVTEscapeCode(const char* buffer);
@@ -120,6 +121,7 @@ private:
     std::vector<std::string>                          m_commandHistory;
     int                                               m_commandIndex;
     std::vector<std::unique_ptr<TerminalLine>>        m_lines;
+    std::unique_ptr<TerminalLine>                     m_temporaryLine;
     int                                               m_inputLineIndexStart;
     int                                               m_inputLineIndexCurrent;
     char*                                             m_printBuffer;

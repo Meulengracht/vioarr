@@ -443,7 +443,7 @@ vioarr_surface_t* vioarr_surface_at(vioarr_surface_t* surface, int x, int y, int
     vioarr_surface_t* surfaceAt = NULL;
     vioarr_region_t*  region;
     //vioarr_utils_trace(VISTR("vioarr_surface_at(surface=%u, x=%i, y=%i)"), vioarr_surface_id(surface), x, y);
-    if (!surface) {
+    if (!vioarr_surface_visible(surface)) {
         return NULL;
     }
 

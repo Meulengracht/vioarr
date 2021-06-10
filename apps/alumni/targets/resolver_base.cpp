@@ -26,6 +26,7 @@
 
 ResolverBase::ResolverBase()
     : m_terminal(nullptr)
+    , m_currentDirectory("nil")
 {
     // Register inbuilt commands
     RegisterCommand("cd", "Change the working directory", std::bind(&ResolverBase::ChangeDirectory, this, std::placeholders::_1));
@@ -61,6 +62,18 @@ bool ResolverBase::Help(const std::vector<std::string>&)
 bool ResolverBase::Exit(const std::vector<std::string>&)
 {
     exit(EXIT_SUCCESS);
+    return true;
+}
+
+bool ResolverBase::ListDirectory(const std::vector<std::string>& arguments)
+{
+    auto path = m_currentDirectory;
+    if (arguments.size() != 0) {
+        path = arguments[0];
+    }
+
+    auto directoryEntries = GetDirectoryContents(path);
+    DirectoryPrinter(directoryEntries);
     return true;
 }
 
@@ -104,4 +117,21 @@ void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEnt
             );
         }
     }
+}
+
+void ResolverBase::TryAutoComplete(const std::string& currentCommand)
+{
+    auto directoryEntries = GetDirectoryContents(m_currentDirectory);
+    if (!currentCommand.size()) {
+        DirectoryPrinter(directoryEntries);
+        PrintCommandHeader();
+        return;
+    }
+
+    auto lastToken = SplitCommandString(currentCommand).back();
+    auto matchingEntry = std::find_if(
+        std::begin(directoryEntries), 
+        std::end(directoryEntries),
+        [lastToken](const std::string& i) { return i.rfind(lastToken, 0) == 0; }
+    );
 }

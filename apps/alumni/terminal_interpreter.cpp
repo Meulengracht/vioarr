@@ -63,48 +63,49 @@ void TerminalInterpreter::RegisterCommand(const std::string& Command, const std:
     m_Commands.push_back(std::make_unique<TerminalCommand>(Command, Description, Fn));
 }
 
-std::vector<std::string> TerminalInterpreter::SplitCommandString(const std::string& String)
+std::vector<std::string> TerminalInterpreter::SplitCommandString(const std::string& command)
 {
-    std::vector<std::string>    Tokens;
-    std::string                 Token = "";
-    for (size_t i = 0; i < String.size(); i++) {
-        if (String[i] == ' ') {
-            if (Token != "") {
-                Tokens.push_back(Token);
+    std::vector<std::string> tokens;
+    std::string              token = "";
+
+    for (auto i = 0u; i < command.size(); i++) {
+        if (command[i] == ' ') {
+            if (token != "") {
+                tokens.push_back(token);
             }
-            Token = "";
+            token = "";
             continue;
         }
-        Token.push_back(String[i]);
+        token.push_back(command[i]);
     }
-    if (Token != "") {
-        Tokens.push_back(Token);
+    if (token != "") {
+        tokens.push_back(token);
     }
-    return Tokens;
+    return tokens;
 }
 
 bool TerminalInterpreter::Interpret(const std::string& String)
 {
-    int ShortestDistance = String.size();
+    int shortestDistance = String.size();
     m_ClosestMatch = "";
     if (String.size() == 0) {
         return false;
     }
     
     // Get command and remove from array
-    std::vector<std::string> Tokens = SplitCommandString(String);
-    std::string CommandString       = Tokens[0];
-    Tokens.erase(Tokens.begin());
+    auto tokens        = SplitCommandString(String);
+    auto commandString = tokens[0];
+    tokens.erase(tokens.begin());
 
-    for (auto& Command : m_Commands) {
-        int Distance = Command->operator()(CommandString, Tokens);
-        if (Distance == 0) {
+    for (auto& command : m_Commands) {
+        int distance = command->operator()(commandString, tokens);
+        if (distance == 0) {
             return true;
         }
-        else if (Distance < ShortestDistance) {
-            ShortestDistance    = Distance;
-            m_ClosestMatch      = Command->GetCommandText();
+        else if (distance < shortestDistance) {
+            shortestDistance    = distance;
+            m_ClosestMatch      = command->GetCommandText();
         }
     }
-    return CommandResolver(CommandString, Tokens);
+    return CommandResolver(commandString, tokens);
 }

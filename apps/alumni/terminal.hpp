@@ -92,8 +92,8 @@ protected:
     void OnResized(enum SurfaceEdges, int width, int height) override;
     
 private:
-    void Redraw();
-    void PrepareBuffer();
+    void Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>&);
+    void PrepareBuffer(const std::shared_ptr<Asgaard::MemoryBuffer>&);
     void CommitLine(bool isInput);
     void UndoLine();
     void ScrollToLine(int line, bool keepInputLine);

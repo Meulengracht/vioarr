@@ -41,14 +41,19 @@ public:
 public:
     virtual bool HandleKeyCode(const Asgaard::KeyEvent&) = 0;
     virtual void PrintCommandHeader() = 0;
+    
+    void TryAutoComplete(const std::string&);
 
 protected:
-    virtual bool ListDirectory(const std::vector<std::string>&) = 0;
     virtual bool ChangeDirectory(const std::vector<std::string>&) = 0;
+    virtual std::vector<std::string> GetDirectoryContents(const std::string& Path) = 0;
+    
+    void DirectoryPrinter(const std::vector<std::string>&);
+    bool ListDirectory(const std::vector<std::string>&);
     bool Help(const std::vector<std::string>&);
     bool Exit(const std::vector<std::string>&);
-    void DirectoryPrinter(const std::vector<std::string>&);
 
 protected:
     std::shared_ptr<Terminal> m_terminal;
+    std::string               m_currentDirectory;
 };

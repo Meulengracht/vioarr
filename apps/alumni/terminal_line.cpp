@@ -198,7 +198,7 @@ void TerminalLine::SetInput(const std::string& input)
     }
 }
 
-void TerminalLine::Redraw(std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
+void TerminalLine::Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
 {
     if (m_dirty) {
         const auto theme = Asgaard::Theming::TM.GetTheme();

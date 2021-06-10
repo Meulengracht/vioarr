@@ -342,25 +342,25 @@ void Terminal::RequestRedraw()
 {
     bool shouldRedraw = m_redrawReady.exchange(false);
     if (shouldRedraw) {
-        Redraw();
+        Redraw(m_buffer);
+        MarkDamaged(Dimensions());
+        ApplyChanges();
     }
     else {
         m_redraw = true;
     }
 }
 
-void Terminal::Redraw()
+void Terminal::Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
 {
     for (int i = 0; i < m_rows; i++) {
-        m_lines[i]->Redraw(m_buffer);
+        m_lines[i]->Redraw(buffer);
     }
-    MarkDamaged(Dimensions());
-    ApplyChanges();
 }
 
-void Terminal::PrepareBuffer()
+void Terminal::PrepareBuffer(const std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
 {
-    Asgaard::Drawing::Painter paint(m_buffer);
+    Asgaard::Drawing::Painter paint(buffer);
     
     const auto theme = Asgaard::Theming::TM.GetTheme();
     paint.SetFillColor(theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL));
@@ -385,7 +385,7 @@ void Terminal::OnCreated()
     EnableDecoration(true);
 
     // Now all resources are created
-    PrepareBuffer();
+    PrepareBuffer(m_buffer);
     SetBuffer(m_buffer);
     SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
     m_resolver->PrintCommandHeader();
@@ -395,7 +395,9 @@ void Terminal::OnRefreshed(Asgaard::MemoryBuffer*)
 {
     // Request redraw
     if (m_redraw) {
-        Redraw();
+        Redraw(m_buffer);
+        MarkDamaged(Dimensions());
+        ApplyChanges();
         m_redraw = false;
     }
     else {
@@ -422,11 +424,14 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
     else if (key.KeyCode() == VKC_ENTER) {
         std::string input = ClearInput();
         if (!m_resolver->Interpret(input)) {
-            if (m_resolver->GetClosestMatch().length() != 0) {
+            if (input.length() != 0 && m_resolver->GetClosestMatch().length() != 0) {
                 Print("Command did not exist, did you mean %s?\n", m_resolver->GetClosestMatch().c_str());
             }
         }
         m_resolver->PrintCommandHeader();
+    }
+    else if (key.KeyCode() == VKC_TAB) {
+        //m_resolver->TryAutoComplete(m_command);
     }
     else if (key.KeyCode() == VKC_UP) {
         if (key.Control()) {
@@ -466,20 +471,25 @@ void Terminal::OnResized(enum SurfaceEdges, int width, int height)
     auto rows = ((height - ALUMNI_MARGIN_TOP) / m_font->GetFontHeight()) - 1;
     auto cols = (width - (ALUMNI_MARGIN_LEFT + ALUMNI_MARGIN_RIGHT)) / m_font->GetFontWidth();
 
-    // todo update buffer
+    // create a new buffer object of the requested size
+    auto buffer = Asgaard::MemoryBuffer::Create(this, m_memory, 0, width,
+        height, Asgaard::PixelFormat::X8B8G8R8, Asgaard::MemoryBuffer::Flags::NONE);
+    
+    PrepareBuffer(m_buffer);
+    if (rows != m_rows || cols != m_cellWidth) {
+        // update stored metrics
+        m_rows = rows;
+        m_cellWidth = cols;
 
-    if (rows == m_rows && cols == m_cellWidth) {
-        return;
+        // clear lines
+        m_lines.clear();
+        for (int i = 0; i < m_rows; i++) {
+            auto line = std::make_unique<TerminalLine>(m_font, i, m_cellWidth);
+        }
+        ScrollToLine(m_historyIndex, m_historyIndex == static_cast<int>(m_history.size()));
     }
-
-    // update stored metrics
-    m_rows = rows;
-    m_cellWidth = cols;
-
-    // clear lines
-    m_lines.clear();
-    for (int i = 0; i < m_rows; i++) {
-        auto line = std::make_unique<TerminalLine>(m_font, i, m_cellWidth);
-    }
-    ScrollToLine(m_historyIndex, m_historyIndex == static_cast<int>(m_history.size()));
+    Redraw(buffer);
+    SetBuffer(buffer);
+    m_buffer->Destroy();
+    m_buffer = buffer;
 }

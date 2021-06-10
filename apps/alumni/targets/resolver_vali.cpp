@@ -47,7 +47,6 @@ namespace {
 ResolverVali::ResolverVali(int stdoutDescriptor, int stderrDescriptor)
     : ResolverBase()
     , m_profile("philip")
-    , m_currentDirectory("n/a")
     , m_application(UUID_INVALID)
     , m_stdoutDescriptor(stdoutDescriptor)
     , m_stdinDescriptor(pipe(0x1000, 0))
@@ -80,7 +79,7 @@ void ResolverVali::UpdateWorkingDirectory()
         m_currentDirectory = std::string(CurrentPath);
     }
     else {
-        m_currentDirectory = "n/a";
+        m_currentDirectory = "nil";
     }
     std::free(CurrentPath);
 }
@@ -222,19 +221,6 @@ bool ResolverVali::CommandResolver(const std::string& Command, const std::vector
         }
     }
     return ExecuteProgram(ProgramPath, Arguments);
-}
-
-bool ResolverVali::ListDirectory(const std::vector<std::string>& Arguments)
-{
-    TRACE("ResolverVali::ListDirectory()");
-    auto path = m_currentDirectory;
-    if (Arguments.size() != 0) {
-        path = Arguments[0];
-    }
-
-    auto directoryEntries = GetDirectoryContents(path);
-    DirectoryPrinter(directoryEntries);
-    return true;
 }
 
 bool ResolverVali::ChangeDirectory(const std::vector<std::string>& Arguments)

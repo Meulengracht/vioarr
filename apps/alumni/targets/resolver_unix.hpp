@@ -43,11 +43,10 @@ public:
 
 protected:
     bool CommandResolver(const std::string&, const std::vector<std::string>&) override;
-    bool ListDirectory(const std::vector<std::string>&) override;
     bool ChangeDirectory(const std::vector<std::string>&) override;
+    std::vector<std::string> GetDirectoryContents(const std::string& Path) override;
 
 private:
-    std::vector<std::string> GetDirectoryContents(const std::string& Path);
     bool ExecuteProgram(const std::string&, const std::vector<std::string>&);
     bool IsProgramPathValid(const std::string&);
     void UpdateWorkingDirectory();
@@ -55,7 +54,6 @@ private:
     
 private:
     std::string m_profile;
-    std::string m_currentDirectory;
     pid_t       m_application;
     int         m_stdoutFds[2];
     int         m_stdinFds[2];

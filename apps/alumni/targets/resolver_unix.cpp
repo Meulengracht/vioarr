@@ -54,7 +54,6 @@ namespace {
 ResolverUnix::ResolverUnix(const int* stdoutFds, const int* stderrFds, const int* stdinFds)
     : ResolverBase()
     , m_profile(ResolveProfileName())
-    , m_currentDirectory("n/a")
     , m_application(-1)
     , m_stdoutFds{stdoutFds[0], stdoutFds[1]}
     , m_stdinFds{stdinFds[0], stdinFds[1]}
@@ -79,7 +78,7 @@ void ResolverUnix::UpdateWorkingDirectory()
         m_currentDirectory = std::string(CurrentPath);
     }
     else {
-        m_currentDirectory = "n/a";
+        m_currentDirectory = "nil";
     }
     std::free(CurrentPath);
 }
@@ -255,27 +254,15 @@ bool ResolverUnix::CommandResolver(const std::string& Command, const std::vector
     return ExecuteProgram(ProgramPath, Arguments);
 }
 
-bool ResolverUnix::ListDirectory(const std::vector<std::string>& Arguments)
+bool ResolverUnix::ChangeDirectory(const std::vector<std::string>& arguments)
 {
-    auto path = m_currentDirectory;
-    if (Arguments.size() != 0) {
-        path = Arguments[0];
-    }
-
-    auto directoryEntries = GetDirectoryContents(path);
-    DirectoryPrinter(directoryEntries);
-    return true;
-}
-
-bool ResolverUnix::ChangeDirectory(const std::vector<std::string>& Arguments)
-{
-    if (Arguments.size() != 0) {
-        std::string Path = Arguments[0];
-        if (!chdir(Path.c_str())) {
+    if (arguments.size() != 0) {
+        std::string path = arguments[0];
+        if (!chdir(path.c_str())) {
             UpdateWorkingDirectory();
             return true;
         }
-        m_terminal->Print("cd: invalid argument %s\n", Path.c_str());
+        m_terminal->Print("cd: invalid argument %s\n", path.c_str());
         return false;
     }
     m_terminal->Print("cd: no argument given\n");

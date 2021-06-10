@@ -44,7 +44,7 @@ public:
     void Resize(int cellCount, std::vector<TerminalCell>& overflownCells);
     void PrependCells(const std::vector<TerminalCell>& cells, std::vector<TerminalCell>& overflownCells);
     int  AppendCells(const std::vector<TerminalCell>& cells);
-    void Redraw(std::shared_ptr<Asgaard::MemoryBuffer>&);
+    void Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>&);
 
     /**
      * @brief Adds user input to the line. The difference here is that input will move

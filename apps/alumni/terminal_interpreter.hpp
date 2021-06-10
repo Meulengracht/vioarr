@@ -69,9 +69,7 @@ public:
 
 protected:
     virtual bool CommandResolver(const std::string&, const std::vector<std::string>&) = 0;
-
-private:
-    std::vector<std::string> SplitCommandString(const std::string& String);
+    std::vector<std::string> SplitCommandString(const std::string&);
 
 private:
     std::list<std::unique_ptr<TerminalCommand>> m_Commands;

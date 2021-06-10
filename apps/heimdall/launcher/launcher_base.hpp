@@ -97,6 +97,7 @@ private:
         );
         m_appTitle->SetFont(m_font);
         m_appTitle->SetText("Applications");
+        m_appTitle->RequestRedraw();
         
         auto renderImage = [](const auto& buffer, const auto& image) {
             Drawing::Painter painter(buffer);

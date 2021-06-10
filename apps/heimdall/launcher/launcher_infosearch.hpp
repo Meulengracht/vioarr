@@ -64,7 +64,7 @@ private:
         const auto theme = Theming::TM.GetTheme();
 
         // load font
-        m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 14);
+        m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 12);
         m_smallFont = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 10);
 
         // create labels
@@ -72,7 +72,7 @@ private:
             auto label = OM.CreateClientObject<Widgets::Label>(m_screen, this, Rectangle(x, y, w, h));
             label->SetFont(m_font);
             label->SetAnchors(anchors);
-            label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
+            label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
             label->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
             return label;
         };
@@ -82,18 +82,21 @@ private:
         // y => widget + 50
         // w => width / 2
         auto midX = Dimensions().Width() >> 1;
-        m_userLabel = createLabel(15, 50, midX - 15, 20, Widgets::Label::Anchors::LEFT);
+        m_userLabel = createLabel(15, 60, midX - 15, 20, Widgets::Label::Anchors::LEFT);
         m_userLabel->SetText("Philip Meulengracht");
+        m_userLabel->RequestRedraw();
 
-        m_pcNameLabel = createLabel(15, 70, midX - 15, 20, Widgets::Label::Anchors::LEFT);
+        m_pcNameLabel = createLabel(15, 80, midX - 15, 20, Widgets::Label::Anchors::LEFT);
         m_pcNameLabel->SetText("Vali-PC");
+        m_pcNameLabel->RequestRedraw();
 
-        m_timeLabel = createLabel(midX, 50, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
-        m_dateLabel = createLabel(midX, 70, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
+        m_timeLabel = createLabel(midX, 60, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
+        m_dateLabel = createLabel(midX, 80, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
 
-        m_sysinfoLabel = createLabel(midX, Dimensions().Height() - 25, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
+        m_sysinfoLabel = createLabel(midX, Dimensions().Height() - 20, midX - 5, 15, Widgets::Label::Anchors::RIGHT);
         m_sysinfoLabel->SetFont(m_smallFont);
         m_sysinfoLabel->SetText("Vali v0.7.0-dev");
+        m_sysinfoLabel->RequestRedraw();
 
         auto renderBackground = [&] {
             Drawing::Painter paint(m_buffer);
@@ -124,9 +127,11 @@ private:
         
         strftime(&buf[0], sizeof(buf), "%a, %H:%M:%S", now);
         m_timeLabel->SetText(std::string(&buf[0]));
+        m_timeLabel->RequestRedraw();
 
         strftime(&buf[0], sizeof(buf), "%B %d, %Y", now);
         m_dateLabel->SetText(std::string(&buf[0]));
+        m_dateLabel->RequestRedraw();
     }
 
 private:

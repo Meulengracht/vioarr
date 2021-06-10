@@ -652,14 +652,6 @@ void vioarr_surface_render(vcontext_t* context, vioarr_surface_t* surface)
         (float)vioarr_region_x(region),
         (float)vioarr_region_y(region)
     );
-
-    // handle transparency of the surface
-    if (ACTIVE_PROPERTIES(surface).transparent) {
-        nvgGlobalCompositeBlendFunc(context, NVG_SRC_ALPHA, NVG_ONE_MINUS_SRC_ALPHA);
-    }
-    else {
-        nvgGlobalCompositeOperation(context, NVG_COPY);
-    }
 #endif
 
     if (ACTIVE_BACKBUFFER(surface).content) {
@@ -821,11 +813,6 @@ static void __render_drop_shadow(vcontext_t* context, vioarr_surface_t* surface)
     float    width        = (float)vioarr_region_width(surface->dimensions);
     float    height       = (float)vioarr_region_height(surface->dimensions);
 #ifdef VIOARR_BACKEND_NANOVG
-    if (!ACTIVE_PROPERTIES(surface).transparent) {
-        nvgSave(context);
-        nvgGlobalCompositeBlendFunc(context, NVG_SRC_ALPHA, NVG_ONE_MINUS_SRC_ALPHA);
-    }
-
 	NVGpaint shadow_paint = nvgBoxGradient(context, 0, 0 + 2.0f, width, height, 
 	    ACTIVE_PROPERTIES(surface).corner_radius * 2, 10, nvgRGBA(0, 0, 0, 128), nvgRGBA(0, 0, 0, 0));
 	nvgBeginPath(context);
@@ -839,10 +826,6 @@ static void __render_drop_shadow(vcontext_t* context, vioarr_surface_t* surface)
 	nvgPathWinding(context, NVG_HOLE);
 	nvgFillPaint(context, shadow_paint);
 	nvgFill(context);
-
-    if (!ACTIVE_PROPERTIES(surface).transparent) {
-        nvgRestore(context);
-    }
 #endif
 }
 

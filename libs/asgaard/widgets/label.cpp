@@ -136,12 +136,15 @@ namespace Asgaard {
             if ((m_anchors & Anchors::RIGHT) == Anchors::RIGHT) {
                 return std::max(0, Dimensions().Width() - (textDimensions.Width() + 1));
             }
+            else if ((m_anchors & Anchors::LEFT) == Anchors::LEFT) {
+                return 0;
+            }
             else if ((m_anchors & Anchors::CENTER) == Anchors::CENTER) {
                 int centerDims = Dimensions().Width() >> 1;
                 int centerText = textDimensions.Width() >> 1;
                 return std::max(0, centerDims - centerText);
             }
-
+            
             return 0;
         }
 
@@ -149,6 +152,9 @@ namespace Asgaard {
         {
             if ((m_anchors & Anchors::BOTTOM) == Anchors::BOTTOM) {
                 return std::max(0, Dimensions().Height() - (textDimensions.Height() + 1));
+            }
+            else if ((m_anchors & Anchors::TOP) == Anchors::TOP) {
+                return 0;
             }
             else if ((m_anchors & Anchors::CENTER) == Anchors::CENTER) {
                 int centerDims = Dimensions().Height() >> 1;

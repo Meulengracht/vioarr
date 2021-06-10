@@ -77,6 +77,17 @@ private:
             return label;
         };
 
+        constexpr auto xOffsetInSearchBox = 15 + 20 + (2 * 4);
+        constexpr auto yOffsetInSearchBox = 15 + 4;
+        m_searchLabel = createLabel(
+            xOffsetInSearchBox, 
+            yOffsetInSearchBox, 
+            Dimensions().Width() - (xOffsetInSearchBox + 20),
+            35 - (2 * 4),
+            Widgets::Label::Anchors::LEFT | Widgets::Label::Anchors::CENTER
+        );
+        SetPlaceholderText();
+
         // USERNAME LABEL starts __under__ the search widget
         // x => 15
         // y => widget + 50
@@ -93,7 +104,7 @@ private:
         m_timeLabel = createLabel(midX, 60, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
         m_dateLabel = createLabel(midX, 80, midX - 15, 20, Widgets::Label::Anchors::RIGHT);
 
-        m_sysinfoLabel = createLabel(midX, Dimensions().Height() - 20, midX - 5, 15, Widgets::Label::Anchors::RIGHT);
+        m_sysinfoLabel = createLabel(midX, Dimensions().Height() - 15, midX - 5, 15, Widgets::Label::Anchors::RIGHT);
         m_sysinfoLabel->SetFont(m_smallFont);
         m_sysinfoLabel->SetText("Vali v0.7.0-dev");
         m_sysinfoLabel->RequestRedraw();
@@ -119,6 +130,13 @@ private:
         ApplyChanges();
     }
 
+    void SetPlaceholderText()
+    {
+        m_searchLabel->SetText("Search");
+        m_searchLabel->SetTextColor(Drawing::Color(0xBC, 0xBC, 0xBC));
+        m_searchLabel->RequestRedraw();
+    }
+
     void UpdateTimeAndDate()
     {
         std::time_t t   = std::time(0);   // get time now
@@ -139,6 +157,7 @@ private:
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     std::shared_ptr<Drawing::Font>         m_font;
     std::shared_ptr<Drawing::Font>         m_smallFont;
+    std::shared_ptr<Widgets::Label>        m_searchLabel;
     std::shared_ptr<Widgets::Label>        m_userLabel;
     std::shared_ptr<Widgets::Label>        m_pcNameLabel;
     std::shared_ptr<Widgets::Label>        m_timeLabel;

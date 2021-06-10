@@ -78,11 +78,15 @@ private:
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
 
         // create info search
-        auto midX = (m_screen->GetCurrentWidth() / 2.0f) - (428.0f / 2.0f);
+        constexpr auto SEARCHBOX_WIDTH = 428.0f;
+        constexpr auto SEARCHBOX_HEIGHT = 174.0f;
+        auto midX = (m_screen->GetCurrentWidth() / 2.0f) - (SEARCHBOX_WIDTH / 2.0f);
         m_infoSearch = OM.CreateClientObject<LauncherInfoSearch>(
             m_screen, 
             this, 
-            Rectangle(static_cast<int>(midX), 150, 428, 174)
+            Rectangle(static_cast<int>(midX), 150, 
+                static_cast<int>(SEARCHBOX_WIDTH), 
+                static_cast<int>(SEARCHBOX_HEIGHT))
         );
 
         // create font

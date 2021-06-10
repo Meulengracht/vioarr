@@ -150,7 +150,7 @@ void Theme::InitializeTheme()
     // load colors
     m_colors.insert(std::make_pair(static_cast<int>(Colors::DECORATION_FILL), Drawing::Color(0x0, 0x0C, 0x35, 0x33)));
     m_colors.insert(std::make_pair(static_cast<int>(Colors::DECORATION_TEXT), Drawing::Color(0xFF, 0xFF, 0xFF)));
-    m_colors.insert(std::make_pair(static_cast<int>(Colors::DEFAULT_FILL), Drawing::Color(0xFF, 0x0C, 0x35, 0x33)));
+    m_colors.insert(std::make_pair(static_cast<int>(Colors::DEFAULT_FILL), Drawing::Color(0xFF, 0x35, 0x35, 0x35)));
 }
 
 Drawing::Image Theme::GetImage(enum Elements element)

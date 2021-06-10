@@ -134,7 +134,7 @@ namespace Asgaard {
         int Label::CalculateXCoordinate(const Rectangle& textDimensions)
         {
             if ((m_anchors & Anchors::RIGHT) == Anchors::RIGHT) {
-                return std::max(0, Dimensions().Width() - textDimensions.Width());
+                return std::max(0, Dimensions().Width() - (textDimensions.Width() + 1));
             }
             else if ((m_anchors & Anchors::CENTER) == Anchors::CENTER) {
                 int centerDims = Dimensions().Width() >> 1;
@@ -148,7 +148,7 @@ namespace Asgaard {
         int Label::CalculateYCoordinate(const Rectangle& textDimensions)
         {
             if ((m_anchors & Anchors::BOTTOM) == Anchors::BOTTOM) {
-                return std::max(0, Dimensions().Height() - textDimensions.Height());
+                return std::max(0, Dimensions().Height() - (textDimensions.Height() + 1));
             }
             else if ((m_anchors & Anchors::CENTER) == Anchors::CENTER) {
                 int centerDims = Dimensions().Height() >> 1;

@@ -219,10 +219,10 @@ namespace Asgaard {
                 return;
             }
             
-            unsigned int bgColor = m_fillColor.GetFormatted(m_canvas->Format());
-            unsigned int fgColor = m_outlineColor.GetFormatted(m_canvas->Format());
-            for (size_t i = 0; i < text.length(); i++) {
-                unsigned int character = text[i];
+            auto bgColor = m_fillColor.GetFormatted(m_canvas->Format());
+            auto fgColor = m_outlineColor.GetFormatted(m_canvas->Format());
+            for (auto i = 0u; i < text.length(); i++) {
+                auto character = text[i];
                 
                 if (m_font->GetCharacterBitmap(character, bitmap)) {
                     if ((currentX + bitmap.indentX + bitmap.advance) >= dims.Width()) {

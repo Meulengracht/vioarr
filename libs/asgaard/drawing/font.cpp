@@ -333,7 +333,7 @@ namespace Asgaard {
             struct CharInfo bitmapInfo = { 0 };
             int             width      = 0;
             int             height     = 0;
-            for (size_t i = 0; i < text.length(); i++) {
+            for (auto i = 0u; i < text.length(); i++) {
                 char character = text[i];
                 
                 if (GetCharacterBitmap(character, bitmapInfo)) {

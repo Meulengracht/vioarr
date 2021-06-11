@@ -99,7 +99,7 @@ bool ResolverVali::HandleKeyCode(const Asgaard::KeyEvent& key)
         }
         return true;
     }
-    return false;
+    return ResolverBase::HandleKeyCode(key);
 }
 
 void ResolverVali::PrintCommandHeader()

@@ -163,22 +163,6 @@ exit:
     EXIT("wm_surface_invalidate_callback");
 }
 
-void wm_surface_set_transparency_invocation(struct gracht_message* message, const uint32_t id, const uint8_t set)
-{
-    ENTRY(VISTR("wm_surface_set_transparency_callback(client %i, surface %u)"), message->client, id);
-    vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
-    if (!surface) {
-        vioarr_utils_error(VISTR("wm_surface_set_transparency_callback: failed to find surface"));
-        wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
-        goto exit;
-    }
-    
-    vioarr_surface_set_transparency(surface, set);
-
-exit:
-    EXIT("wm_surface_set_transparency_callback");
-}
-
 void wm_surface_set_drop_shadow_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y, const int width, const int height)
 {
     ENTRY(VISTR("wm_surface_set_drop_shadow_callback(client %i, surface %u)"), message->client, id);

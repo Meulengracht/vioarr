@@ -186,11 +186,6 @@ namespace Asgaard {
             dimensions.X(), dimensions.Y(), dimensions.Width(), dimensions.Height());
     }
 
-    void Surface::SetTransparency(bool enable)
-    {
-        wm_surface_set_transparency(APP.GrachtClient(), nullptr, Id(), (int)enable);
-    }
-    
     void Surface::ApplyChanges()
     {
         wm_surface_commit(APP.GrachtClient(), nullptr, Id());

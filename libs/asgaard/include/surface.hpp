@@ -56,7 +56,6 @@ namespace Asgaard {
         ASGAARD_API void MarkDamaged(const Rectangle&);
         ASGAARD_API void MarkInputRegion(const Rectangle&);
         ASGAARD_API void SetDropShadow(const Rectangle&);
-        ASGAARD_API void SetTransparency(bool enable);
         ASGAARD_API void ApplyChanges();
         
         ASGAARD_API void RequestFrame();

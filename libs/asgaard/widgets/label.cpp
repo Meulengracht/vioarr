@@ -48,7 +48,6 @@ namespace Asgaard {
                 PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
             SetBuffer(m_buffer);
-            SetTransparency(true);
             RedrawReady();
         }
         

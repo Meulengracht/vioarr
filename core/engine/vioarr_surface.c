@@ -42,7 +42,6 @@ typedef struct vioarr_surface_properties {
     int corner_radius;
     int border_width;
     int border_color;
-    int transparent;
     
     vioarr_region_t*       input_region;
     vioarr_region_t*       drop_shadow;
@@ -328,17 +327,6 @@ void vioarr_surface_set_input_region(vioarr_surface_t* surface, int x, int y, in
     vioarr_rwlock_w_lock(&surface->lock);
     vioarr_region_zero(PENDING_PROPERTIES(surface).input_region);
     vioarr_region_add(PENDING_PROPERTIES(surface).input_region, x, y, width, height);
-    vioarr_rwlock_w_unlock(&surface->lock);
-}
-
-void vioarr_surface_set_transparency(vioarr_surface_t* surface, int enable)
-{
-    if (!surface) {
-        return;
-    }
-
-    vioarr_rwlock_w_lock(&surface->lock);
-    PENDING_PROPERTIES(surface).transparent = enable;
     vioarr_rwlock_w_unlock(&surface->lock);
 }
 
@@ -774,7 +762,6 @@ static void __swap_properties(vioarr_surface_t* surface)
     ACTIVE_PROPERTIES(surface).border_width  = PENDING_PROPERTIES(surface).border_width;
     ACTIVE_PROPERTIES(surface).border_color  = PENDING_PROPERTIES(surface).border_color;
     ACTIVE_PROPERTIES(surface).corner_radius = PENDING_PROPERTIES(surface).corner_radius;
-    ACTIVE_PROPERTIES(surface).transparent   = PENDING_PROPERTIES(surface).transparent;
     vioarr_region_copy(ACTIVE_PROPERTIES(surface).drop_shadow,  PENDING_PROPERTIES(surface).drop_shadow);
     vioarr_region_copy(ACTIVE_PROPERTIES(surface).input_region, PENDING_PROPERTIES(surface).input_region);
     

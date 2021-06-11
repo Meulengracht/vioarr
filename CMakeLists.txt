@@ -15,24 +15,14 @@ message (STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
 find_package (Python3 REQUIRED)
 
 # checkout dependencies that we need
-include(ExternalProject)
 include(FetchContent)
 
-set(GRACHT_PREFIX "${CMAKE_BINARY_DIR}/gracht")
-set(GRACHT_INSTALL_DIR "${CMAKE_BINARY_DIR}/gracht")
-set(GRACHT_CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${GRACHT_INSTALL_DIR} -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE})
-
-ExternalProject_Add(gracht_dl
-  PREFIX ${GRACHT_PREFIX}
+FetchContent_Declare(
+  libgracht
   GIT_REPOSITORY https://github.com/meulengracht/libgracht.git
   GIT_TAG main
-  INSTALL_DIR ${GRACHT_INSTALL_DIR}
-  CMAKE_ARGS ${GRACHT_CMAKE_ARGS}
-  CONFIGURE_HANDLED_BY_BUILD ON
-  BUILD_BYPRODUCTS ${GRACHT_INSTALL_DIR}/lib/${CMAKE_SHARED_MODULE_PREFIX}gracht${CMAKE_SHARED_LIBRARY_SUFFIX}
 )
-add_library(gracht SHARED IMPORTED GLOBAL)
-set_target_properties(gracht PROPERTIES IMPORTED_LOCATION ${GRACHT_INSTALL_DIR}/lib/${CMAKE_SHARED_MODULE_PREFIX}gracht${CMAKE_SHARED_LIBRARY_SUFFIX})
+FetchContent_MakeAvailable(libgracht)
 
 FetchContent_Declare(
   png

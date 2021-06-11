@@ -15,7 +15,7 @@ endmacro()
 # setup include directories
 include_directories(
     ${CMAKE_BINARY_DIR}/protocols
-    ${GRACHT_INSTALL_DIR}/include
+    ${libgracht_SOURCE_DIR}/include
     ${zip_SOURCE_DIR}/src
     ${zip_SOURCE_DIR}/src/extlibs
     ${PROJECT_SOURCE_DIR}/libs/common/include

@@ -14,7 +14,7 @@ endmacro()
 
 include_directories (
     ${CMAKE_BINARY_DIR}/protocols
-    ${GRACHT_INSTALL_DIR}/include
+    ${libgracht_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/libs/glad/include/glad
     ${PROJECT_SOURCE_DIR}/libs/freetype/include
     ${PROJECT_SOURCE_DIR}/libs/common/include

@@ -20,6 +20,7 @@
  *   using freetype as the font renderer.
  */
 
+#include <events/key_event.hpp>
 #include "../terminal_interpreter.hpp"
 #include "../terminal.hpp"
 #include "resolver_base.hpp"
@@ -27,6 +28,9 @@
 ResolverBase::ResolverBase()
     : m_terminal(nullptr)
     , m_currentDirectory("nil")
+    , m_autoCompleteIndex(0)
+    , m_lastKeyCode(VKC_INVALID)
+    , m_originalCommand("")
 {
     // Register inbuilt commands
     RegisterCommand("cd", "Change the working directory", std::bind(&ResolverBase::ChangeDirectory, this, std::placeholders::_1));
@@ -119,19 +123,56 @@ void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEnt
     }
 }
 
-void ResolverBase::TryAutoComplete(const std::string& currentCommand)
+bool ResolverBase::HandleKeyCode(const Asgaard::KeyEvent& key)
 {
-    auto directoryEntries = GetDirectoryContents(m_currentDirectory);
-    if (!currentCommand.size()) {
-        DirectoryPrinter(directoryEntries);
-        PrintCommandHeader();
+    if (key.KeyCode() == VKC_TAB) {
+        if (m_lastKeyCode != VKC_TAB) {
+            m_originalCommand = m_terminal->GetCurrentInput();
+            m_autoCompleteIndex = 0;
+        }
+        else {
+            m_autoCompleteIndex++;
+        }
+        TryAutoComplete();
+        return true;
+    }
+    m_lastKeyCode = key.KeyCode();
+    return false;
+}
+
+void ResolverBase::TryAutoComplete()
+{
+    if (!m_originalCommand.size()) {
         return;
     }
 
-    auto lastToken = SplitCommandString(currentCommand).back();
+    // if we double tab then list all files, and restore the input line
+    auto directoryEntries = GetDirectoryContents(m_currentDirectory);
+    if (m_autoCompleteIndex > 0) {
+        m_terminal->ClearInput(false);
+        DirectoryPrinter(directoryEntries);
+        PrintCommandHeader();
+        m_terminal->SetInput(m_originalCommand);
+        return;
+    }
+
+    // otherwise we try to complete the line
+    auto i = 0;
+    auto lastToken = SplitCommandString(m_originalCommand).back();
     auto matchingEntry = std::find_if(
         std::begin(directoryEntries), 
         std::end(directoryEntries),
-        [lastToken](const std::string& i) { return i.rfind(lastToken, 0) == 0; }
+        [targetIndex = m_autoCompleteIndex, lastToken, &i](const std::string& entry) {
+            if (entry.rfind(lastToken, 0) == 0) {
+                if (i == targetIndex) {
+                    return true;
+                }
+                i++;
+            }
+            return false;
+        }
     );
+    if (matchingEntry != std::end(directoryEntries)) {
+        m_terminal->SetInput(*matchingEntry);
+    }
 }

@@ -39,7 +39,6 @@ namespace Asgaard {
             }
 
             // Configure the surface
-            SetTransparency(true);
             MarkInputRegion(Dimensions());
         }
     

@@ -67,9 +67,10 @@ public:
     void RequestRedraw();
 
     // Input manipulation
-    std::string ClearInput();
+    std::string ClearInput(bool addToHistory = true);
     void RemoveInput();
     void AddInput(int character);
+    void SetInput(const std::string& input);
     
     // History manipulation
     void HistoryPrevious();
@@ -84,6 +85,7 @@ public:
 
     // Stats
     int GetNumberOfCellsPerLine() const { return m_cellWidth; }
+    const std::string& GetCurrentInput() const { return m_command; } 
 
 protected:
     void OnCreated() override;

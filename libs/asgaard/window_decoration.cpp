@@ -63,7 +63,6 @@ namespace Asgaard {
             Dimensions().Width(), Dimensions().Height(),
             PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
         
-        SetTransparency(true);
         SetBuffer(m_buffer);
         RedrawReady();
 

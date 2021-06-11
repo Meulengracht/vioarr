@@ -67,7 +67,6 @@ namespace Asgaard {
         paint.SetFillColor(0, 0, 0, 0);
         paint.RenderFill();
 
-        SetTransparency(true);
         MarkInputRegion(Dimensions());
     }
 

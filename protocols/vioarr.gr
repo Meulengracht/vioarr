@@ -42,24 +42,23 @@ service surface (84) {
     func get_formats(uint32 id) : () = 1;
     func set_buffer(uint32 surfaceId, uint32 bufferId) : () = 2;
     func invalidate(uint32 id, int x, int y, int width, int height) : () = 3;
-    func set_transparency(uint32 id, bool set) : () = 4;
-    func set_drop_shadow(uint32 id, int x, int y, int width, int height) : () = 5;
-    func set_input_region(uint32 id, int x, int y, int width, int height) : () = 6;
-    func add_subsurface(uint32 parentId, uint32 childId, int x, int y) : () = 7;
-    func resize_subsurface(uint32 id, int width, int height) : () = 8;
-    func move_subsurface(uint32 id, int x, int y) : () = 9;
-    func request_fullscreen_mode(uint32 id, fullscreen_mode mode) : () = 10;
-    func request_level(uint32 id, int level) : () = 11;
-    func request_frame(uint32 id) : () = 12;
-    func commit(uint32 id) : () = 13;
-    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 14;
-    func move(uint32 id, uint32 pointerId) : () = 15;
-    func destroy(uint32 id) : () = 16;
+    func set_drop_shadow(uint32 id, int x, int y, int width, int height) : () = 4;
+    func set_input_region(uint32 id, int x, int y, int width, int height) : () = 5;
+    func add_subsurface(uint32 parentId, uint32 childId, int x, int y) : () = 6;
+    func resize_subsurface(uint32 id, int width, int height) : () = 7;
+    func move_subsurface(uint32 id, int x, int y) : () = 8;
+    func request_fullscreen_mode(uint32 id, fullscreen_mode mode) : () = 9;
+    func request_level(uint32 id, int level) : () = 10;
+    func request_frame(uint32 id) : () = 11;
+    func commit(uint32 id) : () = 12;
+    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 13;
+    func move(uint32 id, uint32 pointerId) : () = 14;
+    func destroy(uint32 id) : () = 15;
 
-    event format : (uint32 id, pixel_format format) = 17;
-    event frame : (uint32 id) = 18;
-    event resize : (uint32 id, int width, int height, surface_edge edges) = 19;
-    event focus : (uint32 id, bool focus) = 20;
+    event format : (uint32 id, pixel_format format) = 16;
+    event frame : (uint32 id) = 17;
+    event resize : (uint32 id, int width, int height, surface_edge edges) = 18;
+    event focus : (uint32 id, bool focus) = 19;
 }
 
 service buffer (85) {

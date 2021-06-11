@@ -182,8 +182,8 @@ bool TerminalLine::RemoveInput()
 void TerminalLine::SetInput(const std::string& input)
 {
     // clear input, then add
-    if (m_text.size() > m_inputOffset) {
-        for (auto i = m_inputOffset; i < m_cells.size(); i++) {
+    if (static_cast<int>(m_text.size()) > m_inputOffset) {
+        for (auto i = m_inputOffset; i < static_cast<int>(m_cells.size()); i++) {
             auto& cell = m_cells[i];
             cell.m_character = 0;
         }
@@ -193,7 +193,7 @@ void TerminalLine::SetInput(const std::string& input)
     }
 
     auto charsToFill = std::min(input.size(), (m_cells.size() - m_inputOffset));
-    for (auto i = 0; i < charsToFill; i++) {
+    for (auto i = 0u; i < charsToFill; i++) {
         AddInput(input[i]);
     }
 }

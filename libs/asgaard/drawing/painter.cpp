@@ -40,6 +40,11 @@ namespace {
     }
 }
 
+/**
+ * All these algorithms are naive and non-optimized algorithms. When we encounter
+ * severe performance problems (and we will!). We must start implementing optimized versions.
+ * This will also include SIMD accellerated versions.
+ */
 namespace Asgaard {
     namespace Drawing {
         Painter::Painter(const std::shared_ptr<MemoryBuffer>& canvas)
@@ -154,6 +159,37 @@ namespace Asgaard {
             }
         }
 
+        void Painter::RenderRectangle(const Rectangle& dimensions)
+        {
+            RenderLine(
+                dimensions.X(),
+                dimensions.Y(),
+                dimensions.X() + dimensions.Width(),
+                dimensions.Y()
+            );
+            
+            RenderLine(
+                dimensions.X(),
+                dimensions.Y(),
+                dimensions.X(),
+                dimensions.Y() + dimensions.Height()
+            );
+
+            RenderLine(
+                dimensions.X(), 
+                dimensions.Y() + dimensions.Height(), 
+                dimensions.X() + dimensions.Width(), 
+                dimensions.Y() + dimensions.Height()
+            );
+            
+            RenderLine(
+                dimensions.X() + dimensions.Width(), 
+                dimensions.Y(), 
+                dimensions.X() + dimensions.Width(),
+                dimensions.Y() + dimensions.Height()
+            );
+        }
+
         void Painter::RenderImage(const Image& image)
         {
             // if faulty images are provided we just return
@@ -164,14 +200,18 @@ namespace Asgaard {
             auto bytesInSource = image.Stride() * image.Height();
             auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
             memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
+        }
+        
+        void Painter::RenderImage(int x, int y, const Image& image)
+        {
+            // if faulty images are provided we just return
+            if (image.Width() == 0 || image.Height() == 0) {
+                return;
+            }
 
-            //auto pointer = static_cast<uint32_t*>(m_canvas->Buffer());
-            //for (int h = 0; h < image.Height(); h++) {
-            //    for (int w = 0; w < image.Width(); w++, pointer++) {
-            //        auto pixel = image.GetPixel((h * image.Stride()) + w);
-            //        *pointer = pixel.GetFormatted(m_canvas->Format());
-            //    }
-            //}
+            auto bytesInSource = image.Stride() * image.Height();
+            auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
+            memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
         }
         
         void Painter::RenderCharacter(int x, int y, char character)

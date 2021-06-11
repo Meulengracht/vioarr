@@ -27,6 +27,7 @@
 #include <drawing/painter.hpp>
 #include <drawing/font_manager.hpp>
 #include <drawing/font.hpp>
+#include <widgets/textbox.hpp>
 #include <memory>
 #include <string>
 #include <ctime>
@@ -62,6 +63,7 @@ private:
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
 
         const auto theme = Theming::TM.GetTheme();
+        const auto searchIcon = theme->GetImage(Theming::Theme::Elements::IMAGE_SEARCH);
 
         // load font
         m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 12);
@@ -77,16 +79,12 @@ private:
             return label;
         };
 
-        constexpr auto xOffsetInSearchBox = 15 + 20 + (2 * 4);
-        constexpr auto yOffsetInSearchBox = 15 + 4;
-        m_searchLabel = createLabel(
-            xOffsetInSearchBox, 
-            yOffsetInSearchBox, 
-            Dimensions().Width() - (xOffsetInSearchBox + 20),
-            35 - (2 * 4),
-            Widgets::Label::Anchors::LEFT | Widgets::Label::Anchors::CENTER
-        );
-        SetPlaceholderText();
+        m_searchBox = OM.CreateClientObject<Widgets::Textbox>(m_screen, this, 
+            Rectangle(15, 15, Dimensions().Width() - 30, 35));
+        m_searchBox->SetFont(m_font);
+        m_searchBox->SetImage(searchIcon);
+        m_searchBox->SetPlaceholderText("Search");
+        m_searchBox->SetBorder(Drawing::Color(0xFF, 0, 0, 0xFF));
 
         // USERNAME LABEL starts __under__ the search widget
         // x => 15
@@ -115,10 +113,6 @@ private:
             // render background
             paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
             paint.RenderFill();
-
-            // render input box
-            paint.SetFillColor(Drawing::Color(0xFF, 0xFF, 0xFF, 0xFF));
-            paint.RenderFill(Rectangle(15, 15, Dimensions().Width() - 30, 35));
         };
         renderBackground();
         UpdateTimeAndDate();
@@ -128,13 +122,6 @@ private:
     {
         SetBuffer(m_buffer);
         ApplyChanges();
-    }
-
-    void SetPlaceholderText()
-    {
-        m_searchLabel->SetText("Search");
-        m_searchLabel->SetTextColor(Drawing::Color(0xBC, 0xBC, 0xBC));
-        m_searchLabel->RequestRedraw();
     }
 
     void UpdateTimeAndDate()
@@ -157,10 +144,10 @@ private:
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     std::shared_ptr<Drawing::Font>         m_font;
     std::shared_ptr<Drawing::Font>         m_smallFont;
-    std::shared_ptr<Widgets::Label>        m_searchLabel;
     std::shared_ptr<Widgets::Label>        m_userLabel;
     std::shared_ptr<Widgets::Label>        m_pcNameLabel;
     std::shared_ptr<Widgets::Label>        m_timeLabel;
     std::shared_ptr<Widgets::Label>        m_dateLabel;
     std::shared_ptr<Widgets::Label>        m_sysinfoLabel;
+    std::shared_ptr<Widgets::Textbox>      m_searchBox;
 };

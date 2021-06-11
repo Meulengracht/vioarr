@@ -47,6 +47,7 @@ namespace Asgaard {
                 void SetOutlineColor(unsigned char r, unsigned char g, unsigned char b);
 
                 void RenderLine(int x1, int y1, int x2, int y2);
+                void RenderRectangle(const Rectangle& dimensions);
                 
                 void RenderFillGradientV(const Rectangle& dimensions,
                     unsigned char r1, unsigned char g1, unsigned char b1,
@@ -59,6 +60,7 @@ namespace Asgaard {
                 void RenderFill();
 
                 void RenderImage(const Image& image);
+                void RenderImage(int x, int y, const Image& image);
                 
                 void SetFont(const std::shared_ptr<Font>& font);
                 

@@ -56,6 +56,9 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
     , m_rows(-1)
     , m_cellWidth(0)
     , m_historyIndex(0)
+    , m_command("")
+    , m_commandIndex(0)
+    , m_temporaryLine(nullptr)
     , m_inputLineIndexStart(0)
     , m_inputLineIndexCurrent(0)
     , m_stdoutDescriptor(stdoutDescriptor)
@@ -71,7 +74,6 @@ Terminal::Terminal(uint32_t id, const std::shared_ptr<Asgaard::Screen>& screen, 
     for (int i = 0; i < m_rows; i++) {
         m_lines.push_back(std::make_unique<TerminalLine>(font, i, m_cellWidth));
     }
-    m_temporaryLine = std::make_unique<TerminalLine>(font, 0, m_cellWidth);
 
     // show cursor
     m_lines[0]->SetCursorPosition(0);
@@ -219,6 +221,9 @@ void Terminal::ScrollToBottom(bool keepInputLine)
     if (historySize > m_rows && m_historyIndex < historySize) {
         m_historyIndex = historySize;
         ScrollToLine(m_historyIndex, keepInputLine);
+        if (keepInputLine) {
+            RestoreInputLine();
+        }
     }
 }
 
@@ -229,7 +234,12 @@ void Terminal::HistoryNext()
     // History must be longer than the number of rows - 1
     if (historySize > m_rows && m_historyIndex < historySize) {
         m_historyIndex++;
-        ScrollToLine(m_historyIndex, m_historyIndex == historySize);
+
+        auto atInputLine = m_historyIndex == historySize;
+        ScrollToLine(m_historyIndex, atInputLine);
+        if (atInputLine) {
+            RestoreInputLine();
+        }
     }
 }
 
@@ -237,11 +247,16 @@ void Terminal::HistoryPrevious()
 {
     // History must be longer than the number of rows
     if (m_historyIndex > m_rows) {
+        auto historySize = static_cast<int>(m_history.size());
+        auto atInputLine = m_historyIndex == historySize;
+        if (atInputLine) {
+            SaveInputLine();
+        }
+
         m_historyIndex--;
         ScrollToLine(m_historyIndex, false);
     }
 }
-
 
 void Terminal::CommandHistoryPrevious()
 {
@@ -292,6 +307,28 @@ void Terminal::MoveCursorRight()
     if (currentPosition < m_cellWidth) {
         m_lines[m_inputLineIndexCurrent]->SetCursorPosition(currentPosition + 1);
     }
+}
+
+void Terminal::SaveInputLine()
+{
+    // line already stored!
+    if (m_temporaryLine) {
+        return;
+    }
+
+    m_temporaryLine = std::make_unique<TerminalLine>(m_font, 0, m_cellWidth);
+    m_temporaryLine->Reset(m_lines[m_inputLineIndexCurrent]->GetCells()); // copy line
+}
+
+void Terminal::RestoreInputLine()
+{
+    // no line stored!
+    if (!m_temporaryLine) {
+        return;
+    }
+
+    m_lines[m_inputLineIndexCurrent]->Reset(m_temporaryLine->GetCells());
+    m_temporaryLine.reset();
 }
 
 void Terminal::Print(const char* format, ...)

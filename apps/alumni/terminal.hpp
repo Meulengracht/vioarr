@@ -100,6 +100,8 @@ private:
     void UndoLine();
     void ScrollToLine(int line, bool keepInputLine);
     void ScrollToBottom(bool keepInputLine);
+    void SaveInputLine();
+    void RestoreInputLine();
 
     void   InitializeVT();
     size_t ParseVTEscapeCode(const char* buffer);

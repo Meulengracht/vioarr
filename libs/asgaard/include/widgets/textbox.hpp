@@ -44,6 +44,10 @@ namespace Asgaard {
                 RIGHT,
                 LEFT
             };
+
+            enum class Notification : int {
+                TEXT_CHANGED = static_cast<int>(Object::Notification::CUSTOM_START)
+            };
         public:
             Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle&);
             ~Textbox();
@@ -62,6 +66,10 @@ namespace Asgaard {
             
         protected:
             void Notification(Publisher*, int = 0, void* = 0) override;
+            void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override;
+            void OnMouseLeave(const std::shared_ptr<Pointer>&) override;
+            void OnKeyEvent(const KeyEvent& keyEvent) override;
+            void OnFocus(bool) override;
             
         private:
             void Redraw();

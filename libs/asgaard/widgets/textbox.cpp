@@ -107,7 +107,6 @@ namespace Asgaard {
         void Textbox::SetBorder(const Drawing::Color& color)
         {
             m_borderColor = color;
-            m_borderWidth = 1;
         }
 
         void Textbox::RequestRedraw()
@@ -193,6 +192,29 @@ namespace Asgaard {
             ApplyChanges();
         }
 
+        void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
+        {
+            // set beam cursor
+        }
+        
+        void OnMouseLeave(const std::shared_ptr<Pointer>&)
+        {
+            // 
+        }
+
+        void Textbox::OnKeyEvent(const KeyEvent& keyEvent)
+        {
+            
+
+            Notify(static_cast<int>(Notification::TEXT_CHANGED), &m_text);
+        }
+
+        void Textbox::OnFocus(bool focus)
+        {
+            m_borderWidth = focus ? 1 : 0;
+            RequestRedraw();
+        }
+
         void Textbox::Notification(Publisher* source, int event, void* data)
         {
             auto memoryObject = dynamic_cast<MemoryPool*>(source);
@@ -201,7 +223,7 @@ namespace Asgaard {
                 switch (static_cast<MemoryPool::Notification>(event))
                 {
                     case MemoryPool::Notification::ERROR: {
-                        Notify(static_cast<int>(Notification::ERROR), data);
+                        Notify(static_cast<int>(Object::Notification::ERROR), data);
                     } break;
 
                     default: break;

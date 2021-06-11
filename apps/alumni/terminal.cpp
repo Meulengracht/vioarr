@@ -123,16 +123,23 @@ void Terminal::RemoveInput()
     }
 }
 
-std::string Terminal::ClearInput()
+std::string Terminal::ClearInput(bool addToHistory)
 {
     auto command = m_command;
 
-    CommandHistoryAdd(command);
+    if (addToHistory) {
+        CommandHistoryAdd(command);
+    }
     CommitLine(true);
 
     // reset current to be start
     m_inputLineIndexStart = m_inputLineIndexCurrent;
     return command;
+}
+
+void Terminal::SetInput(const std::string& input)
+{
+    m_lines[m_inputLineIndexCurrent]->SetInput(input);
 }
 
 void Terminal::CommitLine(bool isInput)
@@ -429,9 +436,6 @@ void Terminal::OnKeyEvent(const Asgaard::KeyEvent& key)
             }
         }
         m_resolver->PrintCommandHeader();
-    }
-    else if (key.KeyCode() == VKC_TAB) {
-        //m_resolver->TryAutoComplete(m_command);
     }
     else if (key.KeyCode() == VKC_UP) {
         if (key.Control()) {

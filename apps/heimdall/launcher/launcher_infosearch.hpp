@@ -36,8 +36,8 @@ using namespace Asgaard;
 
 class LauncherInfoSearch : public SubSurface {
 public:
-    LauncherInfoSearch(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-        : SubSurface(id, screen, parent, dimensions)
+    LauncherInfoSearch(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+        : SubSurface(id, screen, dimensions)
     {
         LoadResources();
         FinishSetup();
@@ -71,7 +71,7 @@ private:
 
         // create labels
         auto createLabel = [&] (int x, int y, int w, int h, Widgets::Label::Anchors anchors) {
-            auto label = OM.CreateClientObject<Widgets::Label>(m_screen, this, Rectangle(x, y, w, h));
+            auto label = SubSurface::Create<Widgets::Label>(this, Rectangle(x, y, w, h));
             label->SetFont(m_font);
             label->SetAnchors(anchors);
             label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
@@ -79,12 +79,13 @@ private:
             return label;
         };
 
-        m_searchBox = OM.CreateClientObject<Widgets::Textbox>(m_screen, this, 
+        m_searchBox = SubSurface::Create<Widgets::Textbox>(this, 
             Rectangle(15, 15, Dimensions().Width() - 30, 35));
         m_searchBox->SetFont(m_font);
         m_searchBox->SetImage(searchIcon);
         m_searchBox->SetPlaceholderText("Search");
         m_searchBox->SetBorder(Drawing::Color(0xFF, 0, 0, 0xFF));
+        m_searchBox->RequestRedraw();
 
         // USERNAME LABEL starts __under__ the search widget
         // x => 15
@@ -120,6 +121,7 @@ private:
 
     void FinishSetup()
     {
+        SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
         SetBuffer(m_buffer);
         ApplyChanges();
     }

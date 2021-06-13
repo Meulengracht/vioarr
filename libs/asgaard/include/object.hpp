@@ -24,20 +24,12 @@
 #include <cstdint>
 #include "config.hpp"
 #include "events/event.hpp"
-#include "utils/publisher.hpp"
-#include "utils/subscriber.hpp"
+#include "notifications/publisher.hpp"
+#include "notifications/subscriber.hpp"
+#include "notifications/notification.hpp"
 
 namespace Asgaard {    
-    class Object : public Utils::Publisher, public Utils::Subscriber {
-    public:
-        enum class Notification : int {
-            CREATED = 0,
-            ERROR,
-            DESTROY,
-
-            CUSTOM_START
-        };
-        
+    class Object : public Publisher, public Subscriber {
     public:
         Object(uint32_t id);
         ASGAARD_API virtual ~Object();
@@ -46,7 +38,7 @@ namespace Asgaard {
         uint32_t Id() const { return m_id; }
         
         virtual void Destroy() {
-            Notify(static_cast<int>(Notification::DESTROY));
+            Notify(Asgaard::DestroyNotification(Id()));
         };
 
         virtual void ExternalEvent(const Event&);

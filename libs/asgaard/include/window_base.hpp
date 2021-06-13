@@ -81,7 +81,7 @@ namespace Asgaard {
         ASGAARD_API void InitiateMove(const std::shared_ptr<Pointer>&);
 
         // Protected function, allow override
-        ASGAARD_API void Notification(Publisher*, int = 0, void* = 0) override;
+        ASGAARD_API void Notification(Publisher*, const Asgaard::Notification&) override;
 
     private:
         ASGAARD_API void ExternalEvent(const Event&) final;

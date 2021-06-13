@@ -29,8 +29,8 @@
 
 namespace Asgaard {
     namespace Widgets {
-        Icon::Icon(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-            : SubSurface(id, screen, parent, dimensions)
+        Icon::Icon(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+            : SubSurface(id, screen, dimensions)
             , m_memory(nullptr)
             , m_currentState(IconState::NORMAL)
         {
@@ -116,17 +116,21 @@ namespace Asgaard {
             ApplyChanges();
         }
     
-        void Icon::Notification(Publisher* source, int event, void* data)
+        void Icon::Notification(Publisher* source, const Asgaard::Notification& notifiation)
         {
             auto object = dynamic_cast<Object*>(source);
             if (object != nullptr) {
-                switch (event) {
-                    case static_cast<int>(Object::Notification::ERROR): {
-                        Notify(static_cast<int>(Object::Notification::ERROR), data);
+                switch (notifiation.GetType()) {
+                    case NotificationType::ERROR: {
+                        Notify(notifiation);
                     } break;
+
+                    default:
+                        break;
                 }
-                return;
             }
+
+            SubSurface::Notification(source, notifiation);
         }
 
         void Icon::OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY)
@@ -144,7 +148,7 @@ namespace Asgaard {
             if (button == Pointer::Buttons::LEFT) {
                 if (pressed) {
                     SetState(IconState::ACTIVE);
-                    Notify(static_cast<int>(Notification::CLICKED));
+                    Notify(ClickedNotification(Id()));
                 }
                 else {
                     SetState(IconState::NORMAL);

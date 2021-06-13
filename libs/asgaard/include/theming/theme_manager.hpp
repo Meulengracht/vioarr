@@ -23,7 +23,7 @@
 #pragma once
 
 #include "../config.hpp"
-#include "../utils/publisher.hpp"
+#include "../notifications/publisher.hpp"
 #include <cstdint>
 #include <map>
 #include <memory>
@@ -32,7 +32,7 @@ namespace Asgaard {
     namespace Theming {
         class Theme;
 
-        class ThemeManager final : public Utils::Publisher {
+        class ThemeManager final : public Publisher {
         public:
             ThemeManager();
             ~ThemeManager();

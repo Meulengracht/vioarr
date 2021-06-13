@@ -34,8 +34,8 @@ using namespace Asgaard;
 
 class LauncherApplication : public SubSurface {
 public:
-    LauncherApplication(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions) 
-        : SubSurface(id, screen, parent, dimensions)
+    LauncherApplication(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions) 
+        : SubSurface(id, screen, dimensions)
     {
         LoadResources();
         FinishSetup();

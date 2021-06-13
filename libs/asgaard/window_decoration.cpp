@@ -38,19 +38,20 @@
 #include "include/widgets/icon.hpp"
 #include "include/widgets/label.hpp"
 
+#include "include/notifications/draginitiated_notification.hpp"
+
 #define ICON_SIZE 16
 #define DECORATION_TEXT_SIZE  12
 
 namespace Asgaard {
-    WindowDecoration::WindowDecoration(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-        : WindowDecoration(id, screen, parent, dimensions, Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", DECORATION_TEXT_SIZE)) { }
+    WindowDecoration::WindowDecoration(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+        : WindowDecoration(id, screen, dimensions, Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", DECORATION_TEXT_SIZE)) { }
 
     WindowDecoration::WindowDecoration(uint32_t id, 
         const std::shared_ptr<Screen>& screen,
-        const Surface* parent,
         const Rectangle& dimensions,
         const std::shared_ptr<Drawing::Font>& font) 
-        : SubSurface(id, screen, parent, dimensions)
+        : SubSurface(id, screen, dimensions)
         , m_appFont(font)
         , m_redraw(false)
         , m_redrawReady(false)
@@ -102,13 +103,11 @@ namespace Asgaard {
         Drawing::Image closeImage = theme->GetImage(Theming::Theme::Elements::IMAGE_CLOSE);
 
         // left corner
-        m_appIcon = OM.CreateClientObject<Asgaard::Widgets::Icon>(m_screen, this,
-            Rectangle(8, iconY, ICON_SIZE, ICON_SIZE));
-        m_appIcon->Subscribe(this);
+        m_appIcon = SubSurface::Create<Asgaard::Widgets::Icon>(this, Rectangle(8, iconY, ICON_SIZE, ICON_SIZE));
         m_appIcon->SetImage(appImage);
 
         // middle
-        m_appTitle = OM.CreateClientObject<Asgaard::WindowTitle>(m_screen, this,
+        m_appTitle = SubSurface::Create<Asgaard::WindowTitle>(this,
             Rectangle(
                 8 + 8 + ICON_SIZE, // start text next to app icon
                 0, 
@@ -118,24 +117,20 @@ namespace Asgaard {
         m_appTitle->SetAnchors(Widgets::Label::Anchors::CENTER);
         m_appTitle->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DECORATION_FILL));
         m_appTitle->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
-        m_appTitle->Subscribe(this);
         
         // right corner
-        m_minIcon = OM.CreateClientObject<Asgaard::Widgets::Icon>(m_screen, this,
+        m_minIcon = SubSurface::Create<Asgaard::Widgets::Icon>(this,
             Rectangle(Dimensions().Width() - (3 * (8 + ICON_SIZE)), 8.0f, ICON_SIZE, ICON_SIZE));
-        m_minIcon->Subscribe(this);
         m_minIcon->SetImage(minImage);
 
         // right corner
-        m_maxIcon = OM.CreateClientObject<Asgaard::Widgets::Icon>(m_screen, this,
+        m_maxIcon = SubSurface::Create<Asgaard::Widgets::Icon>(this,
             Rectangle(Dimensions().Width() - (2 * (8 + ICON_SIZE)), 8.0f, ICON_SIZE, ICON_SIZE));
-        m_maxIcon->Subscribe(this);
         m_maxIcon->SetImage(maxImage);
 
         // right corner
-        m_closeIcon = OM.CreateClientObject<Asgaard::Widgets::Icon>(m_screen, this,
+        m_closeIcon = SubSurface::Create<Asgaard::Widgets::Icon>(this,
             Rectangle(Dimensions().Width() - (8 + ICON_SIZE), 8.0f, ICON_SIZE, ICON_SIZE));
-        m_closeIcon->Subscribe(this);
         m_closeIcon->SetImage(closeImage);
     }
     
@@ -198,27 +193,28 @@ namespace Asgaard {
         }
     }
     
-    void WindowDecoration::Notification(Publisher* source, int event, void* data)
+    void WindowDecoration::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
         auto object = dynamic_cast<Object*>(source);
         if (object == nullptr) {
             return;
         }
 
-        if (event == static_cast<int>(Object::Notification::ERROR)) {
-            Notify(static_cast<int>(Object::Notification::ERROR), data);
+        if (notification.GetType() == NotificationType::ERROR) {
+            Notify(notification);
         }
         else if (object->Id() == m_appTitle->Id()) {
-            if (event == static_cast<int>(WindowTitle::Notification::INITIATE_DRAG)) {
-                Notify(static_cast<int>(Notification::INITIATE_DRAG), data);
+            if (notification.GetType() == NotificationType::DRAG_INITIATED) {
+                const auto& dragNotification = reinterpret_cast<const DragInitiatedNotification&>(notification);
+                Notify(DragInitiatedNotification(Id(), dragNotification.GetPointerId()));
             }
         }
-        else if (event == static_cast<int>(Widgets::Icon::Notification::CLICKED)) {
+        else if (notification.GetType() == NotificationType::CLICKED) {
             if (object->Id() == m_minIcon->Id()) {
-                Notify(static_cast<int>(Notification::MINIMIZE));
+                Notify(MinimizeNotification(Id()));
             }
             else if (object->Id() == m_maxIcon->Id()) {
-                Notify(static_cast<int>(Notification::MAXIMIZE));
+                Notify(MaximizeNotification(Id()));
             }
             else if (object->Id() == m_closeIcon->Id()) {
                 exit(EXIT_SUCCESS);

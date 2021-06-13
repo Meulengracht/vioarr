@@ -31,14 +31,8 @@ namespace Asgaard {
 
     class WindowEdge : public SubSurface {
     public:
-        enum class Notification : int {
-            INITIATE_DRAG = static_cast<int>(Object::Notification::CUSTOM_START)
-        };
-
-    public:
         WindowEdge(uint32_t id, 
-            const std::shared_ptr<Screen>& screen, 
-            const Surface* parent, 
+            const std::shared_ptr<Screen>& screen,
             const Rectangle&);
         ~WindowEdge();
 
@@ -48,7 +42,7 @@ namespace Asgaard {
     private:
         void InitializeBuffer();
 
-        void Notification(Publisher*, int = 0, void* = 0) override;
+        void Notification(Publisher*, const Asgaard::Notification&) override;
         void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override;
         void OnMouseMove(const std::shared_ptr<Pointer>&, int localX, int localY) override;
         void OnMouseLeave(const std::shared_ptr<Pointer>&) override;

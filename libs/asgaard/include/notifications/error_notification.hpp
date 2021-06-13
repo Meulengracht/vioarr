@@ -20,32 +20,30 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/object.hpp"
-#include "include/error.hpp"
-#include "include/events/event.hpp"
-#include "include/events/error_event.hpp"
-#include "include/notifications/error_notification.hpp"
-#include "wm_core_service_client.h"
+#include <string>
+#include "notification.hpp"
 
-using namespace Asgaard;
+namespace Asgaard {
+    class ErrorNotification : public NotificationTemplate<NotificationType::ERROR> {
+    public:
+        /**
+         * Constructor (C++ STL string, int, int).
+         *  @param errorCode Error number
+         *  @param description The error message
+         */
+        ErrorNotification(uint32_t sourceObjectId, const int errorCode, const std::string& description) 
+        : NotificationTemplate(sourceObjectId)
+        , error_number(errorCode)
+        , error_message(description)
+        { }
 
-Object::Object(uint32_t id) : m_id(id) { }
-Object::~Object() { }
+        std::string Description() const { return error_message; }
+        int         Code() const { return error_number; }
 
-void Object::ExternalEvent(const Event& event) {
-    switch (event.GetType())
-    {
-        case Event::Type::CREATION: {
-            Notify(CreatedNotification(Id()));
-        } break;
-
-        case Event::Type::ERROR: {
-            const auto& error = static_cast<const ErrorEvent&>(event);
-            Notify(ErrorNotification(Id(), error.Code(), error.Description()));
-        } break;
-        
-        default:
-            break;
-    }
+    private:
+        int         error_number;
+        std::string error_message;
+    };
 }

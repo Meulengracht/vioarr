@@ -20,32 +20,34 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/object.hpp"
-#include "include/error.hpp"
-#include "include/events/event.hpp"
-#include "include/events/error_event.hpp"
-#include "include/notifications/error_notification.hpp"
-#include "wm_core_service_client.h"
+#include <list>
+#include "subscriber.hpp"
 
-using namespace Asgaard;
-
-Object::Object(uint32_t id) : m_id(id) { }
-Object::~Object() { }
-
-void Object::ExternalEvent(const Event& event) {
-    switch (event.GetType())
-    {
-        case Event::Type::CREATION: {
-            Notify(CreatedNotification(Id()));
-        } break;
-
-        case Event::Type::ERROR: {
-            const auto& error = static_cast<const ErrorEvent&>(event);
-            Notify(ErrorNotification(Id(), error.Code(), error.Description()));
-        } break;
+namespace Asgaard {
+    class Publisher {
+    public:
+        Publisher() : m_notifyActive(true) { }
+        virtual ~Publisher() { }
         
-        default:
-            break;
-    }
+        void Subscribe(Subscriber* subscriber) {
+            m_subscribers.push_back(subscriber);
+        }
+        void Unsubscribe(Subscriber* subscriber) {
+            m_subscribers.remove(subscriber);
+        }
+        
+        void Notify(const Notification& notification) {
+            for (auto subscriber : m_subscribers) {
+                subscriber->Notification(this, notification);
+            }
+        }
+        
+        void SetNotifyState(bool enable) { m_notifyActive = enable; }
+        
+    private:
+        std::list<Subscriber*> m_subscribers;
+        bool                   m_notifyActive;
+    };
 }

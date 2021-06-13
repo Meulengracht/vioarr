@@ -51,6 +51,7 @@ add_sources (
 
     widgets/icon.cpp
     widgets/label.cpp
+    widgets/textbox.cpp
 
     application.cpp
     key_event.cpp

@@ -44,28 +44,24 @@ namespace Asgaard {
                 RIGHT,
                 LEFT
             };
-
-            enum class Notification : int {
-                TEXT_CHANGED = static_cast<int>(Object::Notification::CUSTOM_START)
-            };
         public:
-            Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle&);
+            ASGAARD_API Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
             ~Textbox();
 
-            void Destroy() override;
+            ASGAARD_API void Destroy() override;
             
-            void SetBackgroundColor(const Drawing::Color& color);
-            void SetTextColor(const Drawing::Color& color);
-            void SetFont(const std::shared_ptr<Drawing::Font>& font);
-            void SetText(const std::string& text);
-            void SetPlaceholderText(const std::string& text);
-            void SetImage(const Drawing::Image& image);
-            void SetImageAnchor(const Anchor anchor);
-            void SetBorder(const Drawing::Color& color);
-            void RequestRedraw();
+            ASGAARD_API void SetBackgroundColor(const Drawing::Color& color);
+            ASGAARD_API void SetTextColor(const Drawing::Color& color);
+            ASGAARD_API void SetFont(const std::shared_ptr<Drawing::Font>& font);
+            ASGAARD_API void SetText(const std::string& text);
+            ASGAARD_API void SetPlaceholderText(const std::string& text);
+            ASGAARD_API void SetImage(const Drawing::Image& image);
+            ASGAARD_API void SetImageAnchor(const Anchor anchor);
+            ASGAARD_API void SetBorder(const Drawing::Color& color);
+            ASGAARD_API void RequestRedraw();
             
         protected:
-            void Notification(Publisher*, int = 0, void* = 0) override;
+            void Notification(Publisher*, const Asgaard::Notification&) override;
             void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override;
             void OnMouseLeave(const std::shared_ptr<Pointer>&) override;
             void OnKeyEvent(const KeyEvent& keyEvent) override;

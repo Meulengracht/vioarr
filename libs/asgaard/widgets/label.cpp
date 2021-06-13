@@ -30,8 +30,8 @@
 
 namespace Asgaard {
     namespace Widgets {
-        Label::Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-            : SubSurface(id, screen, parent, dimensions)
+        Label::Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+            : SubSurface(id, screen, dimensions)
             , m_font(nullptr)
             , m_text("")
             , m_anchors(Anchors::TOP | Anchors::LEFT)
@@ -164,32 +164,23 @@ namespace Asgaard {
             return 0;
         }
         
-        void Label::Notification(Publisher* source, int event, void* data)
+        void Label::Notification(Publisher* source, const Asgaard::Notification& notification)
         {
-            auto memoryObject = dynamic_cast<MemoryPool*>(source);
-            if (memoryObject != nullptr) {
-                // OK notification from the memory pool
-                switch (static_cast<MemoryPool::Notification>(event))
-                {
-                    case MemoryPool::Notification::ERROR: {
-                        Notify(static_cast<int>(Notification::ERROR), data);
-                    } break;
+            switch (notification.GetType())
+            {
+                case NotificationType::ERROR: {
+                    Notify(notification);
+                } break;
 
-                    default: break;
-                }
+                case NotificationType::REFRESHED: {
+                    RedrawReady();
+                } break;
+
+                default:
+                    break;
             }
-            
-            auto bufferObject = dynamic_cast<MemoryBuffer*>(source);
-            if (bufferObject != nullptr) {
-                switch (event) {
-                    case static_cast<int>(MemoryBuffer::Notification::REFRESHED): {
-                        RedrawReady();
-                    } break;
-                    
-                    default:
-                        break;
-                }
-            }
+
+            SubSurface::Notification(source, notification);
         }
     }
 }

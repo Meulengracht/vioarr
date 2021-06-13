@@ -38,8 +38,8 @@ using namespace Asgaard;
 
 class LauncherBase : public SubSurface {
 public:
-    LauncherBase(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions, const Drawing::Image& background)
-        : SubSurface(id, screen, parent, dimensions)
+    LauncherBase(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, const Drawing::Image& background)
+        : SubSurface(id, screen, dimensions)
         , m_isShown(false)
     {
         LoadResources(background);
@@ -71,7 +71,8 @@ public:
 private:
     void LoadResources(const Drawing::Image& background)
     {
-        auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
+        const auto& screen = GetScreen();
+        auto screenSize = screen->GetCurrentWidth() * screen->GetCurrentHeight() * 4;
         m_memory = MemoryPool::Create(this, screenSize);
 
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
@@ -80,9 +81,8 @@ private:
         // create info search
         constexpr auto SEARCHBOX_WIDTH = 428.0f;
         constexpr auto SEARCHBOX_HEIGHT = 174.0f;
-        auto midX = (m_screen->GetCurrentWidth() / 2.0f) - (SEARCHBOX_WIDTH / 2.0f);
-        m_infoSearch = OM.CreateClientObject<LauncherInfoSearch>(
-            m_screen, 
+        auto midX = (screen->GetCurrentWidth() / 2.0f) - (SEARCHBOX_WIDTH / 2.0f);
+        m_infoSearch = SubSurface::Create<LauncherInfoSearch>(
             this, 
             Rectangle(static_cast<int>(midX), 150, 
                 static_cast<int>(SEARCHBOX_WIDTH), 
@@ -93,9 +93,8 @@ private:
         m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 24);
 
         // create labels
-        midX = (m_screen->GetCurrentWidth() / 2.0f) - (200.0f / 2.0f);
-        m_appTitle = OM.CreateClientObject<Widgets::Label>(
-            m_screen, 
+        midX = (screen->GetCurrentWidth() / 2.0f) - (200.0f / 2.0f);
+        m_appTitle = SubSurface::Create<Widgets::Label>(
             this, 
             Rectangle(static_cast<int>(midX), 350, 200, 50)
         );
@@ -121,11 +120,11 @@ private:
     void LoadApplications()
     {
         // hardcode initial ones
-        auto editor = OM.CreateClientObject<LauncherApplication>(m_screen, this, Rectangle(0, 0, 64, 71));
+        auto editor = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
         
-        auto terminal = OM.CreateClientObject<LauncherApplication>(m_screen, this, Rectangle(0, 0, 64, 71));
+        auto terminal = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
         
-        auto doom = OM.CreateClientObject<LauncherApplication>(m_screen, this, Rectangle(0, 0, 64, 71));
+        auto doom = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
 
         // add to list
         m_registeredApps.push_back(editor);

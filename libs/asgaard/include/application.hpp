@@ -84,7 +84,7 @@ namespace Asgaard {
 
     public:
         void ExternalEvent(const Event&) override;
-        void Notification(Publisher*, int = 0, void* = 0) override;
+        void Notification(Publisher*, const Asgaard::Notification&) override;
 
     private:
         bool IsInitialized() const;

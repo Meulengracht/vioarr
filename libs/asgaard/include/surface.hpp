@@ -28,12 +28,14 @@
 #include "object.hpp"
 #include "pointer.hpp"
 #include "utils/bitset_enum.hpp"
+#include <vector>
 
 namespace Asgaard {
     class Screen;
     class MemoryBuffer;
     class KeyEvent;
     class Pointer;
+    class SubSurface;
     
     class Surface : public Object {
     public:
@@ -45,12 +47,9 @@ namespace Asgaard {
             RIGHT  = 0x8
         };
     public:
-        ASGAARD_API Surface(uint32_t id, const std::shared_ptr<Screen>&, const Surface* parent, const Rectangle&);
         ASGAARD_API Surface(uint32_t id, const std::shared_ptr<Screen>&, const Rectangle&);
         ASGAARD_API Surface(uint32_t id, const Rectangle&);
         ASGAARD_API ~Surface();
-        
-        void BindToScreen(const std::shared_ptr<Screen>&, const Surface* parent);
         
         ASGAARD_API void SetBuffer(const std::shared_ptr<MemoryBuffer>&);
         ASGAARD_API void MarkDamaged(const Rectangle&);
@@ -65,6 +64,7 @@ namespace Asgaard {
         
         const Rectangle& Dimensions() const { return m_dimensions; }
         const std::shared_ptr<Screen>& GetScreen() const { return m_screen; }
+        bool             IsFocused() const { return m_isFocused; }
         
     public:
         ASGAARD_API void ExternalEvent(const Event&) override;
@@ -79,10 +79,20 @@ namespace Asgaard {
         virtual void OnMouseScroll(const std::shared_ptr<Pointer>&, int scollX, int scrollY) { }
         virtual void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) { }
         virtual void OnKeyEvent(const KeyEvent&) { }
+        virtual void Notification(Publisher*, const Asgaard::Notification&) override;
+
+    private:
+        void BindToScreen(const std::shared_ptr<Screen>&);
+        void AddChild(const std::shared_ptr<Surface>&);
         
-    protected:
-        Rectangle               m_dimensions;
-        std::shared_ptr<Screen> m_screen;
+    private:
+        Rectangle                             m_dimensions;
+        std::shared_ptr<Screen>               m_screen;
+        std::vector<std::shared_ptr<Surface>> m_children;
+        bool                                  m_isFocused;
+
+        // allow certain accesses
+        friend class SubSurface;
     };
 }
 

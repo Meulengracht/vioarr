@@ -31,6 +31,7 @@
 #include "include/pointer.hpp"
 
 #include "include/events/surface_format_event.hpp"
+#include "include/notifications/draginitiated_notification.hpp"
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"
@@ -52,13 +53,11 @@ namespace Asgaard {
         : Surface(id, screen, dimensions)
     {
         Rectangle decorationDimensions(0, 0, dimensions.Width(), 35);
-        m_decoration = OM.CreateClientObject<Asgaard::WindowDecoration>(screen, this, decorationDimensions);
-        m_decoration->Subscribe(this);
+        m_decoration = SubSurface::Create<Asgaard::WindowDecoration>(this, decorationDimensions);
 
         // install in right lower corner
         Rectangle edgeDimensions(dimensions.Width() - 16, dimensions.Height() - 16, 16, 16);
-        m_edge = OM.CreateClientObject<Asgaard::WindowEdge>(screen, this, edgeDimensions);
-        m_edge->Subscribe(this);
+        m_edge = SubSurface::Create<Asgaard::WindowEdge>(this, edgeDimensions);
 
         // retrieve a list of supported window content formats
         wm_surface_get_formats(APP.GrachtClient(), nullptr, Id());
@@ -121,45 +120,40 @@ namespace Asgaard {
         wm_surface_move(APP.GrachtClient(), nullptr, Id(), pointer->Id());
     }
     
-    void WindowBase::Notification(Publisher* source, int event, void* data)
+    void WindowBase::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
-        auto object = dynamic_cast<Object*>(source);
-        if (object) {
-            if (object->Id() == m_decoration->Id()) {
-                switch (event) {
-                    case static_cast<int>(WindowDecoration::Notification::MINIMIZE): {
-                        OnMinimize();
-
-                        auto nullPointer = std::shared_ptr<MemoryBuffer>(nullptr);
-                        SetBuffer(nullPointer);
-                    } break;
-                    case static_cast<int>(WindowDecoration::Notification::MAXIMIZE): {
-                        OnMaximize();
-                        RequestFullscreenMode(FullscreenMode::NORMAL);
-                    } break;
-                    case static_cast<int>(WindowDecoration::Notification::INITIATE_DRAG): {
-                        auto pointerId = static_cast<uint32_t>(reinterpret_cast<intptr_t>(data));
-                        auto pointer = std::dynamic_pointer_cast<Asgaard::Pointer>(Asgaard::OM[pointerId]);
-                        InitiateMove(pointer);
-                    } break;
-
-                    default: break;
+        switch (notification.GetType())
+        {
+            case NotificationType::DRAG_INITIATED: {
+                const auto& dragNotification = reinterpret_cast<const DragInitiatedNotification&>(notification);
+                if (notification.GetObjectId() == m_decoration->Id()) {
+                    auto pointer = std::dynamic_pointer_cast<Asgaard::Pointer>(Asgaard::OM[dragNotification.GetPointerId()]);
+                    InitiateMove(pointer);
                 }
-            }
-            else if (object->Id() == m_edge->Id()) {
-                if (event == static_cast<int>(WindowEdge::Notification::INITIATE_DRAG)) {
-                    auto pointerId = static_cast<uint32_t>(reinterpret_cast<intptr_t>(data));
-                    auto pointer = std::dynamic_pointer_cast<Asgaard::Pointer>(Asgaard::OM[pointerId]);
+                else if (notification.GetObjectId() == m_edge->Id()) {
+                    auto pointer = std::dynamic_pointer_cast<Asgaard::Pointer>(Asgaard::OM[dragNotification.GetPointerId()]);
                     InitiateResize(pointer, Surface::SurfaceEdges::RIGHT | Surface::SurfaceEdges::BOTTOM);
                 }
-            }
-            else {
-                switch (event) {
-                    case static_cast<int>(MemoryBuffer::Notification::REFRESHED): {
-                        OnRefreshed(dynamic_cast<MemoryBuffer*>(object));
-                    } break;
-                }
-            }
+            } break;
+
+            case NotificationType::MINIMIZE: {
+                OnMinimize();
+
+                auto nullPointer = std::shared_ptr<MemoryBuffer>(nullptr);
+                SetBuffer(nullPointer);
+            } break;
+
+            case NotificationType::MAXIMIZE: {
+                OnMaximize();
+                RequestFullscreenMode(FullscreenMode::NORMAL);
+            } break;
+
+            case NotificationType::REFRESHED: {
+                OnRefreshed(dynamic_cast<MemoryBuffer*>(source));
+            } break;
+
+            default:
+                break;
         }
     }
     

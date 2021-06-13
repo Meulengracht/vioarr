@@ -141,6 +141,9 @@ std::string Terminal::ClearInput(bool addToHistory)
 
 void Terminal::SetInput(const std::string& input)
 {
+    // update the stored command input to match this
+    m_command = input;
+    
     m_lines[m_inputLineIndexCurrent]->SetInput(input);
 }
 
@@ -414,7 +417,7 @@ void Terminal::PrepareBuffer(const std::shared_ptr<Asgaard::MemoryBuffer>& buffe
 void Terminal::OnCreated()
 {
     // Don't hardcode 4 bytes per pixel, this is only because we assume a format of ARGB32
-    auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
+    auto screenSize = GetScreen()->GetCurrentWidth() * GetScreen()->GetCurrentHeight() * 4;
     m_memory = Asgaard::MemoryPool::Create(this, screenSize);
     
     // Create initial buffer the size of this surface

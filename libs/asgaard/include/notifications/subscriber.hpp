@@ -20,32 +20,15 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
+#pragma once
 
-#include "include/object.hpp"
-#include "include/error.hpp"
-#include "include/events/event.hpp"
-#include "include/events/error_event.hpp"
-#include "include/notifications/error_notification.hpp"
-#include "wm_core_service_client.h"
+#include "notification.hpp"
 
-using namespace Asgaard;
-
-Object::Object(uint32_t id) : m_id(id) { }
-Object::~Object() { }
-
-void Object::ExternalEvent(const Event& event) {
-    switch (event.GetType())
-    {
-        case Event::Type::CREATION: {
-            Notify(CreatedNotification(Id()));
-        } break;
-
-        case Event::Type::ERROR: {
-            const auto& error = static_cast<const ErrorEvent&>(event);
-            Notify(ErrorNotification(Id(), error.Code(), error.Description()));
-        } break;
-        
-        default:
-            break;
-    }
+namespace Asgaard {
+    class Publisher;
+    
+    class Subscriber {
+    public:
+        virtual void Notification(Publisher*, const Asgaard::Notification&) { }
+    };
 }

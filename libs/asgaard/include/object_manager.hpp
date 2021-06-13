@@ -31,7 +31,7 @@
 
 namespace Asgaard {
     
-    class ObjectManager final : Utils::Subscriber {
+    class ObjectManager final : Subscriber {
     public:
         ObjectManager();
         ~ObjectManager();
@@ -106,7 +106,7 @@ namespace Asgaard {
         static void  operator delete[] (void*) = delete;
 
     private:
-        void                 Notification(Utils::Publisher* source, int event, void* data) override;
+        void                 Notification(Publisher* source, const Asgaard::Notification&) override;
         ASGAARD_API uint32_t CreateObjectId();
 
     private:

@@ -472,18 +472,18 @@ namespace Asgaard {
         }
     }
 
-    void Application::Notification(Publisher* source, int event, void* data)
+    void Application::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
         auto screen = dynamic_cast<Screen*>(source);
         if (screen == nullptr) {
             return;
         }
 
-        if (event == static_cast<int>(Object::Notification::CREATED)) {
+        if (notification.GetType() == NotificationType::CREATED) {
             m_screenFound = true;
         }
 
-        if (event == static_cast<int>(Object::Notification::DESTROY)) {
+        if (notification.GetType() == NotificationType::DESTROY) {
             std::remove_if(m_screens.begin(), m_screens.end(), 
                 [screen](const std::shared_ptr<Screen>& i) { return i->Id() == screen->Id(); });
         }

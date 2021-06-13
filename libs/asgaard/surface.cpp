@@ -21,6 +21,7 @@
  *    graphical applications.
  */
 
+#include <algorithm>
 #include "include/application.hpp"
 #include "include/object_manager.hpp"
 #include "include/memory_buffer.hpp"
@@ -35,6 +36,8 @@
 #include "include/events/pointer_click_event.hpp"
 #include "include/events/key_event.hpp"
 
+#include "include/notifications/focus_notification.hpp"
+
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"
 #include "wm_memory_service_client.h"
@@ -47,26 +50,24 @@ static enum Asgaard::Surface::SurfaceEdges GetSurfaceEdges(enum wm_surface_edge 
 }
 
 namespace Asgaard {
-    Surface::Surface(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
+    Surface::Surface(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
         : Object(id)
         , m_dimensions(dimensions)
         , m_screen(nullptr)
+        , m_isFocused(false)
     {
-        BindToScreen(screen, parent);
+        BindToScreen(screen);
     }
     
-    Surface::Surface(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
-        : Surface(id, screen, nullptr, dimensions) { }
-
     Surface::Surface(uint32_t id, const Rectangle& dimensions)
-        : Surface(id, std::shared_ptr<Screen>(nullptr), 0, dimensions) { }
+        : Surface(id, std::shared_ptr<Screen>(nullptr), dimensions) { }
 
     Surface::~Surface()
     {
         wm_surface_destroy(APP.GrachtClient(), nullptr, Id());
     }
     
-    void Surface::BindToScreen(const std::shared_ptr<Screen>& screen, const Surface* parent)
+    void Surface::BindToScreen(const std::shared_ptr<Screen>& screen)
     {
         // If we previously were not attached to a screen and now are attaching
         // then we need to provide an underlying surface
@@ -81,12 +82,28 @@ namespace Asgaard {
 
             wm_screen_create_surface(APP.GrachtClient(), nullptr, screen->Id(), Id(),    
                 m_dimensions.Width(), m_dimensions.Height());
-            if (parent) {
-                wm_surface_add_subsurface(APP.GrachtClient(), nullptr, parent->Id(),
-                    Id(), m_dimensions.X(), m_dimensions.Y());
-            }
         }
         m_screen = screen;
+    }
+
+    void Surface::AddChild(const std::shared_ptr<Surface>& child)
+    {
+        if (!child) {
+            // error
+            return;
+        }
+
+        // request subsurface
+        wm_surface_add_subsurface(APP.GrachtClient(), nullptr, 
+            Id(),
+            child->Id(),
+            child->Dimensions().X(),
+            child->Dimensions().Y()
+        );
+
+        // subscribe to child
+        child->Subscribe(this);
+        m_children.push_back(child);
     }
 
     void Surface::ExternalEvent(const Event& event)
@@ -114,6 +131,8 @@ namespace Asgaard {
 
             case Event::Type::SURFACE_FOCUSED: {
                 const auto& focus = static_cast<const SurfaceFocusEvent&>(event);
+                m_isFocused = focus.Focus();
+                Notify(FocusEventNotification(Id(), m_isFocused));
                 OnFocus(focus.Focus());
             } break;
 
@@ -153,6 +172,45 @@ namespace Asgaard {
             default:
                 Object::ExternalEvent(event);
                 break;
+        }
+    }
+
+    void Surface::Notification(Publisher* source, const Asgaard::Notification& notification)
+    {
+        /**
+         * Focus events are only ever sent by our self, and the focus is already handled.
+         * So when we receive a FOCUS_EVENT we must propegate the event up, and to our other
+         * children.
+         */
+        if (notification.GetType() == NotificationType::FOCUS_EVENT) {
+            /**
+             * If the event came from one of our children, then we must update the rest
+             * of our children, and then send the event further up the chain
+             */
+            auto childEntry = std::find_if(std::begin(m_children), std::end(m_children),
+                [&notification](const std::shared_ptr<Surface>& i) { return i->Id() == notification.GetObjectId(); });
+            if (childEntry != std::end(m_children)) {
+                m_isFocused = (*childEntry)->IsFocused();
+                // clear focus for all other children
+                std::for_each(std::begin(m_children), std::end(m_children),
+                [this, &notification](const std::shared_ptr<Surface>& i) {
+                    if (notification.GetObjectId() != i->Id()) {
+                        i->Notification(this, FocusNotification(Id(), false));
+                    }
+                });
+            }
+
+            // snitch to our parents
+            Notify(FocusEventNotification(Id(), m_isFocused));
+        }
+        else if (notification.GetType() == NotificationType::FOCUS) {
+            /**
+             * This events comes as an internal event, and we must update our
+             * focus and invoke OnFocus. No other actions should be taken here 
+             */
+            const auto& focusNotification = static_cast<const FocusNotification&>(notification);
+            m_isFocused = focusNotification.Focus();
+            OnFocus(m_isFocused);
         }
     }
     

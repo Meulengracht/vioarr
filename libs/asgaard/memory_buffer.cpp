@@ -108,7 +108,7 @@ void* Asgaard::MemoryBuffer::Buffer(int x, int y) {
 void Asgaard::MemoryBuffer::ExternalEvent(const Event& event)
 {
     if (event.GetType() == Event::Type::BUFFER_RELEASE) {
-        Notify(static_cast<int>(Notification::REFRESHED));
+        Notify(RefreshedNotification(Id()));
         return;
     }
 

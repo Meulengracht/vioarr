@@ -59,13 +59,13 @@ public:
 private:
     void OnCreated() override
     {
-        auto screenSize = m_screen->GetCurrentWidth() * m_screen->GetCurrentHeight() * 4;
+        auto screenSize = GetScreen()->GetCurrentWidth() * GetScreen()->GetCurrentHeight() * 4;
         m_memory = MemoryPool::Create(this, screenSize);
 
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
         
-        m_cursor = OM.CreateClientObject<Widgets::Cursor>(m_screen, 
+        m_cursor = OM.CreateClientObject<Widgets::Cursor>(GetScreen(), 
             Rectangle(0, 0, CURSOR_SIZE, CURSOR_SIZE), 
             Theming::Theme::Elements::IMAGE_CURSOR
         );
@@ -87,8 +87,8 @@ private:
         renderImage(m_buffer, background);
         
         // create the launcher
-        m_launcher = OM.CreateClientObject<LauncherBase>(m_screen, this, 
-            Rectangle(0, 0, m_screen->GetCurrentWidth(), m_screen->GetCurrentHeight()), 
+        m_launcher = SubSurface::Create<LauncherBase>(this, 
+            Rectangle(0, 0, GetScreen()->GetCurrentWidth(), GetScreen()->GetCurrentHeight()), 
             background
         );
     }

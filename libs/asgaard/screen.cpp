@@ -130,7 +130,7 @@ namespace Asgaard {
     {
         switch (event.GetType()) {
             case Event::Type::SYNC: {
-                Notify(static_cast<int>(Notification::CREATED));
+                Notify(CreatedNotification(Id()));
             } break;
             
             case Event::Type::SCREEN_PROPERTIES: {
@@ -163,14 +163,14 @@ namespace Asgaard {
         }
     }
 
-    void Screen::Notification(Publisher* source, int event, void* data)
+    void Screen::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
         auto window = dynamic_cast<WindowBase*>(source);
         if (window == nullptr) {
             return;
         }
 
-        if (event == static_cast<int>(Object::Notification::DESTROY)) {
+        if (notification.GetType() == NotificationType::DESTROY) {
             std::remove_if(m_windows.begin(), m_windows.end(), 
                 [window](const std::shared_ptr<WindowBase>& i) { return i->Id() == window->Id(); });
         }

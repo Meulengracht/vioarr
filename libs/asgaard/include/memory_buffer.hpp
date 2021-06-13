@@ -33,10 +33,6 @@ namespace Asgaard {
     
     class MemoryBuffer final : public Object {
     public:
-        enum class Notification : int {
-            REFRESHED = static_cast<int>(Object::Notification::CUSTOM_START),
-        };
-        
         enum class Flags : int {
             NONE = 0,
             FLIP_Y

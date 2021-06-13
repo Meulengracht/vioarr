@@ -196,11 +196,15 @@ exit:
     return surfaceAt;
 }
 
+/**
+ * We need to handle a few cases, because a parent surface is focused
+ * as long as one of its sub-surfaces are focused. This essentially means
+ * we need to focus the actual clicked surface, but also focus all the way up
+ */
 void vioarr_manager_focus_surface(vioarr_surface_t* surface)
 {
-    vioarr_surface_t* entering = vioarr_surface_parent(surface, 1);
+    vioarr_surface_t* entering = surface;
     vioarr_surface_t* leaving  = NULL;
-    int               level    = vioarr_surface_level(entering);
 
     vioarr_rwlock_w_lock(&g_manager.lock);
     if (entering != g_manager.focused) {
@@ -208,14 +212,18 @@ void vioarr_manager_focus_surface(vioarr_surface_t* surface)
         g_manager.focused = entering;
 
         if (g_manager.focused) {
-            element_t* element = list_find(&g_manager.surfaces[level], __surface_key(entering));
-            if (element) {
-                list_remove(&g_manager.surfaces[level], element);
-                list_append(&g_manager.surfaces[level], element);
-            }
-            else {
-                g_manager.focused = NULL;
-                entering = NULL;
+            vioarr_surface_t* parent = vioarr_surface_parent(surface, 1);
+            if (parent != vioarr_surface_parent(leaving, 1)) {
+                int        level   = vioarr_surface_level(parent);
+                element_t* element = list_find(&g_manager.surfaces[level], __surface_key(parent));
+                if (element) {
+                    list_remove(&g_manager.surfaces[level], element);
+                    list_append(&g_manager.surfaces[level], element);
+                }
+                else {
+                    g_manager.focused = NULL;
+                    entering = NULL;
+                }
             }
         }
     }

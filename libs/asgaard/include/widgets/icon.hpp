@@ -46,12 +46,8 @@ namespace Asgaard {
     
                 COUNT
             };
-            
-            enum class Notification : int {
-                CLICKED = static_cast<int>(Object::Notification::CUSTOM_START)
-            };
         public:
-            Icon(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle&);
+            Icon(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
             ~Icon();
 
             void Destroy() override;
@@ -61,7 +57,7 @@ namespace Asgaard {
             void SetState(IconState state);
     
         private:
-            void Notification(Publisher*, int = 0, void* = 0) override;
+            void Notification(Publisher*, const Asgaard::Notification&) override;
             void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override;
             void OnMouseLeave(const std::shared_ptr<Pointer>&) override;
             void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override;

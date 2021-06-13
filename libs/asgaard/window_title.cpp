@@ -27,13 +27,14 @@
 #include "include/memory_buffer.hpp"
 #include "include/pointer.hpp"
 
+#include "include/notifications/draginitiated_notification.hpp"
+
 namespace Asgaard {
     WindowTitle::WindowTitle(
             uint32_t id, 
-            const std::shared_ptr<Screen>& screen, 
-            const Surface* parent, 
+            const std::shared_ptr<Screen>& screen,
             const Rectangle& dimensions)
-        : Label(id, screen, parent, dimensions)
+        : Label(id, screen, dimensions)
     {
         // we are essentially a label that is input reactive
         MarkInputRegion(Dimensions());
@@ -44,19 +45,21 @@ namespace Asgaard {
         Destroy();
     }
 
-    void WindowTitle::Notification(Publisher* source, int event, void* data)
+    void WindowTitle::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
         auto object = dynamic_cast<Object*>(source);
         if (object) {
-            switch (event) {
-                case static_cast<int>(Object::Notification::ERROR): {
-                    Notify(static_cast<int>(Object::Notification::ERROR));
-                    return;
+            switch (notification.GetType()) {
+                case NotificationType::ERROR: {
+                    Notify(notification);
                 } break;
+
+                default:
+                    break;
             }
         }
 
-        Widgets::Label::Notification(source, event, data);
+        Widgets::Label::Notification(source, notification);
     }
 
     void WindowTitle::OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY)
@@ -79,8 +82,7 @@ namespace Asgaard {
     void WindowTitle::OnMouseMove(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
     {
         if (m_lmbHold) {
-            Notify(static_cast<int>(Notification::INITIATE_DRAG), 
-                reinterpret_cast<void*>(static_cast<intptr_t>(pointer->Id())));
+            Notify(DragInitiatedNotification(Id(), pointer->Id()));
             m_lmbHold = false;
         }
     }

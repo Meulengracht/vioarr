@@ -27,13 +27,14 @@
 #include "include/memory_buffer.hpp"
 #include "include/pointer.hpp"
 
+#include "include/notifications/draginitiated_notification.hpp"
+
 namespace Asgaard {
     WindowEdge::WindowEdge(
             uint32_t id, 
-            const std::shared_ptr<Screen>& screen, 
-            const Surface* parent, 
+            const std::shared_ptr<Screen>& screen,
             const Rectangle& dimensions)
-        : SubSurface(id, screen, parent, dimensions)
+        : SubSurface(id, screen, dimensions)
     {
         // create required memory
         auto poolSize = (dimensions.Width() * dimensions.Height() * 4);
@@ -83,16 +84,21 @@ namespace Asgaard {
         ApplyChanges();
     }
 
-    void WindowEdge::Notification(Publisher* source, int event, void* data)
+    void WindowEdge::Notification(Publisher* source, const Asgaard::Notification& notification)
     {
         auto object = dynamic_cast<Object*>(source);
         if (object) {
-            switch (event) {
-                case static_cast<int>(Object::Notification::ERROR): {
-                    Notify(static_cast<int>(Object::Notification::ERROR));
+            switch (notification.GetType()) {
+                case NotificationType::ERROR: {
+                    Notify(notification);
                 } break;
+
+                default:
+                    break;
             }
         }
+
+        SubSurface::Notification(source, notification);
     }
 
     void WindowEdge::OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY)
@@ -115,8 +121,7 @@ namespace Asgaard {
     void WindowEdge::OnMouseMove(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
     {
         if (m_lmbHold) {
-            Notify(static_cast<int>(Notification::INITIATE_DRAG), 
-                reinterpret_cast<void*>(static_cast<intptr_t>(pointer->Id())));
+            Notify(DragInitiatedNotification(Id(), pointer->Id()));
             m_lmbHold = false;
         }
     }

@@ -125,7 +125,7 @@ void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEnt
 
 bool ResolverBase::HandleKeyCode(const Asgaard::KeyEvent& key)
 {
-    if (key.KeyCode() == VKC_TAB) {
+    if (key.KeyCode() == VKC_TAB && key.Pressed()) {
         if (m_lastKeyCode != VKC_TAB) {
             m_originalCommand = m_terminal->GetCurrentInput();
             m_autoCompleteIndex = 0;
@@ -153,6 +153,7 @@ void ResolverBase::TryAutoComplete()
         DirectoryPrinter(directoryEntries);
         PrintCommandHeader();
         m_terminal->SetInput(m_originalCommand);
+        m_terminal->RequestRedraw();
         return;
     }
 
@@ -173,6 +174,12 @@ void ResolverBase::TryAutoComplete()
         }
     );
     if (matchingEntry != std::end(directoryEntries)) {
-        m_terminal->SetInput(*matchingEntry);
+        // extend current command with the matching entry
+        auto lastMatch  = m_originalCommand.find_last_of(lastToken);
+        auto cutCommand = m_originalCommand.substr(0, lastMatch);
+        cutCommand += *matchingEntry;
+
+        m_terminal->SetInput(cutCommand);
+        m_terminal->RequestRedraw();
     }
 }

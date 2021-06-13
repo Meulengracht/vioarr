@@ -22,13 +22,20 @@
  */
 #pragma once
 
+#include <string>
+#include "notification.hpp"
+
 namespace Asgaard {
-    namespace Utils {
-        class Publisher;
-        
-        class Subscriber {
-        public:
-            virtual void Notification(Publisher*, int = 0, void* = 0) { }
-        };
-    }
+    class DragInitiatedNotification : public NotificationTemplate<NotificationType::DRAG_INITIATED> {
+    public:
+        DragInitiatedNotification(uint32_t sourceObjectId, uint32_t pointerId) 
+        : NotificationTemplate(sourceObjectId)
+        , m_pointerId(pointerId)
+        { }
+
+        uint32_t GetPointerId() const { return m_pointerId; }
+
+    private:
+        uint32_t m_pointerId;
+    };
 }

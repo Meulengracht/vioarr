@@ -161,32 +161,29 @@ namespace Asgaard {
 
         void Painter::RenderRectangle(const Rectangle& dimensions)
         {
+            auto left = dimensions.X();
+            auto right = dimensions.X() + dimensions.Width() - 1;
+            auto top = dimensions.Y();
+            auto bottom = dimensions.Y() + dimensions.Height() - 1;
+
             RenderLine(
-                dimensions.X(),
-                dimensions.Y(),
-                dimensions.X() + dimensions.Width(),
-                dimensions.Y()
+                left, top,
+                right, top
             );
             
             RenderLine(
-                dimensions.X(),
-                dimensions.Y(),
-                dimensions.X(),
-                dimensions.Y() + dimensions.Height()
+                left, top,
+                left, bottom
             );
 
             RenderLine(
-                dimensions.X(), 
-                dimensions.Y() + dimensions.Height(), 
-                dimensions.X() + dimensions.Width(), 
-                dimensions.Y() + dimensions.Height()
+                left, bottom, 
+                right, bottom
             );
             
             RenderLine(
-                dimensions.X() + dimensions.Width(), 
-                dimensions.Y(), 
-                dimensions.X() + dimensions.Width(),
-                dimensions.Y() + dimensions.Height()
+                right, top, 
+                right, bottom
             );
         }
 
@@ -209,9 +206,22 @@ namespace Asgaard {
                 return;
             }
 
-            auto bytesInSource = image.Stride() * image.Height();
-            auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
-            memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
+            auto destination = static_cast<uint8_t*>(m_canvas->Buffer(x, y));
+            auto source      = static_cast<uint8_t*>(image.Data());
+            auto bytesCut    = x * GetBytesPerPixel(m_canvas->Format());
+
+            // copy each line individually
+            for (auto i = 0; i < std::min(image.Height(), m_canvas->Height() - y); i++) {
+                // this should be optimized routine
+                memcpy(
+                    static_cast<void*>(destination),
+                    static_cast<const void*>(source),
+                    std::min(image.Stride(), m_canvas->Stride() - bytesCut)
+                );
+
+                destination += m_canvas->Stride();
+                source      += image.Stride();
+            }
         }
         
         void Painter::RenderCharacter(int x, int y, char character)
@@ -237,7 +247,7 @@ namespace Asgaard {
                         else if (alpha == 0) {
                             pointer[column] = bgColor;
                         }
-                        else if (alpha > 0) {
+                        else {
                             // ok so we must blend the text color, but with what?
                             if (m_fillColor.Alpha() == 255) {
                                 pointer[column] = AlphaBlendAXGX(bgColor, fgColor, alpha);

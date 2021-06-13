@@ -48,7 +48,7 @@ namespace Asgaard {
                 LEFT = 0x10
             };
         public:
-            Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle&);
+            Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
             ~Label();
 
             void Destroy() override;
@@ -61,7 +61,7 @@ namespace Asgaard {
             void RequestRedraw();
             
         protected:
-            void Notification(Publisher*, int = 0, void* = 0) override;
+            void Notification(Publisher*, const Asgaard::Notification&) override;
             
         private:
             void Redraw();

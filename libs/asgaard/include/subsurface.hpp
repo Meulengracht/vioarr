@@ -30,8 +30,26 @@ namespace Asgaard {
     
     class SubSurface : public Surface {
     public:
-        SubSurface(uint32_t, const std::shared_ptr<Screen>&, const Surface*, const Rectangle&);
-        
+        SubSurface(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
+
+    public:
+        template<class S, typename... Params>
+        static std::shared_ptr<S> Create(Surface* parent, Params... parameters) {
+            if (!std::is_base_of<SubSurface, S>::value) {
+                return nullptr;
+            }
+
+            auto subsurface = OM.CreateClientObject<S, const std::shared_ptr<Screen>&, Params...>(
+                parent->GetScreen(), std::forward<Params>(parameters)...);
+            if (subsurface == nullptr) {
+                return nullptr;
+            }
+
+            parent->AddChild(subsurface);
+            return subsurface;
+        }
+    
+    public:
         void Resize(int width, int height);
         void Move(int parentX, int parentY);
     };

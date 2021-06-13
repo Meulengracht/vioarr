@@ -26,11 +26,13 @@
 #include "../include/memory_pool.hpp"
 #include "../include/memory_buffer.hpp"
 #include "../include/rectangle.hpp"
+#include "../include/notifications/textchanged_notification.hpp"
+#include <iostream>
 
 namespace Asgaard {
     namespace Widgets {
-        Textbox::Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Surface* parent, const Rectangle& dimensions)
-            : SubSurface(id, screen, parent, dimensions)
+        Textbox::Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+            : SubSurface(id, screen, dimensions)
             , m_font(nullptr)
             , m_text("")
             , m_placeholderText("")
@@ -51,6 +53,7 @@ namespace Asgaard {
                 Dimensions().Width(), Dimensions().Height(), 
                 PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
+            MarkInputRegion(Dimensions());
             SetBuffer(m_buffer);
             RedrawReady();
         }
@@ -184,6 +187,7 @@ namespace Asgaard {
             
             renderImage();
             paint.SetFont(m_font);
+            paint.SetFillColor(m_fillColor);
             paint.SetOutlineColor(textColor);
             paint.RenderText(textX, textY, text);
             renderBorder();
@@ -192,21 +196,21 @@ namespace Asgaard {
             ApplyChanges();
         }
 
-        void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
+        void Textbox::OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY)
         {
             // set beam cursor
         }
         
-        void OnMouseLeave(const std::shared_ptr<Pointer>&)
+        void Textbox::OnMouseLeave(const std::shared_ptr<Pointer>&)
         {
             // 
         }
 
         void Textbox::OnKeyEvent(const KeyEvent& keyEvent)
         {
-            
+            std::cout << "Textbox::OnKeyEvent" << std::endl;
 
-            Notify(static_cast<int>(Notification::TEXT_CHANGED), &m_text);
+            Notify(TextChangedNotification(Id(), m_text));
         }
 
         void Textbox::OnFocus(bool focus)
@@ -215,31 +219,19 @@ namespace Asgaard {
             RequestRedraw();
         }
 
-        void Textbox::Notification(Publisher* source, int event, void* data)
+        void Textbox::Notification(Publisher* source, const Asgaard::Notification& notification)
         {
-            auto memoryObject = dynamic_cast<MemoryPool*>(source);
-            if (memoryObject != nullptr) {
-                // OK notification from the memory pool
-                switch (static_cast<MemoryPool::Notification>(event))
-                {
-                    case MemoryPool::Notification::ERROR: {
-                        Notify(static_cast<int>(Object::Notification::ERROR), data);
-                    } break;
+            switch (notification.GetType())
+            {
+                case NotificationType::ERROR: {
+                    Notify(notification);
+                } break;
 
-                    default: break;
-                }
-            }
-            
-            auto bufferObject = dynamic_cast<MemoryBuffer*>(source);
-            if (bufferObject != nullptr) {
-                switch (event) {
-                    case static_cast<int>(MemoryBuffer::Notification::REFRESHED): {
-                        RedrawReady();
-                    } break;
-                    
-                    default:
-                        break;
-                }
+                case NotificationType::REFRESHED: {
+                    RedrawReady();
+                } break;
+
+                default: break;
             }
         }
     }

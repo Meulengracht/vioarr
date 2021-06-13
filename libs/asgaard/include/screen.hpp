@@ -98,7 +98,7 @@ namespace Asgaard {
         }
 
         void ExternalEvent(const Event&) override;
-        void Notification(Publisher*, int = 0, void* = 0) override;
+        void Notification(Publisher*, const Asgaard::Notification&) override;
         
     private:
         std::list<std::unique_ptr<ScreenMode>> m_modes;

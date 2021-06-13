@@ -22,34 +22,33 @@
  */
 #pragma once
 
-#include <list>
-#include "subscriber.hpp"
+#include <string>
+#include "notification.hpp"
 
 namespace Asgaard {
-    namespace Utils {
-        class Publisher {
-        public:
-            Publisher() : m_notifyActive(true) { }
-            virtual ~Publisher() { }
-            
-            void Subscribe(Subscriber* subscriber) {
-                m_subscribers.push_back(subscriber);
-            }
-            void Unsubscribe(Subscriber* subscriber) {
-                m_subscribers.remove(subscriber);
-            }
-            
-            void Notify(int event = 0, void* data = 0) {
-                for (auto subscriber : m_subscribers) {
-                    subscriber->Notification(this, event, data);
-                }
-            }
-            
-            void SetNotifyState(bool enable) { m_notifyActive = enable; }
-            
-        private:
-            std::list<Subscriber*> m_subscribers;
-            bool                   m_notifyActive;
-        };
-    }
+    class FocusEventNotification : public NotificationTemplate<NotificationType::FOCUS_EVENT> {
+    public:
+        FocusEventNotification(uint32_t sourceObjectId, const bool focus) 
+        : NotificationTemplate(sourceObjectId)
+        , m_focus(focus)
+        { }
+
+        bool Focus() const { return m_focus; }
+
+    private:
+        bool m_focus;
+    };
+
+    class FocusNotification : public NotificationTemplate<NotificationType::FOCUS> {
+    public:
+        FocusNotification(uint32_t sourceObjectId, const bool focus) 
+        : NotificationTemplate(sourceObjectId)
+        , m_focus(focus)
+        { }
+
+        bool Focus() const { return m_focus; }
+
+    private:
+        bool m_focus;
+    };
 }

@@ -24,8 +24,10 @@
 #include <subsurface.hpp>
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
+#include <notifications/textchanged_notification.hpp>
 #include <drawing/painter.hpp>
 #include <widgets/label.hpp>
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -66,6 +68,19 @@ public:
     void Destroy() override
     {
         SubSurface::Destroy();
+    }
+
+public:
+    void Notification(const Publisher* source, const Asgaard::Notification& notification) override
+    {
+        if (notification.GetType() == NotificationType::TEXT_CHANGED) {
+            // apply new filtering based on input
+            auto textNotification = static_cast<const Asgaard::TextChangedNotification&>(notification);
+            ApplySearchFilter(textNotification.GetText());
+        }
+
+        // do not steal events that the underlying system needs
+        SubSurface::Notification(source, notification);
     }
 
 private:
@@ -130,6 +145,18 @@ private:
         m_registeredApps.push_back(editor);
         m_registeredApps.push_back(terminal);
         m_registeredApps.push_back(doom);
+
+        // sort list alphabetically
+        std::sort(
+            m_registeredApps.begin(),
+            m_registeredApps.end(), 
+            [](const auto& a, const auto& b){ return a->GetName() < b->GetName(); }
+        );
+    }
+
+    void ApplySearchFilter(const std::string& filter)
+    {
+        // iterate through all apps, if their name contains stuff then show
     }
     
 private:

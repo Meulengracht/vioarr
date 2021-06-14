@@ -50,6 +50,8 @@ public:
         SubSurface::Destroy();
     }
 
+    std::string const& GetName() const { return m_name; }
+
 private:
     void LoadResources()
     {
@@ -86,4 +88,5 @@ private:
     std::shared_ptr<Drawing::Font>         m_font;
     std::shared_ptr<Widgets::Label>        m_label;
     std::shared_ptr<Widgets::Icon>         m_icon;
+    std::string                            m_name;
 };

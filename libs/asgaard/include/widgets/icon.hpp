@@ -57,7 +57,7 @@ namespace Asgaard {
             void SetState(IconState state);
     
         private:
-            void Notification(Publisher*, const Asgaard::Notification&) override;
+            void Notification(const Publisher*, const Asgaard::Notification&) override;
             void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override;
             void OnMouseLeave(const std::shared_ptr<Pointer>&) override;
             void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override;

@@ -158,21 +158,22 @@ namespace Asgaard {
             } break;
             
             default:
-                Object::ExternalEvent(event);
                 break;
         }
+
+        // always call base-handler for these types
+        Object::ExternalEvent(event);
     }
 
-    void Screen::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void Screen::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        auto window = dynamic_cast<WindowBase*>(source);
-        if (window == nullptr) {
-            return;
-        }
-
         if (notification.GetType() == NotificationType::DESTROY) {
             std::remove_if(m_windows.begin(), m_windows.end(), 
-                [window](const std::shared_ptr<WindowBase>& i) { return i->Id() == window->Id(); });
+                [objectId = notification.GetObjectId()](const std::shared_ptr<WindowBase>& i) { 
+                    return i->Id() == objectId; 
+            });
         }
+        
+        Object::Notification(source, notification);
     }
 }

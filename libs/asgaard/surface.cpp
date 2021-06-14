@@ -170,12 +170,14 @@ namespace Asgaard {
             } break;
 
             default:
-                Object::ExternalEvent(event);
                 break;
         }
+        
+        // always call base-handler for these types
+        Object::ExternalEvent(event);
     }
 
-    void Surface::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void Surface::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
         /**
          * Focus events are only ever sent by our self, and the focus is already handled.
@@ -212,6 +214,8 @@ namespace Asgaard {
             m_isFocused = focusNotification.Focus();
             OnFocus(m_isFocused);
         }
+        
+        Object::Notification(source, notification);
     }
     
     void Surface::SetBuffer(const std::shared_ptr<MemoryBuffer>& buffer)

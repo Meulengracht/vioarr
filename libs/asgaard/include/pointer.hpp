@@ -22,12 +22,17 @@
  */
 #pragma once
 
-#include <memory>
 #include "config.hpp"
 #include "object.hpp"
+#include <map>
+#include <memory>
 
 namespace Asgaard {
     class Surface;
+    
+    namespace Widgets {
+        class Cursor;
+    }
 
     class Pointer : public Object {
     public:
@@ -38,10 +43,25 @@ namespace Asgaard {
             // 2 > is possible
         };
 
+        enum class DefaultCursors : int {
+            ARROW,
+            ARROW_WE,
+            ARROW_ALL,
+            BEAM
+        };
+
     public:
         Pointer(uint32_t id);
         ~Pointer();
         
-        ASGAARD_API void SetSurface(const std::shared_ptr<Surface>&, int xOffset = 0, int yOffset = 0);
+        ASGAARD_API void SetSurface(const std::shared_ptr<Widgets::Cursor>&, int xOffset = 0, int yOffset = 0);
+        ASGAARD_API void SetDefaultSurface(const DefaultCursors cursor = DefaultCursors::ARROW);
+
+    private:
+        void Notification(const Publisher*, const Asgaard::Notification&) override;
+
+    private:
+        std::map<int, std::shared_ptr<Widgets::Cursor>> m_defaultCursors;
+        std::shared_ptr<Widgets::Cursor>                m_currentCursor;
     };
 }

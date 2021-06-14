@@ -73,7 +73,7 @@ namespace Asgaard {
         virtual void OnMinimize() { }
         virtual void OnMaximize() { }
         virtual void OnCreated() = 0;
-        virtual void OnRefreshed(MemoryBuffer*) = 0;
+        virtual void OnRefreshed(const MemoryBuffer*) = 0;
 
     // Window functions that can be called to configure this window 
     protected:
@@ -81,7 +81,7 @@ namespace Asgaard {
         ASGAARD_API void InitiateMove(const std::shared_ptr<Pointer>&);
 
         // Protected function, allow override
-        ASGAARD_API void Notification(Publisher*, const Asgaard::Notification&) override;
+        ASGAARD_API void Notification(const Publisher*, const Asgaard::Notification&) override;
 
     private:
         ASGAARD_API void ExternalEvent(const Event&) final;

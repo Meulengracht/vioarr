@@ -53,15 +53,10 @@ namespace Asgaard {
         return nullptr;
     }
 
-    void ObjectManager::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void ObjectManager::Notification(const Publisher*, const Asgaard::Notification& notification)
     {
-        auto object = dynamic_cast<Object*>(source);
-        if (object == nullptr) {
-            return;
-        }
-
         if (notification.GetType() == NotificationType::DESTROY) {
-            m_objects.erase(object->Id());
+            m_objects.erase(notification.GetObjectId());
         }
     }
     

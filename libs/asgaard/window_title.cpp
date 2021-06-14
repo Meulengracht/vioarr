@@ -45,18 +45,15 @@ namespace Asgaard {
         Destroy();
     }
 
-    void WindowTitle::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void WindowTitle::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        auto object = dynamic_cast<Object*>(source);
-        if (object) {
-            switch (notification.GetType()) {
-                case NotificationType::ERROR: {
-                    Notify(notification);
-                } break;
+        switch (notification.GetType()) {
+            case NotificationType::ERROR: {
+                // log error
+            } break;
 
-                default:
-                    break;
-            }
+            default:
+                break;
         }
 
         Widgets::Label::Notification(source, notification);

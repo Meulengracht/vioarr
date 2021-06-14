@@ -164,12 +164,12 @@ namespace Asgaard {
             return 0;
         }
         
-        void Label::Notification(Publisher* source, const Asgaard::Notification& notification)
+        void Label::Notification(const Publisher* source, const Asgaard::Notification& notification)
         {
             switch (notification.GetType())
             {
                 case NotificationType::ERROR: {
-                    Notify(notification);
+                    // log error
                 } break;
 
                 case NotificationType::REFRESHED: {

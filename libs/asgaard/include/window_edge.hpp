@@ -42,7 +42,7 @@ namespace Asgaard {
     private:
         void InitializeBuffer();
 
-        void Notification(Publisher*, const Asgaard::Notification&) override;
+        void Notification(const Publisher*, const Asgaard::Notification&) override;
         void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override;
         void OnMouseMove(const std::shared_ptr<Pointer>&, int localX, int localY) override;
         void OnMouseLeave(const std::shared_ptr<Pointer>&) override;

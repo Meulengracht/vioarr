@@ -84,18 +84,15 @@ namespace Asgaard {
         ApplyChanges();
     }
 
-    void WindowEdge::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void WindowEdge::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        auto object = dynamic_cast<Object*>(source);
-        if (object) {
-            switch (notification.GetType()) {
-                case NotificationType::ERROR: {
-                    Notify(notification);
-                } break;
+        switch (notification.GetType()) {
+            case NotificationType::ERROR: {
+                // log error
+            } break;
 
-                default:
-                    break;
-            }
+            default:
+                break;
         }
 
         SubSurface::Notification(source, notification);

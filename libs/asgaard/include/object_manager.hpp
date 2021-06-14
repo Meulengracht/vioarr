@@ -106,7 +106,7 @@ namespace Asgaard {
         static void  operator delete[] (void*) = delete;
 
     private:
-        void                 Notification(Publisher* source, const Asgaard::Notification&) override;
+        void                 Notification(const Publisher* source, const Asgaard::Notification&) override;
         ASGAARD_API uint32_t CreateObjectId();
 
     private:

@@ -116,18 +116,15 @@ namespace Asgaard {
             ApplyChanges();
         }
     
-        void Icon::Notification(Publisher* source, const Asgaard::Notification& notifiation)
+        void Icon::Notification(const Publisher* source, const Asgaard::Notification& notifiation)
         {
-            auto object = dynamic_cast<Object*>(source);
-            if (object != nullptr) {
-                switch (notifiation.GetType()) {
-                    case NotificationType::ERROR: {
-                        Notify(notifiation);
-                    } break;
+            switch (notifiation.GetType()) {
+                case NotificationType::ERROR: {
+                    // log error
+                } break;
 
-                    default:
-                        break;
-                }
+                default:
+                    break;
             }
 
             SubSurface::Notification(source, notifiation);

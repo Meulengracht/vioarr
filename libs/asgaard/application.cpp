@@ -460,9 +460,6 @@ namespace Asgaard {
                 }
                 
             }
-            case Event::Type::ERROR: {
-                Object::ExternalEvent(event);
-            } break;
             case Event::Type::SYNC: {
                 m_syncRecieved = true;
             } break;
@@ -470,11 +467,14 @@ namespace Asgaard {
             default:
                 break;
         }
+
+        // always call base-handler for these types
+        Object::ExternalEvent(event);
     }
 
-    void Application::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void Application::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        auto screen = dynamic_cast<Screen*>(source);
+        const auto screen = dynamic_cast<const Screen*>(source);
         if (screen == nullptr) {
             return;
         }

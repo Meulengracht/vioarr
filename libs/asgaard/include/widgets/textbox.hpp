@@ -61,21 +61,29 @@ namespace Asgaard {
             ASGAARD_API void RequestRedraw();
             
         protected:
-            void Notification(Publisher*, const Asgaard::Notification&) override;
+            void Notification(const Publisher*, const Asgaard::Notification&) override;
             void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override;
             void OnMouseLeave(const std::shared_ptr<Pointer>&) override;
             void OnKeyEvent(const KeyEvent& keyEvent) override;
             void OnFocus(bool) override;
             
         private:
+            void CalculateBeamOffset();
             void Redraw();
             void RedrawReady();
+            void OnBackspace();
+            void OnDelete();
+            void OnLeftArrow();
+            void OnRightArrow();
+            void AddInput(const KeyEvent& keyEvent);
     
         private:
             std::shared_ptr<Asgaard::MemoryPool>   m_memory;
             std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
             std::shared_ptr<Drawing::Font>         m_font;
 
+            int            m_cursor;
+            int            m_beamOffset;
             std::string    m_text;
             std::string    m_placeholderText;
             Drawing::Color m_textColor;

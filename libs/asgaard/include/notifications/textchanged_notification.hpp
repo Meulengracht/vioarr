@@ -33,7 +33,7 @@ namespace Asgaard {
         , m_text(text)
         { }
 
-        std::string Text() const { return m_text; }
+        std::string GetText() const { return m_text; }
 
     private:
         std::string m_text;

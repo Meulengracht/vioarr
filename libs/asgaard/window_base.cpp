@@ -120,7 +120,7 @@ namespace Asgaard {
         wm_surface_move(APP.GrachtClient(), nullptr, Id(), pointer->Id());
     }
     
-    void WindowBase::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void WindowBase::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
         switch (notification.GetType())
         {
@@ -149,12 +149,14 @@ namespace Asgaard {
             } break;
 
             case NotificationType::REFRESHED: {
-                OnRefreshed(dynamic_cast<MemoryBuffer*>(source));
+                OnRefreshed(dynamic_cast<const MemoryBuffer*>(source));
             } break;
 
             default:
                 break;
         }
+
+        Surface::Notification(source, notification);
     }
     
     void WindowBase::ExternalEvent(const Event& event)

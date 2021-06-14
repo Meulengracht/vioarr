@@ -89,7 +89,7 @@ public:
 
 protected:
     void OnCreated() override;
-    void OnRefreshed(Asgaard::MemoryBuffer*) override;
+    void OnRefreshed(const Asgaard::MemoryBuffer*) override;
     void OnKeyEvent(const Asgaard::KeyEvent&) override;
     void OnResized(enum SurfaceEdges, int width, int height) override;
     

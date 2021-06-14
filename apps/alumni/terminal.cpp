@@ -438,7 +438,7 @@ void Terminal::OnCreated()
     m_resolver->PrintCommandHeader();
 }
 
-void Terminal::OnRefreshed(Asgaard::MemoryBuffer*)
+void Terminal::OnRefreshed(const Asgaard::MemoryBuffer*)
 {
     // Request redraw
     if (m_redraw) {

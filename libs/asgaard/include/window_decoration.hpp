@@ -66,7 +66,7 @@ namespace Asgaard {
         void Initialize();
         void Redraw();
         void RedrawReady();
-        void Notification(Publisher*, const Asgaard::Notification&) override;
+        void Notification(const Publisher*, const Asgaard::Notification&) override;
 
     private:
         // consists of multiple resources;

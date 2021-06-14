@@ -81,7 +81,7 @@ private:
         ApplyChanges();
     }
     
-    void OnRefreshed(MemoryBuffer* buffer) override
+    void OnRefreshed(const MemoryBuffer* buffer) override
     {
         // nothing to do
     }

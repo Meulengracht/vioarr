@@ -42,6 +42,7 @@ void Object::ExternalEvent(const Event& event) {
 
         case Event::Type::ERROR: {
             const auto& error = static_cast<const ErrorEvent&>(event);
+            // @todo log this error
             Notify(ErrorNotification(Id(), error.Code(), error.Description()));
         } break;
         
@@ -49,3 +50,7 @@ void Object::ExternalEvent(const Event& event) {
             break;
     }
 }
+
+void Object::Destroy() {
+    Notify(Asgaard::DestroyNotification(Id()));
+};

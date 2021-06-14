@@ -21,9 +21,11 @@
  */
 #pragma once
 
-#include <memory_pool.hpp>
-#include <memory_buffer.hpp>
-#include <surface.hpp>
+#include "../memory_pool.hpp"
+#include "../memory_buffer.hpp"
+#include "../surface.hpp"
+#include "../drawing/painter.hpp"
+#include "../drawing/image.hpp"
 
 namespace Asgaard {
     namespace Widgets {
@@ -42,17 +44,19 @@ namespace Asgaard {
 
                 LoadCursor(cursorType);
             }
-
-            void LoadCursor(enum Theming::Theme::Elements cursorType)
+            
+            Cursor(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, const Drawing::Image& image)
+                : Surface(id, screen, dimensions)
             {
-                const auto theme = Theming::TM.GetTheme();
-                auto cursor = theme->GetImage(cursorType);
+                // create memory resources
+                auto poolSize = (Dimensions().Width() * Dimensions().Height() * 4);
+                m_memory = MemoryPool::Create(this, poolSize);
+                
+                m_buffer = MemoryBuffer::Create(this, m_memory, 0,
+                    Dimensions().Width(), Dimensions().Height(),
+                    PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
-                auto renderImage = [&](const auto& buffer, const auto& image) {
-                    Asgaard::Drawing::Painter painter(buffer);
-                    painter.RenderImage(image);
-                };
-                renderImage(m_buffer, cursor);
+                RenderImage(image);
             }
 
             void Show()
@@ -67,6 +71,20 @@ namespace Asgaard {
                 SetBuffer(nullBuffer);
                 ApplyChanges();
             }
+
+        private:
+            void LoadCursor(enum Theming::Theme::Elements cursorType)
+            {
+                const auto theme = Theming::TM.GetTheme();
+                auto cursor = theme->GetImage(cursorType);
+                RenderImage(cursor);
+            }
+
+            void RenderImage(const Drawing::Image& image)
+            {
+                Drawing::Painter painter(m_buffer);
+                painter.RenderImage(image);
+            }   
 
         private:
             std::shared_ptr<MemoryPool>   m_memory;

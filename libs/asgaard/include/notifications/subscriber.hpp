@@ -29,6 +29,6 @@ namespace Asgaard {
     
     class Subscriber {
     public:
-        virtual void Notification(Publisher*, const Asgaard::Notification&) { }
+        virtual void Notification(const Publisher*, const Asgaard::Notification&) { }
     };
 }

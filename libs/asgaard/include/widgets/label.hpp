@@ -61,7 +61,7 @@ namespace Asgaard {
             void RequestRedraw();
             
         protected:
-            void Notification(Publisher*, const Asgaard::Notification&) override;
+            void Notification(const Publisher*, const Asgaard::Notification&) override;
             
         private:
             void Redraw();

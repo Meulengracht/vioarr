@@ -37,10 +37,8 @@ namespace Asgaard {
     public:
         uint32_t Id() const { return m_id; }
         
-        virtual void Destroy() {
-            Notify(Asgaard::DestroyNotification(Id()));
-        };
-
+    public:
+        virtual void Destroy();
         virtual void ExternalEvent(const Event&);
         
     private:

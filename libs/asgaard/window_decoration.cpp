@@ -193,32 +193,31 @@ namespace Asgaard {
         }
     }
     
-    void WindowDecoration::Notification(Publisher* source, const Asgaard::Notification& notification)
+    void WindowDecoration::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        auto object = dynamic_cast<Object*>(source);
-        if (object == nullptr) {
-            return;
-        }
+        auto notifyingObjectId = notification.GetObjectId();
 
         if (notification.GetType() == NotificationType::ERROR) {
             Notify(notification);
         }
-        else if (object->Id() == m_appTitle->Id()) {
+        else if (notifyingObjectId == m_appTitle->Id()) {
             if (notification.GetType() == NotificationType::DRAG_INITIATED) {
                 const auto& dragNotification = reinterpret_cast<const DragInitiatedNotification&>(notification);
                 Notify(DragInitiatedNotification(Id(), dragNotification.GetPointerId()));
             }
         }
         else if (notification.GetType() == NotificationType::CLICKED) {
-            if (object->Id() == m_minIcon->Id()) {
+            if (notifyingObjectId == m_minIcon->Id()) {
                 Notify(MinimizeNotification(Id()));
             }
-            else if (object->Id() == m_maxIcon->Id()) {
+            else if (notifyingObjectId == m_maxIcon->Id()) {
                 Notify(MaximizeNotification(Id()));
             }
-            else if (object->Id() == m_closeIcon->Id()) {
+            else if (notifyingObjectId == m_closeIcon->Id()) {
                 exit(EXIT_SUCCESS);
             }
         }
+
+        SubSurface::Notification(source, notification);
     }
 }

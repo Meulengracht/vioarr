@@ -52,6 +52,18 @@ public:
         SubSurface::Destroy();
     }
 
+public:
+    void Notification(const Publisher* source, const Asgaard::Notification& notification) override
+    {
+        if (notification.GetType() == NotificationType::TEXT_CHANGED) {
+            // ok notify this to our launcher, simply redirect event
+            Notify(notification);
+        }
+
+        // do not steal events that the underlying system needs
+        SubSurface::Notification(source, notification);
+    }
+
 private:
     void LoadResources()
     {

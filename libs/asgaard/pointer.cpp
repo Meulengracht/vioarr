@@ -94,6 +94,7 @@ void Pointer::SetDefaultSurface(const DefaultCursors cursor)
             Rectangle(0, 0, CURSOR_SIZE, CURSOR_SIZE), 
             ConvertToThemeImageIndex(cursor)
         );
+        exists = m_defaultCursors.find(static_cast<int>(cursor));
     }
 
     SetSurface((*exists).second);

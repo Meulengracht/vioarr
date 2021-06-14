@@ -150,13 +150,25 @@ private:
         std::sort(
             m_registeredApps.begin(),
             m_registeredApps.end(), 
-            [](const auto& a, const auto& b){ return a->GetName() < b->GetName(); }
+            [](const auto& a, const auto& b) { return a->GetName() < b->GetName(); }
         );
     }
 
     void ApplySearchFilter(const std::string& filter)
     {
         // iterate through all apps, if their name contains stuff then show
+        //std::for_each(
+        //    m_registeredApps.begin(),
+        //    m_registeredApps.end(), 
+        //    [filter](std::shared_ptr<LauncherApplication>& a) {
+        //        if (a->GetName().find(filter) != std::string::npos) {
+//
+        //        }
+        //        else {
+        //            a->
+        //        }
+        //    }
+        //);
     }
     
 private:

@@ -48,6 +48,7 @@ namespace Asgaard {
 
                 void RenderLine(int x1, int y1, int x2, int y2);
                 void RenderRectangle(const Rectangle& dimensions);
+                void RenderRectangle(int top, int left, int bottom, int right);
                 
                 void RenderFillGradientV(const Rectangle& dimensions,
                     unsigned char r1, unsigned char g1, unsigned char b1,

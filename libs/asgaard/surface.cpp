@@ -46,6 +46,7 @@
 
 static enum Asgaard::Surface::SurfaceEdges GetSurfaceEdges(enum wm_surface_edge edges)
 {
+    // todo
     return Asgaard::Surface::SurfaceEdges::NONE;
 }
 

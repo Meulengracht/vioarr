@@ -35,6 +35,7 @@ namespace Asgaard {
             const std::shared_ptr<Screen>& screen,
             const Rectangle& dimensions)
         : Label(id, screen, dimensions)
+        , m_lmbHold(false)
     {
         // we are essentially a label that is input reactive
         MarkInputRegion(Dimensions());

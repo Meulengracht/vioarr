@@ -187,6 +187,29 @@ namespace Asgaard {
             );
         }
 
+        void Painter::RenderRectangle(int top, int left, int bottom, int right)
+        {
+            RenderLine(
+                left, top,
+                right, top
+            );
+            
+            RenderLine(
+                left, top,
+                left, bottom
+            );
+
+            RenderLine(
+                left, bottom, 
+                right, bottom
+            );
+            
+            RenderLine(
+                right, top, 
+                right, bottom
+            );
+        }
+
         void Painter::RenderImage(const Image& image)
         {
             // if faulty images are provided we just return

@@ -180,7 +180,7 @@ void Textbox::Redraw()
     auto renderBorder = [&] {
         if (m_borderWidth) {
             paint.SetFillColor(m_borderColor);
-            paint.RenderRectangle(Dimensions());
+            paint.RenderRectangle(0, 0, Dimensions().Height() - 1,  Dimensions().Width() - 1);
         }
     };
 
@@ -196,10 +196,11 @@ void Textbox::Redraw()
     paint.RenderText(textX, textY, text);
 
     // render beam
-    paint.SetFillColor(0xFF, 0, 0, 0);
-    paint.RenderLine(textX + m_beamOffset, textY, textX + m_beamOffset, textY + textDimensions.Height());
-
-    renderBorder();
+    if (IsFocused()) {
+        paint.SetFillColor(0xFF, 0, 0, 0);
+        paint.RenderLine(textX + m_beamOffset, textY, textX + m_beamOffset, textY + textDimensions.Height());
+        renderBorder();
+    }
 
     MarkDamaged(Dimensions());
     ApplyChanges();
@@ -219,7 +220,7 @@ void Textbox::CalculateBeamOffset()
 
 void Textbox::OnBackspace()
 {
-    if (m_cursor >= static_cast<int>(m_text.size())) {
+    if (m_cursor > 0 && m_cursor <= static_cast<int>(m_text.size())) {
         m_text.erase(m_cursor - 1, 1);
         m_cursor--;
 
@@ -264,7 +265,7 @@ void Textbox::AddInput(const KeyEvent& keyEvent)
         return;
     }
 
-    m_text.append(reinterpret_cast<const char*>(const_cast<const uint32_t*>(&character)));
+    m_text.insert(m_cursor, reinterpret_cast<const char*>(const_cast<const uint32_t*>(&character)));
     m_cursor++;
 
     Notify(TextChangedNotification(Id(), m_text));
@@ -285,6 +286,9 @@ void Textbox::OnMouseLeave(const std::shared_ptr<Pointer>& pointer)
 void Textbox::OnKeyEvent(const KeyEvent& keyEvent)
 {
     std::cout << "Textbox::OnKeyEvent" << std::endl;
+    if (!keyEvent.Pressed()) {
+        return;
+    }
 
     switch (keyEvent.KeyCode()) {
         case VKC_BACK:

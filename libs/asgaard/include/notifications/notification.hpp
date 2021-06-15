@@ -35,6 +35,7 @@ namespace Asgaard {
         MAXIMIZE,
         CLICKED,
         TEXT_CHANGED,
+        TEXT_COMMIT,
         FOCUS_EVENT,
         FOCUS,
 

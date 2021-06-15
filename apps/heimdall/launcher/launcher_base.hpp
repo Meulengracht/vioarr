@@ -45,7 +45,7 @@ using namespace Asgaard;
 constexpr auto SEARCHBOX_WIDTH = 428.0f;
 constexpr auto SEARCHBOX_HEIGHT = 174.0f;
 constexpr auto TILE_WIDTH = 64.0f;
-constexpr auto TILE_HEIGHT = 71.0f;
+constexpr auto TILE_HEIGHT = 78.0f;
 constexpr auto TILE_PADDING = 30;
 
 class LauncherBase : public SubSurface {
@@ -60,6 +60,7 @@ public:
         LoadResources(background);
         CalculateDimensions();
         LoadApplications();
+        Configure();
     }
 
     ~LauncherBase() {
@@ -69,6 +70,7 @@ public:
     void Toggle()
     {
         if (!m_isShown) {
+            ApplySearchFilter("");
             SetBuffer(m_buffer);
             ApplyChanges();
         }
@@ -89,25 +91,39 @@ public:
 public:
     void Notification(const Publisher* source, const Asgaard::Notification& notification) override
     {
+        auto spawn = [&] (uint32_t objectId) {
+            auto hasInfo = m_registeredAppInfos.find(objectId);
+            if (hasInfo != std::end(m_registeredAppInfos)) {
+                Toggle();
+                Spawner::SpawnApplication((*hasInfo).second);
+            }
+        };
+
         if (notification.GetType() == NotificationType::TEXT_CHANGED) {
             // apply new filtering based on input
             auto textNotification = static_cast<const Asgaard::TextChangedNotification&>(notification);
             ApplySearchFilter(textNotification.GetText());
         }
+        else if (notification.GetType() == NotificationType::TEXT_COMMIT) {
+            // launch first app
+            auto app = std::find_if(
+                std::begin(m_registeredApps),
+                std::end(m_registeredApps),
+                [] (const auto& a) { return a->IsShown(); }
+            );
 
-        if (notification.GetType() == NotificationType::CLICKED) {
-            auto hasInfo = m_registeredAppInfos.find(notification.GetObjectId());
-            if (hasInfo != std::end(m_registeredAppInfos)) {
-                Toggle();
-                Spawner::SpawnApplication((*hasInfo).second);
+            if (app != std::end(m_registeredApps)) {
+                spawn((*app)->Id());
             }
+        }
+        else if (notification.GetType() == NotificationType::CLICKED) {
+            spawn(notification.GetObjectId());
         }
 
         // do not steal events that the underlying system needs
         SubSurface::Notification(source, notification);
     }
 
-private:
     void CalculateDimensions()
     {
         // We want the application box to be a little bit larger than the
@@ -122,7 +138,7 @@ private:
             static_cast<int>(width),
             static_cast<int>(height)
         );
-        m_tilesPerRow = static_cast<int>(TILE_WIDTH / width);
+        m_tilesPerRow = static_cast<int>(width / TILE_WIDTH);
     }
 
     void LoadResources(const Drawing::Image& background)
@@ -213,20 +229,30 @@ private:
         );
     }
 
+    void Configure()
+    {
+        //RequestPriorityLevel(PriorityLevel::TOP);
+        //RequestFullscreenMode(FullscreenMode::NORMAL);
+        //MarkInputRegion(Dimensions());
+    }
+
     void ApplySearchFilter(const std::string& filter)
     {
         // iterate through all apps, if their name contains stuff then show
-        int i = 0;
+        auto i = 0;
         std::for_each(
             m_registeredApps.begin(),
             m_registeredApps.end(), 
             [this, filter, &i](std::shared_ptr<LauncherApplication>& a) {
-                if (a->GetName().find(filter) != std::string::npos) {
+                if (filter.size() == 0 || a->GetName().find(filter) != std::string::npos) {
                     a->Move(this->GetApplicationTileX(i), this->GetApplicationTileY(i));
                     a->Show();
+                    a->SetHighlight(!i && filter.size() > 0);
+                    a->RequestRedraw();
                     i++;
                 }
                 else {
+                    a->SetHighlight(false);
                     a->Hide();
                 }
             }

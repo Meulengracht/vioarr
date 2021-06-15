@@ -75,6 +75,7 @@ namespace Asgaard {
             void OnDelete();
             void OnLeftArrow();
             void OnRightArrow();
+            void OnEnter();
             void AddInput(const KeyEvent& keyEvent);
     
         private:

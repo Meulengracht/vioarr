@@ -28,6 +28,7 @@
 #include "../include/rectangle.hpp"
 #include "../include/events/key_event.hpp"
 #include "../include/notifications/textchanged_notification.hpp"
+#include "../include/notifications/textcommit_notification.hpp"
 #include <iostream>
 
 using namespace Asgaard::Widgets;
@@ -258,6 +259,13 @@ void Textbox::OnRightArrow()
     }
 }
 
+void Textbox::OnEnter()
+{
+    if (m_text.size() > 0u) {
+        Notify(TextCommitNotification(Id(), m_text));
+    }
+}
+
 void Textbox::AddInput(const KeyEvent& keyEvent)
 {
     auto character = keyEvent.Key();
@@ -305,6 +313,10 @@ void Textbox::OnKeyEvent(const KeyEvent& keyEvent)
         
         case VKC_RIGHT:
             OnRightArrow();
+            break;
+
+        case VKC_ENTER:
+            OnEnter();
             break;
 
         default:

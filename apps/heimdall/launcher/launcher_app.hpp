@@ -32,6 +32,8 @@
 #include <memory>
 #include <string>
 
+#include <notifications/notification.hpp>
+
 using namespace Asgaard;
 
 class LauncherApplication : public SubSurface {
@@ -41,9 +43,14 @@ public:
         : SubSurface(id, screen, dimensions)
         , m_name(name)
         , m_isShown(false)
+        , m_isHovered(false)
+        , m_redraw(false)
+        , m_redrawReady(false)
     {
         LoadResources(image);
         MarkInputRegion(Dimensions());
+        RedrawReady();
+        Redraw();
         Show();
     }
 
@@ -76,10 +83,32 @@ public:
         std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);
         SetBuffer(empty);
         ApplyChanges();
+
+        // clear some values
         m_isShown = false;
+        m_isHovered = false;
+    }
+
+    void SetHighlight(bool highlight)
+    {
+        m_isHovered = highlight;
+    }
+
+    void RequestRedraw()
+    {
+        bool shouldRedraw = m_redrawReady.exchange(false);
+        if (shouldRedraw) {
+            Redraw();
+            MarkDamaged(Dimensions());
+            ApplyChanges();
+        }
+        else {
+            m_redraw = true;
+        }
     }
 
     std::string const& GetName() const { return m_name; }
+    bool               IsShown() const { return m_isShown; }
 
 private:
     void LoadResources(const Drawing::Image& image)
@@ -92,25 +121,21 @@ private:
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
 
         const auto theme = Theming::TM.GetTheme();
-        auto renderBackground = [&] {
-            Drawing::Painter paint(m_buffer);
-            paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
-            paint.RenderFill();
-        };
 
         // create font
-        m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 14);
+        m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 12);
 
         // create labels
         m_label = SubSurface::Create<Widgets::Label>(
             this, 
-            Rectangle(0, Dimensions().Height() - 15, Dimensions().Width(), 15)
+            Rectangle(1, Dimensions().Height() - 20, Dimensions().Width() - 2, 19)
         );
         m_label->SetAnchors(Widgets::Label::Anchors::CENTER);
         m_label->SetText(m_name);
         m_label->SetFont(m_font);
         m_label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
         m_label->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
+        m_label->RequestRedraw();
 
         // create image
         m_icon = SubSurface::Create<Widgets::Icon>(
@@ -118,27 +143,76 @@ private:
             Rectangle(8, 8, 48, 48)
         );
         m_icon->SetImage(image);
-
-        renderBackground();
     }
 
-    protected:
-        void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override
+    void RedrawReady()
+    {
+        if (m_redraw) {
+            Redraw();
+            MarkDamaged(Dimensions());
+            ApplyChanges();
+            m_redraw = false;
+        }
+        else {
+            m_redrawReady.store(true);
+        }
+    }
+
+    void Redraw()
+    {
+        Drawing::Painter paint(m_buffer);
+        const auto theme = Theming::TM.GetTheme();
+        
+        auto renderBorder = [&] {
+            if (m_isHovered) {
+                paint.SetFillColor(Drawing::Color(0xFF, 0, 0xFF, 0));
+                paint.RenderRectangle(0, 0, Dimensions().Height() - 1,  Dimensions().Width() - 1);
+            }
+        };
+
+        paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
+        paint.RenderFill();
+        renderBorder();
+    }
+
+protected:
+    void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override
+    {
+        m_isHovered = true;
+        RequestRedraw();
+    }
+
+    void OnMouseLeave(const std::shared_ptr<Pointer>&) override
+    {
+        m_isHovered = false;
+        RequestRedraw();
+    }
+
+    void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override
+    {
+        if (button == Pointer::Buttons::LEFT && !pressed) {
+            Notify(ClickedNotification(Id()));
+        }
+    }
+
+    void Notification(const Publisher* source, const Asgaard::Notification& notification) override
+    {
+        switch (notification.GetType())
         {
-            // we must draw borderS!
+            case NotificationType::ERROR: {
+                // log error
+            } break;
+
+            case NotificationType::REFRESHED: {
+                RedrawReady();
+            } break;
+
+            default: break;
         }
 
-        void OnMouseLeave(const std::shared_ptr<Pointer>&) override
-        {
-            // we must not draw borderS!
-        }
+        SubSurface::Notification(source, notification);
+    }
 
-        void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override
-        {
-            // cleaR!
-
-            // send event
-        }
 
 private:
     std::shared_ptr<Asgaard::MemoryPool>   m_memory;
@@ -148,4 +222,7 @@ private:
     std::shared_ptr<Widgets::Icon>         m_icon;
     std::string                            m_name;
     bool                                   m_isShown;
+    bool                                   m_isHovered;
+    bool                                   m_redraw;
+    std::atomic<bool>                      m_redrawReady;
 };

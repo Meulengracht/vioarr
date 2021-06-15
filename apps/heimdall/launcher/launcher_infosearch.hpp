@@ -52,10 +52,17 @@ public:
         SubSurface::Destroy();
     }
 
+    void ResetInput()
+    {
+        m_searchBox->SetText("");
+        m_searchBox->RequestRedraw();
+    }
+
 public:
     void Notification(const Publisher* source, const Asgaard::Notification& notification) override
     {
-        if (notification.GetType() == NotificationType::TEXT_CHANGED) {
+        if (notification.GetType() == NotificationType::TEXT_CHANGED ||
+            notification.GetType() == NotificationType::TEXT_COMMIT) {
             // ok notify this to our launcher, simply redirect event
             Notify(notification);
         }

@@ -34,12 +34,10 @@
 #include <keycodes.h>
 
 #include "launcher/launcher_base.hpp"
+#include "utils/spawner.hpp"
 
 #ifdef MOLLENOS
 #include <ddk/utils.h>
-#include <os/process.h>
-#else
-#include <unistd.h>
 #endif
 
 #define CURSOR_SIZE 16
@@ -123,15 +121,9 @@ private:
 
         if (keyEvent.KeyCode() == VKC_F1 && !keyEvent.Pressed()) {
 #ifdef MOLLENOS
-            UUId_t pid;
-            ProcessSpawn("$bin/alumni.app", NULL, &pid);
+        Spawner::SpawnApplication("$bin/alumni.app");
 #else
-            auto childPid = fork();
-            if (!childPid) {
-                char* argv[] = { "alumni", NULL };
-                auto  resultCode = execv("alumni", argv);
-                exit(resultCode);
-            }
+        Spawner::SpawnApplication("alumni");
 #endif
         }
         else if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {

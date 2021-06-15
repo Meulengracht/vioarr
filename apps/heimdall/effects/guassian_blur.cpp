@@ -43,7 +43,7 @@ namespace std {
 
 /**
  * Guassian blur implemented using box-approximation. Not a perfect blur
- * but the performance is much better. Error-rate is low.
+ * but the performance is much better. Error-rate is < 0.1%
  * http://blog.ivank.net/fastest-gaussian-blur.html
  */
 

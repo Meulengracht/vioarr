@@ -27,25 +27,39 @@
 #include <notifications/textchanged_notification.hpp>
 #include <drawing/painter.hpp>
 #include <widgets/label.hpp>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
 #include "../effects/guassian_blur.hpp"
+#include "../utils/spawner.hpp"
 #include "launcher_infosearch.hpp"
 #include "launcher_app.hpp"
 
 using namespace Asgaard;
 
+constexpr auto SEARCHBOX_WIDTH = 428.0f;
+constexpr auto SEARCHBOX_HEIGHT = 174.0f;
+constexpr auto TILE_WIDTH = 64.0f;
+constexpr auto TILE_HEIGHT = 71.0f;
+constexpr auto TILE_PADDING = 30;
+
 class LauncherBase : public SubSurface {
 public:
     LauncherBase(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, const Drawing::Image& background)
         : SubSurface(id, screen, dimensions)
+        , m_applicationBox(0, 0, 0, 0)
+        , m_tileBox(0, 0, static_cast<int>(TILE_WIDTH), static_cast<int>(TILE_HEIGHT))
+        , m_tilesPerRow(0)
         , m_isShown(false)
     {
         LoadResources(background);
-        //LoadApplications();
+        CalculateDimensions();
+        LoadApplications();
     }
 
     ~LauncherBase() {
@@ -63,6 +77,8 @@ public:
             SetBuffer(empty);
             ApplyChanges();
         }
+
+        m_isShown = !m_isShown;
     }
 
     void Destroy() override
@@ -79,11 +95,36 @@ public:
             ApplySearchFilter(textNotification.GetText());
         }
 
+        if (notification.GetType() == NotificationType::CLICKED) {
+            auto hasInfo = m_registeredAppInfos.find(notification.GetObjectId());
+            if (hasInfo != std::end(m_registeredAppInfos)) {
+                Toggle();
+                Spawner::SpawnApplication((*hasInfo).second);
+            }
+        }
+
         // do not steal events that the underlying system needs
         SubSurface::Notification(source, notification);
     }
 
 private:
+    void CalculateDimensions()
+    {
+        // We want the application box to be a little bit larger than the
+        // infosearch box
+        auto width = SEARCHBOX_WIDTH + (2 * (TILE_WIDTH + TILE_PADDING));
+        auto height = (3 * TILE_HEIGHT) + (2 * TILE_PADDING);
+        auto x = (GetScreen()->GetCurrentWidth() / 2.0f) - (width / 2.0f);
+        auto y = 450;
+
+        m_applicationBox = Rectangle(
+            static_cast<int>(x), y, 
+            static_cast<int>(width),
+            static_cast<int>(height)
+        );
+        m_tilesPerRow = static_cast<int>(TILE_WIDTH / width);
+    }
+
     void LoadResources(const Drawing::Image& background)
     {
         const auto& screen = GetScreen();
@@ -94,8 +135,6 @@ private:
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
 
         // create info search
-        constexpr auto SEARCHBOX_WIDTH = 428.0f;
-        constexpr auto SEARCHBOX_HEIGHT = 174.0f;
         auto midX = (screen->GetCurrentWidth() / 2.0f) - (SEARCHBOX_WIDTH / 2.0f);
         m_infoSearch = SubSurface::Create<LauncherInfoSearch>(
             this, 
@@ -132,19 +171,39 @@ private:
         blurImage(m_buffer, background);
     }
 
+    void RegisterApplication(const std::string& name, const Drawing::Image& image, const std::string& path)
+    {
+        // create the app visual
+        auto index = m_registeredApps.size();
+        auto app   = SubSurface::Create<LauncherApplication>(this, 
+            Rectangle(GetApplicationTileX(index), GetApplicationTileY(index),
+                static_cast<int>(TILE_WIDTH), static_cast<int>(TILE_HEIGHT)), 
+            name, image
+        );
+        m_registeredApps.push_back(app);
+
+        // create the app info
+        m_registeredAppInfos.insert(std::make_pair(app->Id(), path));
+    }
+
     void LoadApplications()
     {
-        // hardcode initial ones
-        auto editor = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
-        
-        auto terminal = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
-        
-        auto doom = SubSurface::Create<LauncherApplication>(this, Rectangle(0, 0, 64, 71));
+        const auto theme = Theming::TM.GetTheme();
 
-        // add to list
-        m_registeredApps.push_back(editor);
-        m_registeredApps.push_back(terminal);
-        m_registeredApps.push_back(doom);
+        auto termImage = theme->GetImage(Theming::Theme::Elements::IMAGE_TERMINAL);
+        auto editImage = theme->GetImage(Theming::Theme::Elements::IMAGE_EDITOR);
+        auto gameImage = theme->GetImage(Theming::Theme::Elements::IMAGE_GAME);
+
+        // hardcode initial ones
+#ifdef MOLLENOS
+        RegisterApplication("Terminal", termImage, "$bin/alumni.app");
+        RegisterApplication("Lite", editImage, "$bin/lite.app");
+        RegisterApplication("Doom", gameImage, "$bin/doom.app");
+#else
+        RegisterApplication("Terminal", termImage, "alumni");
+        RegisterApplication("Lite", editImage, "alumni");
+        RegisterApplication("Doom", gameImage, "alumni");
+#endif
 
         // sort list alphabetically
         std::sort(
@@ -157,18 +216,35 @@ private:
     void ApplySearchFilter(const std::string& filter)
     {
         // iterate through all apps, if their name contains stuff then show
-        //std::for_each(
-        //    m_registeredApps.begin(),
-        //    m_registeredApps.end(), 
-        //    [filter](std::shared_ptr<LauncherApplication>& a) {
-        //        if (a->GetName().find(filter) != std::string::npos) {
-//
-        //        }
-        //        else {
-        //            a->
-        //        }
-        //    }
-        //);
+        int i = 0;
+        std::for_each(
+            m_registeredApps.begin(),
+            m_registeredApps.end(), 
+            [this, filter, &i](std::shared_ptr<LauncherApplication>& a) {
+                if (a->GetName().find(filter) != std::string::npos) {
+                    a->Move(this->GetApplicationTileX(i), this->GetApplicationTileY(i));
+                    a->Show();
+                    i++;
+                }
+                else {
+                    a->Hide();
+                }
+            }
+        );
+    }
+
+    int GetApplicationTileX(int tileIndex)
+    {
+        auto rowIndex = tileIndex % m_tilesPerRow;
+        auto xCoord   = m_applicationBox.X() + (rowIndex * (m_tileBox.Width() + TILE_PADDING));
+        return xCoord;
+    }
+
+    int GetApplicationTileY(int tileIndex)
+    {
+        auto row    = tileIndex / m_tilesPerRow;
+        auto yCoord = m_applicationBox.Y() + (row * (m_tileBox.Height() + TILE_PADDING));
+        return yCoord;
     }
     
 private:
@@ -178,5 +254,11 @@ private:
     std::shared_ptr<Widgets::Label>                   m_appTitle;
     std::shared_ptr<LauncherInfoSearch>               m_infoSearch;
     std::vector<std::shared_ptr<LauncherApplication>> m_registeredApps;
+    std::map<uint32_t, std::string>                   m_registeredAppInfos;
+
+    Rectangle m_applicationBox;
+    Rectangle m_tileBox;
+    int       m_tilesPerRow;
+
     bool m_isShown;
 };

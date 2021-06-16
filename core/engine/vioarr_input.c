@@ -330,8 +330,13 @@ void vioarr_input_on_surface_destroy(vioarr_surface_t* surface)
 {
     foreach (element, &g_inputDevices) {
         vioarr_input_source_t* input = element->value;
-        if (input->state.pointer.op_surface == surface) {
-            __clear_state(input);
+        if (input->type == VIOARR_INPUT_POINTER) {
+            if (input->state.pointer.op_surface == surface) {
+                __clear_state(input);
+            }
+        }
+        else if (input->type == VIOARR_INPUT_KEYBOARD) {
+            unhook_keyboard(input, surface);
         }
     }
 }

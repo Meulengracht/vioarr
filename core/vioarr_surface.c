@@ -252,6 +252,7 @@ void wm_surface_commit_invocation(struct gracht_message* message, const uint32_t
     }
     
     vioarr_surface_commit(surface);
+    // register/unregister
 
 exit:
     EXIT("wm_surface_commit_callback");

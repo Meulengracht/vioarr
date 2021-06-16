@@ -81,9 +81,9 @@ private:
         // Render the normal state
         Drawing::Image background(DATA_DIRECTORY "/themes/backgrounds/bg.png");
         renderImage(m_buffer, background);
-        
+
         // create the launcher
-        m_launcher = SubSurface::Create<LauncherBase>(this, 
+        m_launcher = Surface::Create<LauncherBase>(GetScreen(), 
             Rectangle(0, 0, GetScreen()->GetCurrentWidth(), GetScreen()->GetCurrentHeight()), 
             background
         );

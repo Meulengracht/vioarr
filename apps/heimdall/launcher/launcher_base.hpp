@@ -48,10 +48,10 @@ constexpr auto TILE_WIDTH = 64.0f;
 constexpr auto TILE_HEIGHT = 78.0f;
 constexpr auto TILE_PADDING = 30;
 
-class LauncherBase : public SubSurface {
+class LauncherBase : public Surface {
 public:
     LauncherBase(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, const Drawing::Image& background)
-        : SubSurface(id, screen, dimensions)
+        : Surface(id, screen, dimensions)
         , m_applicationBox(0, 0, 0, 0)
         , m_tileBox(0, 0, static_cast<int>(TILE_WIDTH), static_cast<int>(TILE_HEIGHT))
         , m_tilesPerRow(0)
@@ -85,7 +85,7 @@ public:
 
     void Destroy() override
     {
-        SubSurface::Destroy();
+        Surface::Destroy();
     }
 
 public:
@@ -121,7 +121,7 @@ public:
         }
 
         // do not steal events that the underlying system needs
-        SubSurface::Notification(source, notification);
+        Surface::Notification(source, notification);
     }
 
     void CalculateDimensions()
@@ -231,9 +231,9 @@ public:
 
     void Configure()
     {
-        //RequestPriorityLevel(PriorityLevel::TOP);
-        //RequestFullscreenMode(FullscreenMode::NORMAL);
-        //MarkInputRegion(Dimensions());
+        RequestPriorityLevel(PriorityLevel::TOP);
+        RequestFullscreenMode(FullscreenMode::NORMAL);
+        MarkInputRegion(Dimensions());
     }
 
     void ApplySearchFilter(const std::string& filter)

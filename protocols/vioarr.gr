@@ -50,15 +50,16 @@ service surface (84) {
     func request_fullscreen_mode(uint32 id, fullscreen_mode mode) : () = 9;
     func request_level(uint32 id, int level) : () = 10;
     func request_frame(uint32 id) : () = 11;
-    func commit(uint32 id) : () = 12;
-    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 13;
-    func move(uint32 id, uint32 pointerId) : () = 14;
-    func destroy(uint32 id) : () = 15;
+    func request_focus(uint32 id) : () = 12;
+    func commit(uint32 id) : () = 13;
+    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 14;
+    func move(uint32 id, uint32 pointerId) : () = 15;
+    func destroy(uint32 id) : () = 16;
 
-    event format : (uint32 id, pixel_format format) = 16;
-    event frame : (uint32 id) = 17;
-    event resize : (uint32 id, int width, int height, surface_edge edges) = 18;
-    event focus : (uint32 id, bool focus) = 19;
+    event format : (uint32 id, pixel_format format) = 17;
+    event frame : (uint32 id) = 18;
+    event resize : (uint32 id, int width, int height, surface_edge edges) = 19;
+    event focus : (uint32 id, bool focus) = 20;
 }
 
 service buffer (85) {

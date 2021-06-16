@@ -68,6 +68,15 @@ namespace Asgaard {
         
     public:
         ASGAARD_API void ExternalEvent(const Event&) override;
+
+    public:
+        template<class S, typename... Params>
+        static std::shared_ptr<S> Create(Params... parameters) {
+            if (!std::is_base_of<Surface, S>::value) {
+                return nullptr;
+            }
+            return OM.CreateClientObject<S, Params...>(std::forward<Params>(parameters)...);
+        }
         
     protected:
         virtual void OnResized(enum SurfaceEdges, int width, int height) { }

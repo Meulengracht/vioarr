@@ -23,12 +23,17 @@
 #pragma once
 
 #include "config.hpp"
-#include "object_manager.hpp"
-#include "window_base.hpp"
+#include "object.hpp"
+#include <map>
+#include <memory>
 
 typedef struct gracht_client gracht_client_t;
 
 namespace Asgaard {
+    class Keyboard;
+    class Pointer;
+    class Screen;
+
     namespace Utils {
         class DescriptorListener;
     }
@@ -81,6 +86,8 @@ namespace Asgaard {
     public:
         gracht_client_t*               GrachtClient() const { return m_client; }
         const std::shared_ptr<Screen>& GetScreen() const    { return m_screens.front(); }
+        std::shared_ptr<Keyboard>      GetKeyboard() const;
+        std::shared_ptr<Pointer>       GetPointer() const;
 
     public:
         void ExternalEvent(const Event&) override;
@@ -92,6 +99,7 @@ namespace Asgaard {
     private:
         std::map<int, std::shared_ptr<Utils::DescriptorListener>> m_listeners;
         std::list<std::shared_ptr<Screen>>                        m_screens;
+        std::list<std::shared_ptr<Object>>                        m_inputs;
         gracht_client_t*                                          m_client;
         int                                                       m_ioset;
         volatile bool                                             m_syncRecieved;

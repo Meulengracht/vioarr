@@ -73,6 +73,7 @@ add_sources (
     vioarr_surface.c
     vioarr_screen.c
     vioarr_pointer.c
+    vioarr_keyboard.c
     vioarr_memory.c
     vioarr_core.c
 )

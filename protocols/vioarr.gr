@@ -80,5 +80,8 @@ service pointer (86) {
 }
 
 service keyboard (87) {
-    event key : (uint32 surfaceId, uint32 keycode, uint16 modifiers, bool pressed) = 1;
+    func hook(uint32 keyboardId, uint32 surfaceId) : () = 1;
+    func unhook(uint32 keyboardId, uint32 surfaceId) : () = 2;
+
+    event key : (uint32 surfaceId, uint32 keycode, uint16 modifiers, bool pressed) = 3;
 }

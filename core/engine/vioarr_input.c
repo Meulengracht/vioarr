@@ -62,10 +62,24 @@ typedef struct vioarr_input_source {
             enum wm_surface_edge edge;
             vioarr_surface_t*    op_surface;
         } pointer;
+        struct {
+            list_t          hooks;
+            vioarr_rwlock_t lock;
+        } keyboard;
     } state;
 } vioarr_input_source_t;
 
 static list_t g_inputDevices = LIST_INIT;
+
+int convert_input_type_to_wm_type(int type)
+{
+    if (type == VIOARR_INPUT_POINTER) {
+        return WM_OBJECT_TYPE_POINTER;
+    }
+    else {
+        return WM_OBJECT_TYPE_KEYBOARD;
+    }
+}
 
 void vioarr_input_register(UUId_t deviceId, int type)
 {
@@ -79,7 +93,7 @@ void vioarr_input_register(UUId_t deviceId, int type)
 
     memset(source, 0, sizeof(vioarr_input_source_t));
 
-    sourceId = vioarr_objects_create_server_object(source, WM_OBJECT_TYPE_POINTER);
+    sourceId = vioarr_objects_create_server_object(source, convert_input_type_to_wm_type(WM_OBJECT_TYPE_POINTER));
 
     ELEMENT_INIT(&source->header, (uintptr_t)deviceId, source);
     source->id       = sourceId;
@@ -90,6 +104,10 @@ void vioarr_input_register(UUId_t deviceId, int type)
     if (type == VIOARR_INPUT_POINTER) {
         source->state.pointer.x = vioarr_engine_x_maximum() >> 1;
         source->state.pointer.y = vioarr_engine_y_maximum() >> 1;
+    }
+    else {
+        list_construct(&source->state.keyboard.hooks);
+        vioarr_rwlock_init(&source->state.keyboard.lock);
     }
     list_append(&g_inputDevices, &source->header);
 }
@@ -102,8 +120,13 @@ void vioarr_input_unregister(UUId_t deviceId)
     }
 
     list_remove(&g_inputDevices, &source->header);
-    if (source->state.pointer.surface) {
-        vioarr_manager_demote_cursor(source->state.pointer.surface);
+    if (source->type == VIOARR_INPUT_POINTER) {
+        if (source->state.pointer.surface) {
+            vioarr_manager_demote_cursor(source->state.pointer.surface);
+        }
+    }
+    else {
+        // keyboard, clean list
     }
 
     // destroy server object
@@ -184,14 +207,9 @@ void vioarr_input_request_move(vioarr_input_source_t* input, vioarr_surface_t* s
     input->state.pointer.mode = POINTER_MODE_MOVING;    
 }
 
-
-void vioarr_input_grab(vioarr_input_source_t* input, vioarr_surface_t* surface)
+void grab_pointer(vioarr_input_source_t* input, vioarr_surface_t* surface)
 {
     vioarr_region_t* region;
-
-    if (!input || !surface) {
-        return;
-    }
 
     if (input->state.pointer.mode != POINTER_MODE_NORMAL) {
         return;
@@ -210,10 +228,88 @@ void vioarr_input_grab(vioarr_input_source_t* input, vioarr_surface_t* surface)
     input->state.pointer.y = vioarr_region_y(region) + (vioarr_region_height(region) >> 1);
 }
 
+void hook_keyboard(vioarr_input_source_t* input, vioarr_surface_t* surface)
+{
+    element_t* i;
+    int        alreadyHooked = 0;
+
+    // is surface already hooked
+    vioarr_rwlock_r_lock(&input->state.keyboard.lock);
+    _foreach(i, &input->state.keyboard.hooks) {
+        if (i->key == surface) {
+            alreadyHooked = 1;
+            break;
+        }
+    }
+    vioarr_rwlock_r_unlock(&input->state.keyboard.lock);
+    if (alreadyHooked) {
+        return;
+    }
+
+    // hook us
+    i = malloc(sizeof(element_t));
+    if (!i) {
+        vioarr_utils_error("hook_keyboard ran out of memory for hook element");
+        return;
+    }
+
+    ELEMENT_INIT(i, surface, NULL);
+    vioarr_rwlock_w_lock(&input->state.keyboard.lock);
+    list_append(&input->state.keyboard.hooks, i);
+    vioarr_rwlock_w_unlock(&input->state.keyboard.lock);
+}
+
+void vioarr_input_grab(vioarr_input_source_t* input, vioarr_surface_t* surface)
+{
+    if (!input || !surface) {
+        return;
+    }
+
+    if (input->type == VIOARR_INPUT_POINTER) {
+        grab_pointer(input, surface);
+    }
+    else {
+        hook_keyboard(input, surface);
+    }
+}
+
 static void __clear_state(vioarr_input_source_t* input)
 {
     input->state.pointer.mode = POINTER_MODE_NORMAL;
     input->state.pointer.op_surface = NULL;
+}
+
+void ungrab_pointer(vioarr_input_source_t* input, vioarr_surface_t* surface)
+{
+    if (input->state.pointer.mode != POINTER_MODE_GRABBED ||
+        input->state.pointer.op_surface != surface) {
+        return;
+    }
+
+    __clear_state(input);
+}
+
+void unhook_keyboard(vioarr_input_source_t* input, vioarr_surface_t* surface)
+{
+    element_t* i;
+    int        found = 0;
+
+    // is surface already hooked
+    vioarr_rwlock_r_lock(&input->state.keyboard.lock);
+    _foreach(i, &input->state.keyboard.hooks) {
+        if (i->key == surface) {
+            found = 1;
+            break;
+        }
+    }
+    vioarr_rwlock_r_unlock(&input->state.keyboard.lock);
+    if (!found) {
+        return;
+    }
+
+    vioarr_rwlock_w_lock(&input->state.keyboard.lock);
+    list_remove(&input->state.keyboard.hooks, i);
+    vioarr_rwlock_w_unlock(&input->state.keyboard.lock);
 }
 
 void vioarr_input_ungrab(vioarr_input_source_t* input, vioarr_surface_t* surface)
@@ -222,12 +318,12 @@ void vioarr_input_ungrab(vioarr_input_source_t* input, vioarr_surface_t* surface
         return;
     }
 
-    if (input->state.pointer.mode != POINTER_MODE_GRABBED ||
-        input->state.pointer.op_surface != surface) {
-        return;
+    if (input->type == VIOARR_INPUT_POINTER) {
+        ungrab_pointer(input, surface);
     }
-
-    __clear_state(input);
+    else {
+        unhook_keyboard(input, surface);
+    }
 }
 
 void vioarr_input_on_surface_destroy(vioarr_surface_t* surface)
@@ -459,7 +555,9 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
     }
     else {
         // keyboard
+        element_t*        i;
         vioarr_surface_t* currentSurface = vioarr_manager_front_surface();
+
         if (currentSurface) {
             vioarr_utils_trace(VISTR("vioarr_input_button_event sending key to %i:%u"),
                 vioarr_surface_client(currentSurface), vioarr_surface_id(currentSurface));
@@ -470,8 +568,19 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
                 modifiers,
                 pressed);
         }
-        else {
-            vioarr_utils_error(VISTR("vioarr_input_button_event no surface for key event"));
+        
+        // also notify hooks
+        vioarr_rwlock_r_lock(&source->state.keyboard.lock);
+        _foreach(i, &source->state.keyboard.hooks) {
+            if (i->key != currentSurface) {
+                wm_keyboard_event_key_single(vioarr_get_server_handle(),
+                    vioarr_surface_client(currentSurface),
+                    vioarr_surface_id(currentSurface),
+                    keycode, 
+                    modifiers,
+                    pressed);
+            }
         }
+        vioarr_rwlock_r_unlock(&source->state.keyboard.lock);
     }
 }

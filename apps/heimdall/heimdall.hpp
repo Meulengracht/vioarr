@@ -26,6 +26,7 @@
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
 #include <object_manager.hpp>
+#include <keyboard.hpp>
 #include <events/key_event.hpp>
 #include <drawing/painter.hpp>
 #include <theming/theme_manager.hpp>
@@ -36,15 +37,11 @@
 #include "launcher/launcher_base.hpp"
 #include "utils/spawner.hpp"
 
-#ifdef MOLLENOS
-#include <ddk/utils.h>
-#endif
-
-#define CURSOR_SIZE 16
+constexpr auto CURSOR_SIZE = 16;
 
 using namespace Asgaard;
 
-class Heimdall final : public WindowBase {
+class Heimdall final : public WindowBase, public std::enable_shared_from_this<Heimdall> {
 public:
     Heimdall(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
         : WindowBase(id, screen, dimensions) { }
@@ -70,6 +67,7 @@ private:
 
         // Now all objects are created, load and prepare resources
         LoadResources();
+        Configure();
         FinishSetup();
     }
 
@@ -91,11 +89,21 @@ private:
         );
     }
     
-    void FinishSetup()
+    void Configure()
     {
+        // install a keyboard hook so we get events even when not focused
+        auto keyboard = APP.GetKeyboard();
+        if (keyboard) {
+            keyboard->Hook(shared_from_this());
+        }
+
         RequestPriorityLevel(PriorityLevel::BOTTOM);
         RequestFullscreenMode(FullscreenMode::NORMAL);
         MarkInputRegion(Dimensions());
+    }
+
+    void FinishSetup()
+    {
         SetBuffer(m_buffer);
         MarkDamaged(Dimensions());
         ApplyChanges();
@@ -115,18 +123,7 @@ private:
     
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
-#ifdef MOLLENOS
-        ERROR("Heimdall::OnKeyEvent(keycode=%u)", keyEvent.KeyCode());
-#endif
-
-        if (keyEvent.KeyCode() == VKC_F1 && !keyEvent.Pressed()) {
-#ifdef MOLLENOS
-        Spawner::SpawnApplication("$bin/alumni.app");
-#else
-        Spawner::SpawnApplication("alumni");
-#endif
-        }
-        else if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {
+        if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {
             m_launcher->Toggle();
         }
     }

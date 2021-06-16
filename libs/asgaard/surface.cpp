@@ -26,6 +26,7 @@
 #include "include/object_manager.hpp"
 #include "include/memory_buffer.hpp"
 #include "include/surface.hpp"
+#include "include/screen.hpp"
 
 #include "include/events/surface_resize_event.hpp"
 #include "include/events/surface_focus_event.hpp"

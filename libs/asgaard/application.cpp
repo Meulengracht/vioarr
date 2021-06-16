@@ -29,6 +29,7 @@
 #include "include/application.hpp"
 #include "include/pointer.hpp"
 #include "include/screen.hpp"
+#include "include/keyboard.hpp"
 #include "include/object_manager.hpp"
 #include "include/window_base.hpp"
 #include "include/exceptions/application_exception.h"
@@ -437,6 +438,38 @@ namespace Asgaard {
         }
     }
 
+    std::shared_ptr<Keyboard> Application::GetKeyboard() const
+    {
+        auto entry = std::find_if(
+            std::begin(m_inputs),
+            std::end(m_inputs),
+            [] (const auto& obj) {
+                auto keyboard = std::dynamic_pointer_cast<Keyboard>(obj);
+                return keyboard != nullptr;
+            }
+        );
+        if (entry == std::end(m_inputs)) {
+            return std::shared_ptr<Keyboard>(nullptr);
+        }
+        return std::dynamic_pointer_cast<Keyboard>((*entry));
+    }
+
+    std::shared_ptr<Pointer> Application::GetPointer() const
+    {
+        auto entry = std::find_if(
+            std::begin(m_inputs),
+            std::end(m_inputs),
+            [] (const auto& obj) {
+                auto keyboard = std::dynamic_pointer_cast<Pointer>(obj);
+                return keyboard != nullptr;
+            }
+        );
+        if (entry == std::end(m_inputs)) {
+            return std::shared_ptr<Pointer>(nullptr);
+        }
+        return std::dynamic_pointer_cast<Pointer>(*entry);
+    }
+
     void Application::ExternalEvent(const Event& event)
     {
         switch (event.GetType()) {
@@ -453,6 +486,12 @@ namespace Asgaard {
 
                     case WM_OBJECT_TYPE_POINTER: {
                         auto pointer = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(object.ObjectId());
+                        m_inputs.push_back(pointer);
+                    } break;
+
+                    case WM_OBJECT_TYPE_KEYBOARD: {
+                        auto keyboard = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(object.ObjectId());
+                        m_inputs.push_back(keyboard);
                     } break;
                     
                     default:
@@ -531,9 +570,8 @@ extern "C"
     {
         switch (type) {
             // Handle new server objects
-            case WM_OBJECT_TYPE_SCREEN: {
-                Asgaard::APP.ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
-            } break;
+            case WM_OBJECT_TYPE_SCREEN:
+            case WM_OBJECT_TYPE_KEYBOARD:
             case WM_OBJECT_TYPE_POINTER: {
                 Asgaard::APP.ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
             } break;

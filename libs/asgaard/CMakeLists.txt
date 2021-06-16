@@ -55,6 +55,7 @@ add_sources (
 
     application.cpp
     key_event.cpp
+    keyboard.cpp
     memory_buffer.cpp
     object_manager.cpp
     object.cpp

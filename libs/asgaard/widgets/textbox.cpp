@@ -93,6 +93,8 @@ void Textbox::SetFont(const std::shared_ptr<Drawing::Font>& font)
 void Textbox::SetText(const std::string& text)
 {
     m_text = text;
+    m_cursor = text.size();
+    CalculateBeamOffset();
 }
 
 void Textbox::SetPlaceholderText(const std::string& text)

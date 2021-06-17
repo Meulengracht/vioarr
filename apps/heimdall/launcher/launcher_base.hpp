@@ -73,7 +73,6 @@ public:
             ApplySearchFilter("");
             SetBuffer(m_buffer);
             ApplyChanges();
-            m_infoSearch->OnShown();
         }
         else {
             std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);
@@ -272,6 +271,13 @@ public:
         auto row    = tileIndex / m_tilesPerRow;
         auto yCoord = m_applicationBox.Y() + (row * (m_tileBox.Height() + TILE_PADDING));
         return yCoord;
+    }
+
+    void OnFocus(bool focus) override
+    {
+        if (focus) {
+            m_infoSearch->OnShown();
+        }
     }
     
 private:

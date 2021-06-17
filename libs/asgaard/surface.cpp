@@ -83,7 +83,7 @@ namespace Asgaard {
             }
 
             wm_screen_create_surface(APP.GrachtClient(), nullptr, screen->Id(), Id(),    
-                m_dimensions.Width(), m_dimensions.Height());
+                m_dimensions.X(), m_dimensions.Y(), m_dimensions.Width(), m_dimensions.Height());
         }
         m_screen = screen;
     }

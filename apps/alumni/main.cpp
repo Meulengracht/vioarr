@@ -43,7 +43,7 @@ int main(int argc, char **argv)
 {
     std::string                             fontPath = DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf";
     std::shared_ptr<Asgaard::Drawing::Font> font     = Asgaard::Drawing::FM.CreateFont(fontPath, 12);
-    Asgaard::Rectangle                      initialSize(0, 0, 600, 400);
+    Asgaard::Rectangle                      initialSize(-1, -1, 600, 400);
 
     // set pipes non-blocking
 #ifdef MOLLENOS

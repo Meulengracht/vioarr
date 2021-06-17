@@ -23,7 +23,17 @@ service screen (81) {
     func get_modes(uint32 id) : () = 2;
     func set_scale(uint32 id, int scale) : () = 3;
     func set_transform(uint32 id, transform transform) : () = 4;
-    func create_surface(uint32 screenId, uint32 surfaceId, int width, int height) : () = 5;
+
+    /**
+     * Creates a new surface that binds to the screen provided. Surfaces are root objects that present as their
+     * own element on the screen. Surfaces are initially not shown before they have been bound with a buffer.
+     * 
+     * @param x The x-origin value for the window, this is the x-coordinate for which the window will spawn.
+     *          If none is desired, pass -1.
+     * @param y The y-origin value for the window, this is the y-coordinate for which the window will spawn.
+     *          If none is desired, pass -1.
+     */
+    func create_surface(uint32 screenId, uint32 surfaceId, int x, int y, int width, int height) : () = 5;
 
     event properties : (uint32 id, int x, int y, transform transform, int scale) = 6;
     event mode : (uint32 id, mode_attributes attributes, int resolutionX, int resolutionY, int refreshRate) = 7;

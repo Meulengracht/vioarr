@@ -35,12 +35,13 @@
 #include <keycodes.h>
 
 #include "launcher/launcher_base.hpp"
+#include "statusbar/statusbar.hpp"
 #include "utils/spawner.hpp"
-#include <iostream>
-
-constexpr auto CURSOR_SIZE = 16;
 
 using namespace Asgaard;
+
+constexpr auto CURSOR_SIZE = 16;
+constexpr auto STATUSBAR_HEIGHT = 25;
 
 class Heimdall final : public WindowBase, public std::enable_shared_from_this<Heimdall> {
 public:
@@ -87,6 +88,11 @@ private:
         m_launcher = Surface::Create<LauncherBase>(GetScreen(), 
             Rectangle(0, 0, GetScreen()->GetCurrentWidth(), GetScreen()->GetCurrentHeight()), 
             background
+        );
+
+        // create the statusbar
+        m_statusBar = Surface::Create<StatusBar>(GetScreen(), 
+            Rectangle(0, 0, GetScreen()->GetCurrentWidth(), STATUSBAR_HEIGHT)
         );
     }
     
@@ -147,4 +153,5 @@ private:
     std::shared_ptr<MemoryBuffer>    m_buffer;
     std::shared_ptr<Widgets::Cursor> m_cursor;
     std::shared_ptr<LauncherBase>    m_launcher;
+    std::shared_ptr<StatusBar>       m_statusBar;
 };

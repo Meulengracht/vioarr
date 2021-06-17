@@ -100,22 +100,32 @@ void wm_screen_set_transform_invocation(struct gracht_message* message, const ui
     vioarr_screen_set_transform(screen, transform);
 }
 
-void wm_screen_create_surface_invocation(struct gracht_message* message, const uint32_t screenId, const uint32_t surfaceId, const int width, const int height)
+void wm_screen_create_surface_invocation(struct gracht_message* message, 
+    const uint32_t screenId, const uint32_t surfaceId, 
+    const int x, const int y,
+    const int width, const int height)
 {
     vioarr_utils_trace(VISTR("[wm_screen_create_surface_callback] client %i"), message->client);
     vioarr_screen_t*   screen = vioarr_objects_get_object(-1, screenId);
     vioarr_surface_t*  surface;
     int                status;
+    int                spawnX = x;
+    int                spawnY = y;
     if (!screen) {
         vioarr_utils_error(VISTR("wm_screen_create_surface_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, screenId, ENOENT, "wm_screen: object does not exist");
         return;
     }
+
+    if (spawnX == -1) {
+        spawnX = g_spawnCoordinateX[g_spawnIndex % SPAWN_COORDINATES_COUNT];
+    }
+    if (spawnY == -1) {
+        spawnY = g_spawnCoordinateY[g_spawnIndex % SPAWN_COORDINATES_COUNT];
+    }
     
     status = vioarr_surface_create(message->client, surfaceId, screen,
-        g_spawnCoordinateX[g_spawnIndex % SPAWN_COORDINATES_COUNT], 
-        g_spawnCoordinateY[g_spawnIndex % SPAWN_COORDINATES_COUNT], 
-        width, height, &surface);
+        spawnX, spawnY, width, height, &surface);
     if (status) {
         vioarr_utils_error(VISTR("wm_screen_create_surface_callback: failed to create surface"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, screenId, status, "wm_screen: failed to create surface");

@@ -46,15 +46,14 @@ static void* __surface_key(vioarr_surface_t* surface)
 
 static void __focus_top_surface(void)
 {
-    for (int level = SURFACE_LEVELS - 2; level >= 0; level--) {
-        foreach_reverse(i, &g_manager.surfaces[level]) {
+    // We only care about mid-level surfaces which contains all
+    // the regular windows.
+    foreach_reverse(i, &g_manager.surfaces[1]) {
             if (vioarr_surface_visible(i->value)) {
                 g_manager.focused = i->value;
                 return;
             }
         }
-    }
-
     // none to focus :(
     g_manager.focused = NULL;
 }

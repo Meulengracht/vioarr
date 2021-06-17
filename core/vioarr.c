@@ -59,6 +59,7 @@ static const char* g_serverPath = "/tmp/vi-srv";
 #include "wm_buffer_service_server.h"
 #include "wm_surface_service_server.h"
 #include "wm_pointer_service_server.h"
+#include "wm_keyboard_service_server.h"
 
 #include "engine/vioarr_engine.h"
 #include "engine/vioarr_objects.h"
@@ -286,6 +287,7 @@ int main(int argc, char **argv)
     gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_keyboard_server_protocol);
 
     return server_run(eventIod);
 }
@@ -351,6 +353,7 @@ int main(int argc, char **argv)
     gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_keyboard_server_protocol);
 
     return server_run(eventIod);
 }
@@ -415,6 +418,7 @@ int main(int argc, char **argv)
     gracht_server_register_protocol(g_valiServer, &wm_buffer_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_surface_server_protocol);
     gracht_server_register_protocol(g_valiServer, &wm_pointer_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &wm_keyboard_server_protocol);
 
 #ifdef VIOARR_LAUNCHER
     pid_t childPid = fork();

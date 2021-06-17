@@ -93,7 +93,7 @@ void vioarr_input_register(UUId_t deviceId, int type)
 
     memset(source, 0, sizeof(vioarr_input_source_t));
 
-    sourceId = vioarr_objects_create_server_object(source, convert_input_type_to_wm_type(WM_OBJECT_TYPE_POINTER));
+    sourceId = vioarr_objects_create_server_object(source, convert_input_type_to_wm_type(type));
 
     ELEMENT_INIT(&source->header, (uintptr_t)deviceId, source);
     source->id       = sourceId;
@@ -580,8 +580,8 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
         _foreach(i, &source->state.keyboard.hooks) {
             if (i->key != currentSurface) {
                 wm_keyboard_event_key_single(vioarr_get_server_handle(),
-                    vioarr_surface_client(currentSurface),
-                    vioarr_surface_id(currentSurface),
+                    vioarr_surface_client(i->key),
+                    vioarr_surface_id(i->key),
                     keycode, 
                     modifiers,
                     pressed);

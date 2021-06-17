@@ -281,10 +281,14 @@ void vioarr_manager_request_focus(int client, vioarr_surface_t* surface)
  */
 void vioarr_manager_on_surface_visiblity_change(vioarr_surface_t* surface, int visible)
 {
+    vioarr_rwlock_r_unlock(&g_manager.lock);
     if (visible) {
         vioarr_manager_focus_surface(surface);
     }
-    else if (g_manager.focused == surface) {
+    else if (vioarr_surface_parent(g_manager.focused, 1) == surface) {
+        vioarr_rwlock_w_lock(&g_manager.lock);
         __focus_top_surface();
+        vioarr_rwlock_w_unlock(&g_manager.lock);
     }
+    vioarr_rwlock_r_lock(&g_manager.lock);
 }

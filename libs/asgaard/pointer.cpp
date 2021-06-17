@@ -58,6 +58,8 @@ namespace {
 
 Pointer::Pointer(uint32_t id) 
     : Object(id)
+    , m_defaultCursors{}
+    , m_currentCursor(nullptr)
 { }
 
 Pointer::~Pointer()
@@ -80,9 +82,11 @@ void Pointer::SetSurface(const std::shared_ptr<Widgets::Cursor>& cursor, int xOf
     // calling with an id of 0 will result in clearing the pointer surface
     wm_pointer_set_surface(APP.GrachtClient(), nullptr, Id(), id, xOffset, yOffset);
     
-    m_currentCursor = cursor;
-    m_currentCursor->Subscribe(this);
-    m_currentCursor->Show();
+    if (cursor) {
+        m_currentCursor = cursor;
+        m_currentCursor->Subscribe(this);
+        m_currentCursor->Show();
+    }
 }
 
 void Pointer::SetDefaultSurface(const DefaultCursors cursor)

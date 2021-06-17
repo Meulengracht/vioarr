@@ -36,6 +36,7 @@
 
 #include "launcher/launcher_base.hpp"
 #include "utils/spawner.hpp"
+#include <iostream>
 
 constexpr auto CURSOR_SIZE = 16;
 
@@ -97,6 +98,13 @@ private:
             keyboard->Hook(shared_from_this());
         }
 
+        // install the cursor immediately
+        auto pointer = APP.GetPointer();
+        if (pointer) {
+            m_cursor->Show();
+            pointer->SetSurface(m_cursor);
+        }
+
         RequestPriorityLevel(PriorityLevel::BOTTOM);
         RequestFullscreenMode(FullscreenMode::NORMAL);
         MarkInputRegion(Dimensions());
@@ -117,12 +125,18 @@ private:
     void OnMouseEnter(const std::shared_ptr<Pointer>& pointer, int localX, int localY) override
     {
         // When a new cursor image is set the old surface is automatically cleared of its buffer
-        m_cursor->Show();
-        pointer->SetSurface(m_cursor);
+        if (m_cursor) {
+            m_cursor->Show();
+            pointer->SetSurface(m_cursor);
+        }
     }
     
     void OnKeyEvent(const KeyEvent& keyEvent) override
     {
+        if (!m_launcher) {
+            return;
+        }
+
         if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {
             m_launcher->Toggle();
         }

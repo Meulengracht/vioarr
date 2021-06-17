@@ -490,7 +490,7 @@ namespace Asgaard {
                     } break;
 
                     case WM_OBJECT_TYPE_KEYBOARD: {
-                        auto keyboard = Asgaard::OM.CreateServerObject<Asgaard::Pointer>(object.ObjectId());
+                        auto keyboard = Asgaard::OM.CreateServerObject<Asgaard::Keyboard>(object.ObjectId());
                         m_inputs.push_back(keyboard);
                     } break;
                     

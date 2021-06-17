@@ -75,8 +75,7 @@ public:
             ApplyChanges();
         }
         else {
-            std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);
-            SetBuffer(empty);
+            SetBuffer(std::shared_ptr<Asgaard::MemoryBuffer>(nullptr));
             ApplyChanges();
         }
 

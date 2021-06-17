@@ -96,6 +96,7 @@ void wm_surface_request_fullscreen_mode_invocation(struct gracht_message* messag
     switch (mode) {
         case WM_FULLSCREEN_MODE_EXIT: {
             vioarr_manager_change_level(surface, 1);
+            vioarr_surface_set_level(surface, 1);
             vioarr_surface_restore_size(surface);
         } break;
 
@@ -105,6 +106,7 @@ void wm_surface_request_fullscreen_mode_invocation(struct gracht_message* messag
 
         case WM_FULLSCREEN_MODE_FULL: {
             vioarr_manager_change_level(surface, 2);
+            vioarr_surface_set_level(surface, 2);
             vioarr_surface_maximize(surface);
         } break;
 
@@ -124,8 +126,15 @@ void wm_surface_request_level_invocation(struct gracht_message* message, const u
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
         goto exit;
     }
+
+    if (level < 0 || level >= SURFACE_LEVELS) {
+        vioarr_utils_error(VISTR("wm_surface_request_level input was invalid, level had bad range: %i"), level);
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ERANGE, "wm_surface: bad level requested");
+        goto exit;
+    }
     
     vioarr_manager_change_level(surface, level);
+    vioarr_surface_set_level(surface, level);
 
 exit:
     EXIT("wm_surface_request_level");
@@ -145,6 +154,22 @@ void wm_surface_request_frame_invocation(struct gracht_message* message, const u
 
 exit:
     EXIT("wm_surface_request_frame_callback");
+}
+
+void wm_surface_request_focus_invocation(struct gracht_message* message, const uint32_t id)
+{
+    ENTRY(VISTR("wm_surface_request_focus_invocation(client %i, surface %u)"), message->client, id);
+    vioarr_surface_t* surface = vioarr_objects_get_object(message->client, id);
+    if (!surface) {
+        vioarr_utils_error(VISTR("wm_surface_request_focus_invocation: failed to find surface"));
+        wm_core_event_error_single(vioarr_get_server_handle(), message->client, id, ENOENT, "wm_surface: object does not exist");
+        goto exit;
+    }
+    
+    vioarr_manager_request_focus(message->client, surface);
+
+exit:
+    EXIT("wm_surface_request_focus_invocation");
 }
 
 void wm_surface_invalidate_invocation(struct gracht_message* message, const uint32_t id, const int x, const int y, const int width, const int height)
@@ -252,7 +277,6 @@ void wm_surface_commit_invocation(struct gracht_message* message, const uint32_t
     }
     
     vioarr_surface_commit(surface);
-    // register/unregister
 
 exit:
     EXIT("wm_surface_commit_callback");

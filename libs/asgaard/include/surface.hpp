@@ -46,6 +46,18 @@ namespace Asgaard {
             LEFT   = 0x4,
             RIGHT  = 0x8
         };
+        
+        enum class FullscreenMode : int {
+            EXIT,
+            NORMAL,
+            FULL
+        };
+
+        enum class PriorityLevel : int {
+            BOTTOM,
+            DEFAULT,
+            TOP
+        };
     public:
         ASGAARD_API Surface(uint32_t id, const std::shared_ptr<Screen>&, const Rectangle&);
         ASGAARD_API Surface(uint32_t id, const Rectangle&);
@@ -55,6 +67,8 @@ namespace Asgaard {
         ASGAARD_API void MarkDamaged(const Rectangle&);
         ASGAARD_API void MarkInputRegion(const Rectangle&);
         ASGAARD_API void SetDropShadow(const Rectangle&);
+        ASGAARD_API void RequestPriorityLevel(enum PriorityLevel);
+        ASGAARD_API void RequestFullscreenMode(enum FullscreenMode);
         ASGAARD_API void ApplyChanges();
         
         ASGAARD_API void RequestFrame();

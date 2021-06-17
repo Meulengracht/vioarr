@@ -98,18 +98,6 @@ namespace Asgaard {
         m_decoration->SetVisible(enable);
     }
 
-    void WindowBase::RequestPriorityLevel(enum PriorityLevel level)
-    {
-        wm_surface_request_level(APP.GrachtClient(), nullptr, Id(),
-            static_cast<int>(level));
-    }
-
-    void WindowBase::RequestFullscreenMode(enum FullscreenMode mode)
-    {
-        wm_surface_request_fullscreen_mode(APP.GrachtClient(), nullptr, Id(), 
-            static_cast<wm_fullscreen_mode>(mode));
-    }
-    
     void WindowBase::InitiateResize(const std::shared_ptr<Pointer>& pointer, enum SurfaceEdges edges)
     {
         wm_surface_resize(APP.GrachtClient(), nullptr, Id(), pointer->Id(), ToWindowEdges(edges));

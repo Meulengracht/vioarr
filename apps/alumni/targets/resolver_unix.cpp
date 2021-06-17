@@ -187,11 +187,24 @@ bool ResolverUnix::ExecuteProgram(const std::string& Program, const std::vector<
     return false;
 }
 
-std::vector<std::string> ResolverUnix::GetDirectoryContents(const std::string& Path)
+std::vector<ResolverBase::DirectoryEntry> ResolverUnix::GetDirectoryContents(const std::string& Path)
 {
-    DIR*           dir;
-    struct dirent* entry;
-    std::vector<std::string> entries;
+    DIR*                        dir;
+    struct dirent*              entry;
+    std::vector<DirectoryEntry> entries;
+
+    auto getType = [] (char* path, auto unixType) {
+        if (unixType == DT_DIR) {
+            return DirectoryEntry::Type::DIRECTORY;
+        }
+        else if (unixType == DT_REG) {
+            if (access(path, X_OK) != -1) {
+                return DirectoryEntry::Type::EXECUTABLE;
+            }
+            return DirectoryEntry::Type::REGULAR;
+        }
+        return DirectoryEntry::Type::REGULAR;
+    };
 
     dir = opendir(Path.c_str());
     if (dir != nullptr) {
@@ -202,13 +215,16 @@ std::vector<std::string> ResolverUnix::GetDirectoryContents(const std::string& P
                 continue;
             }
 
-            entries.push_back(std::string(entry->d_name));
+            entries.push_back(DirectoryEntry(std::string(entry->d_name), getType(entry->d_name, entry->d_type)));
             entry = readdir(dir);
         }
         closedir(dir);
     }
 
-    std::sort(entries.begin(), entries.end());
+    std::sort(
+        entries.begin(), 
+        entries.end(),
+        [](const auto& a, const auto& b) { return a.GetName() < b.GetName(); });
     return entries;
 }
 

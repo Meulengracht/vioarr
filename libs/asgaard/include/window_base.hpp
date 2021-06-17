@@ -41,19 +41,6 @@ namespace Asgaard {
     
     class WindowBase : public Surface {
     public:
-        enum class FullscreenMode : int {
-            EXIT,
-            NORMAL,
-            FULL
-        };
-
-        enum class PriorityLevel : int {
-            BOTTOM,
-            DEFAULT,
-            TOP
-        };
-        
-    public:
         ASGAARD_API WindowBase(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
         ASGAARD_API ~WindowBase();
 
@@ -62,9 +49,6 @@ namespace Asgaard {
 
         ASGAARD_API void SetResizable(bool resizeable);
         ASGAARD_API void EnableDecoration(bool enable);
-
-        ASGAARD_API void RequestPriorityLevel(enum PriorityLevel);
-        ASGAARD_API void RequestFullscreenMode(enum FullscreenMode);
 
         ASGAARD_API void Destroy() override;
         

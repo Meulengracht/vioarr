@@ -34,6 +34,27 @@ class Terminal;
 
 class ResolverBase : public TerminalInterpreter {
 public:
+    class DirectoryEntry {
+    public:
+        enum class Type {
+            DIRECTORY,
+            EXECUTABLE,
+            REGULAR
+        };
+    public:
+        DirectoryEntry(const std::string& path, Type type)
+            : m_name(path)
+            , m_type(type)
+            { }
+
+        const std::string& GetName() const { return m_name; }
+        Type               GetType() const { return m_type; }
+    private:
+        std::string m_name;
+        Type        m_type;
+    };
+
+public:
     ResolverBase();
     virtual ~ResolverBase() = default;
 
@@ -45,9 +66,9 @@ public:
     
 protected:
     virtual bool ChangeDirectory(const std::vector<std::string>&) = 0;
-    virtual std::vector<std::string> GetDirectoryContents(const std::string& Path) = 0;
+    virtual std::vector<DirectoryEntry> GetDirectoryContents(const std::string& Path) = 0;
     
-    void DirectoryPrinter(const std::vector<std::string>&);
+    void DirectoryPrinter(const std::vector<DirectoryEntry>&);
     bool ListDirectory(const std::vector<std::string>&);
     bool Help(const std::vector<std::string>&);
     bool Exit(const std::vector<std::string>&);

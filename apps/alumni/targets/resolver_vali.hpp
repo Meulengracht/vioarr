@@ -47,7 +47,7 @@ public:
 protected:
     bool CommandResolver(const std::string&, const std::vector<std::string>&) override;
     bool ChangeDirectory(const std::vector<std::string>&) override;
-    std::vector<std::string> GetDirectoryContents(const std::string& Path) override;
+    std::vector<ResolverBase::DirectoryEntry> GetDirectoryContents(const std::string& Path) override;
 
 private:
     bool ExecuteProgram(const std::string&, const std::vector<std::string>&);

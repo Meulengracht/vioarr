@@ -162,22 +162,37 @@ bool ResolverVali::ExecuteProgram(const std::string& Program, const std::vector<
     return false;
 }
 
-std::vector<std::string> ResolverVali::GetDirectoryContents(const std::string& Path)
+std::vector<ResolverBase::DirectoryEntry> ResolverVali::GetDirectoryContents(const std::string& Path)
 {
-    struct DIR*              dir;
-    struct DIRENT            dp;
-    std::vector<std::string> entries;
+    struct DIR*                 dir;
+    struct DIRENT               dp;
+    std::vector<DirectoryEntry> entries;
     TRACE("ResolverVali::GetDirectoryContents(path=%s)", Path.c_str());
+
+    auto getType = [] (auto options, auto perms) {
+        if (options & FILE_FLAG_DIRECTORY) {
+            return DirectoryEntry::Type::DIRECTORY;
+        }
+        else {
+            if (perms & FILE_PERMISSION_EXECUTE) {
+                return DirectoryEntry::Type::EXECUTABLE;
+            }
+            return DirectoryEntry::Type::REGULAR;
+        }
+    };
 
     if (opendir(Path.c_str(), 0, &dir) != -1) {
         while (readdir(dir, &dp) != -1) {
             TRACE("ResolverVali::GetDirectoryContents entry %s", &dp.d_name[0]);
-            entries.push_back(std::string(&dp.d_name[0]));
+            entries.push_back(DirectoryEntry(std::string(&dp.d_name[0]), getType(dp.d_options, dp.d_perms));
         }
         closedir(dir);
     }
 
-    std::sort(entries.begin(), entries.end());
+    std::sort(
+        entries.begin(), 
+        entries.end(),
+        [](const auto& a, const auto& b) { return a.GetName() < b.GetName(); });
     return entries;
 }
 

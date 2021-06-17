@@ -126,6 +126,7 @@ void wm_screen_create_surface_invocation(struct gracht_message* message, const u
     g_spawnIndex++;
 
     // notify of new surface
+    vioarr_manager_register_surface(surface);
     vioarr_objects_create_client_object(message->client, surfaceId, surface, WM_OBJECT_TYPE_SURFACE);
     wm_core_event_object_single(vioarr_get_server_handle(), message->client, surfaceId, 0, WM_OBJECT_TYPE_SURFACE);
 }

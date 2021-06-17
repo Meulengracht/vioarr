@@ -496,7 +496,8 @@ void vioarr_input_axis_event(UUId_t deviceId, int x, int y)
 void vioarr_input_scroll_event(UUId_t deviceId, int horz, int vert)
 {
     vioarr_utils_trace(VISTR("vioarr_input_scroll_event(x=%i, y=%i)"), horz, vert);
-    
+    (void)deviceId;
+    // todo
 }
 
 static void __normal_mode_click(vioarr_input_source_t* source, uint32_t button, uint8_t pressed)
@@ -561,7 +562,7 @@ void vioarr_input_button_event(UUId_t deviceId, uint32_t keycode, uint32_t modif
     else {
         // keyboard
         element_t*        i;
-        vioarr_surface_t* currentSurface = vioarr_manager_front_surface();
+        vioarr_surface_t* currentSurface = vioarr_manager_get_focused();
 
         if (currentSurface) {
             vioarr_utils_trace(VISTR("vioarr_input_button_event sending key to %i:%u"),

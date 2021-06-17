@@ -81,15 +81,15 @@ bool ResolverBase::ListDirectory(const std::vector<std::string>& arguments)
     return true;
 }
 
-void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEntries)
+void ResolverBase::DirectoryPrinter(const std::vector<DirectoryEntry>& directoryEntries)
 {
     auto longestEntry = 0U;
     auto entireLength = 0U;
     for (const auto& entry : directoryEntries) {
-        if (entry.size() > longestEntry) {
-            longestEntry = entry.size();
+        if (entry.GetName().size() > longestEntry) {
+            longestEntry = entry.GetName().size();
         }
-        entireLength += entry.size();
+        entireLength += entry.GetName().size();
     }
 
     // account for spaces
@@ -104,17 +104,34 @@ void ResolverBase::DirectoryPrinter(const std::vector<std::string>& directoryEnt
         }
     };
 
+    auto getFormatString = [] (const auto& entry, bool padding) {
+        if (entry.GetType() == DirectoryEntry::Type::DIRECTORY) {
+            return padding ? "\033[34m%-*s" : "\033[34m%s";
+        }
+        else if (entry.GetType() == DirectoryEntry::Type::EXECUTABLE) {
+            return padding ? "\033[32m%-*s" : "\033[32m%s";
+        }
+        return padding ? "\033[39m%-*s" : "\033[39m%s";
+    };
+
     // account for a space after each entry
     if (m_terminal->GetNumberOfCellsPerLine() >= static_cast<int>(entireLength)) {
         for (auto i = 0U; i < directoryEntries.size(); i++) {
-            m_terminal->Print("%s", directoryEntries[i].c_str());
+            m_terminal->Print(
+                getFormatString(directoryEntries[i], false), 
+                directoryEntries[i].GetName().c_str()
+            );
             printEndOfLine(i == directoryEntries.size() - 1);
         }
     }
     else {
         auto entriesPerLine = m_terminal->GetNumberOfCellsPerLine() / (longestEntry + 1);
         for (auto i = 0U; i < directoryEntries.size(); i++) {
-            m_terminal->Print("%-*s", longestEntry, directoryEntries[i].c_str());
+            m_terminal->Print(
+                getFormatString(directoryEntries[i], true),
+                longestEntry,
+                directoryEntries[i].GetName().c_str()
+            );
             printEndOfLine(
                 (((i + 1) % entriesPerLine) == 0) || 
                 (i == (directoryEntries.size() - 1))
@@ -163,8 +180,8 @@ void ResolverBase::TryAutoComplete()
     auto matchingEntry = std::find_if(
         std::begin(directoryEntries), 
         std::end(directoryEntries),
-        [targetIndex = m_autoCompleteIndex, lastToken, &i](const std::string& entry) {
-            if (entry.rfind(lastToken, 0) == 0) {
+        [targetIndex = m_autoCompleteIndex, lastToken, &i](const DirectoryEntry& entry) {
+            if (entry.GetName().rfind(lastToken, 0) == 0) {
                 if (i == targetIndex) {
                     return true;
                 }
@@ -177,7 +194,7 @@ void ResolverBase::TryAutoComplete()
         // extend current command with the matching entry
         auto lastMatch  = m_originalCommand.find_last_of(lastToken);
         auto cutCommand = m_originalCommand.substr(0, lastMatch);
-        cutCommand += *matchingEntry;
+        cutCommand += (*matchingEntry).GetName();
 
         m_terminal->SetInput(cutCommand);
         m_terminal->RequestRedraw();

@@ -250,6 +250,18 @@ namespace Asgaard {
             dimensions.X(), dimensions.Y(), dimensions.Width(), dimensions.Height());
     }
 
+    void Surface::RequestPriorityLevel(enum PriorityLevel level)
+    {
+        wm_surface_request_level(APP.GrachtClient(), nullptr, Id(),
+            static_cast<int>(level));
+    }
+
+    void Surface::RequestFullscreenMode(enum FullscreenMode mode)
+    {
+        wm_surface_request_fullscreen_mode(APP.GrachtClient(), nullptr, Id(), 
+            static_cast<wm_fullscreen_mode>(mode));
+    }
+    
     void Surface::ApplyChanges()
     {
         wm_surface_commit(APP.GrachtClient(), nullptr, Id());

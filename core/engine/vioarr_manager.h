@@ -37,13 +37,15 @@ typedef struct vioarr_surface vioarr_surface_t;
 void              vioarr_manager_initialize(void);
 void              vioarr_manager_register_surface(vioarr_surface_t* surface);
 void              vioarr_manager_unregister_surface(vioarr_surface_t* surface);
+void              vioarr_manager_on_surface_visiblity_change(vioarr_surface_t* surface, int visible);
 void              vioarr_manager_promote_cursor(vioarr_surface_t* surface);
 void              vioarr_manager_demote_cursor(vioarr_surface_t* surface);
 void              vioarr_manager_change_level(vioarr_surface_t* surface, int level);
 void              vioarr_manager_render_start(list_t** surfaceLevels);
 void              vioarr_manager_render_end(void);
-vioarr_surface_t* vioarr_manager_front_surface(void);
+vioarr_surface_t* vioarr_manager_get_focused(void);
 vioarr_surface_t* vioarr_manager_surface_at(int x, int y, int* localX, int* localY);
 void              vioarr_manager_focus_surface(vioarr_surface_t* surface);
+void              vioarr_manager_request_focus(int client, vioarr_surface_t* surface);
 
 #endif //!__VIOARR_MANAGER_H__

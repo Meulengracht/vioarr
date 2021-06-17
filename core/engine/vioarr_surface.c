@@ -699,10 +699,15 @@ static int __nvg_flags(vioarr_buffer_t* buffer)
  */
 static int __swap_backbuffer(NVGcontext* context, vioarr_surface_t* surface)
 {
+    int visible;
+
     if (!surface->swap_backbuffers) {
         return surface->visible;
     }
     surface->swap_backbuffers = 0;
+
+    // store the old value of visible
+    visible = surface->visible;
 
     // initialize the new content
     if (PENDING_BACKBUFFER(surface).content) {
@@ -732,6 +737,11 @@ static int __swap_backbuffer(NVGcontext* context, vioarr_surface_t* surface)
         vioarr_buffer_destroy(ACTIVE_BACKBUFFER(surface).content);
         ACTIVE_BACKBUFFER(surface).content = NULL;
         ACTIVE_BACKBUFFER(surface).resource_id = -1;
+    }
+
+    // notify the manager of this update
+    if (!surface->parent && visible != surface->visible) {
+        vioarr_manager_on_surface_visiblity_change(surface, surface->visible);
     }
 
     surface->backbuffer_index ^= 1;

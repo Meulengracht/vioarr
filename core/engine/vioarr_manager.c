@@ -44,6 +44,21 @@ static void* __surface_key(vioarr_surface_t* surface)
     return (void*)(uintptr_t)surfaceId;
 }
 
+static void __focus_top_surface(void)
+{
+    for (int level = SURFACE_LEVELS - 2; level >= 0; level--) {
+        foreach_reverse(i, &g_manager.surfaces[level]) {
+            if (vioarr_surface_visible(i->value)) {
+                g_manager.focused = i->value;
+                return;
+            }
+        }
+    }
+
+    // none to focus :(
+    g_manager.focused = NULL;
+}
+
 void vioarr_manager_initialize(void)
 {
     int i;
@@ -88,13 +103,13 @@ void vioarr_manager_unregister_surface(vioarr_surface_t* surface)
     level = vioarr_surface_level(surface);
 
     vioarr_rwlock_w_lock(&g_manager.lock);
-    if (g_manager.focused == surface) {
-        g_manager.focused = NULL;
-    }
-
     element = list_find(&g_manager.surfaces[level], __surface_key(surface));
     if (element) {
         list_remove(&g_manager.surfaces[level], element);
+    }
+
+    if (g_manager.focused == surface) {
+        __focus_top_surface();
     }
     vioarr_rwlock_w_unlock(&g_manager.lock);
 }
@@ -105,7 +120,6 @@ static void __change_surface_level(vioarr_surface_t* surface, int level, int new
     if (element) {
         list_remove(&g_manager.surfaces[level], element);
         list_append(&g_manager.surfaces[newLevel], element);
-        vioarr_surface_set_level(surface, newLevel);
     }
 }
 
@@ -119,6 +133,7 @@ void vioarr_manager_promote_cursor(vioarr_surface_t* surface)
     vioarr_rwlock_w_lock(&g_manager.lock);
     __change_surface_level(surface, level, SURFACE_LEVELS - 1);
     vioarr_rwlock_w_unlock(&g_manager.lock);
+    vioarr_surface_set_level(surface, SURFACE_LEVELS - 1);
 }
 
 void vioarr_manager_demote_cursor(vioarr_surface_t* surface)
@@ -126,6 +141,7 @@ void vioarr_manager_demote_cursor(vioarr_surface_t* surface)
     vioarr_rwlock_w_lock(&g_manager.lock);
     __change_surface_level(surface, SURFACE_LEVELS - 1, 1);
     vioarr_rwlock_w_unlock(&g_manager.lock);
+    vioarr_surface_set_level(surface, 1);
 }
 
 void vioarr_manager_change_level(vioarr_surface_t* surface, int level)
@@ -153,24 +169,12 @@ void vioarr_manager_render_end(void)
     vioarr_rwlock_r_unlock(&g_manager.lock);
 }
 
-vioarr_surface_t* vioarr_manager_front_surface(void)
+vioarr_surface_t* vioarr_manager_get_focused(void)
 {
-    vioarr_surface_t* front = NULL;
-    int               level;
+    vioarr_surface_t* front;
 
     vioarr_rwlock_r_lock(&g_manager.lock);
     front = g_manager.focused;
-    if (!front) {
-        for (level = SURFACE_LEVELS - 2; level >= 0 && !front; level--) {
-            // back element is front
-            foreach_reverse(i, &g_manager.surfaces[level]) {
-                if (vioarr_surface_visible(i->value)) {
-                    front = i->value;
-                    break;
-                }
-            }
-        }
-    }
     vioarr_rwlock_r_unlock(&g_manager.lock);
     return front;
 }
@@ -237,5 +241,50 @@ void vioarr_manager_focus_surface(vioarr_surface_t* surface)
     }
     if (entering) {
         vioarr_surface_focus(entering, 1);
+    }
+}
+
+/**
+ * Occurs when a surface has explicitly requested focus, but in order for
+ * the focus to be granted, we must check their relation to each other. If
+ * they share ancestry or origin then we allow it.
+ */
+void vioarr_manager_request_focus(int client, vioarr_surface_t* surface)
+{
+    vioarr_surface_t* currentFocus = vioarr_manager_get_focused();
+    vioarr_surface_t* requestParent;
+    vioarr_surface_t* currentParent;
+    if (!currentFocus || currentFocus == surface) {
+        return; // do not allow this
+    }
+
+    // lets get the elder parent of both
+    requestParent = vioarr_surface_parent(surface, 1);
+    currentParent = vioarr_surface_parent(currentFocus, 1);
+    if (requestParent != currentParent) {
+        // ok they might not share ancestry, but do they share origin?
+        int currentOrigin = vioarr_surface_client(currentFocus);
+        if (currentOrigin != client) {
+            return; // ok we can't allow this heresay
+        }
+    }
+
+    vioarr_manager_focus_surface(surface);
+}
+
+/**
+ * Should be invoked by the renderer when a visibility of surfaces happen.
+ * When surfaces are shown, we want to grant them focus, and when they are hidden
+ * we need to update the focused surface (if they are focused).
+ * This function should only be invoked on root surfaces, as we do not act on subsurfaces
+ * in this case
+ */
+void vioarr_manager_on_surface_visiblity_change(vioarr_surface_t* surface, int visible)
+{
+    if (visible) {
+        vioarr_manager_focus_surface(surface);
+    }
+    else if (g_manager.focused == surface) {
+        __focus_top_surface();
     }
 }

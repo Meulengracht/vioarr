@@ -261,6 +261,11 @@ namespace Asgaard {
         wm_surface_request_fullscreen_mode(APP.GrachtClient(), nullptr, Id(), 
             static_cast<wm_fullscreen_mode>(mode));
     }
+
+    void Surface::RequestFocus()
+    {
+        wm_surface_request_focus(APP.GrachtClient(), nullptr, Id());
+    }
     
     void Surface::ApplyChanges()
     {

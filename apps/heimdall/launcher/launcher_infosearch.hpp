@@ -52,10 +52,11 @@ public:
         SubSurface::Destroy();
     }
 
-    void ResetInput()
+    void OnShown()
     {
         m_searchBox->SetText("");
         m_searchBox->RequestRedraw();
+        m_searchBox->RequestFocus();
     }
 
 public:

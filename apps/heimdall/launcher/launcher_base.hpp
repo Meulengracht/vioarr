@@ -73,6 +73,7 @@ public:
             ApplySearchFilter("");
             SetBuffer(m_buffer);
             ApplyChanges();
+            m_infoSearch->OnShown();
         }
         else {
             std::shared_ptr<Asgaard::MemoryBuffer> empty(nullptr);

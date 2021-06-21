@@ -78,9 +78,8 @@ public:
             )
         );
         m_dateAndTime->SetFont(m_font);
-        m_dateAndTime->SetText("Jun 17, 12:00");
         m_dateAndTime->SetAnchors(Widgets::Label::Anchors::CENTER);
-        m_dateAndTime->RequestRedraw();
+        UpdateTimeAndDate();
 
         auto render = [&] {
             Drawing::Painter painter(m_buffer);
@@ -98,6 +97,17 @@ public:
         MarkInputRegion(Dimensions());
         SetBuffer(m_buffer);
         ApplyChanges();
+    }
+
+    void UpdateTimeAndDate()
+    {
+        std::time_t t   = std::time(0);   // get time now
+        std::tm*    now = std::localtime(&t);
+        char        buf[64] = { 0 };
+        
+        strftime(&buf[0], sizeof(buf), "%B %d, %H:%M", now);
+        m_dateAndTime->SetText(std::string(&buf[0]));
+        m_dateAndTime->RequestRedraw();
     }
 
 private:

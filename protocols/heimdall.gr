@@ -24,17 +24,29 @@ enum buttons {
 
 service core (90) {
     /**
+     * Functionality primary associated with the launcher functionality. When apps
+     * register using these functions, the launcher supports advanced user functionality
+     * integration with that application. Advanced swapping, application bar support etc.
+     */
+    func register_app(uint appId) : () = 1;
+    func unregister_app(uint appId) : () = 2;
+
+    // todo for these to work we must support some kind of global reference
+    func register_surface(uint surfaceId) : () = 3;
+    func unregister_surface(uint surfaceId) : () = 4;
+
+    /**
      * Notifications are asynchronous and do never block. Their responses come in form
      * of events from the heimdall server. Notifications support returning input, and thus
      * are capable of being interactive.
      */
-    func notification(uint id, string content, buttons buttons) : () = 1;
+    func notification(uint id, string content, buttons buttons) : () = 5;
 
     /**
      * Message-boxes are blocking calls that wait for the result of the message-box input. If
      * the type was input, then the input field will be filled with whatever the user entered. 
      */
-    func message_box(string title, string body, context_type type, buttons buttons) : (buttons button, string input) = 2;
+    func message_box(string title, string body, context_type type, buttons buttons) : (buttons button, string input) = 6;
     
     /**
      * If a notification has buttons exposed like defined in <buttons>, then
@@ -42,6 +54,6 @@ service core (90) {
      * input event (if the notification had an input field) or it will come
      * as an response event (if the notification had any buttons).
      */
-    event notification_input : (uint id, string input) = 3;
-    event notification_response : (uint id, buttons button) = 4;
+    event notification_input : (uint id, string input) = 7;
+    event notification_response : (uint id, buttons button) = 8;
 }

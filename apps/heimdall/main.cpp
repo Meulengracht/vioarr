@@ -22,15 +22,210 @@
  */
 
 #include "heimdall.hpp"
+#include <gracht/server.h>
+
+#ifdef MOLLENOS
+#include <ddk/service.h>
+#include <ddk/utils.h>
+#include <gracht/link/vali.h>
+#include <io.h>
+#include <ioset.h>
+#include <os/process.h>
+#elif defined(_WIN32)
+#include <gracht/link/socket.h>
+#include <windows.h>
+static const char* g_ipAddress = "127.0.0.1";
+static uint16_t    g_portNo    = 55556;
+#else
+#include <gracht/link/socket.h>
+#include <sys/epoll.h>
+#include <sys/un.h>
+#include <sys/socket.h>
+static const char* g_serverPath = "/tmp/hd-srv";
+#endif
+
+static gracht_server_t*    g_valiServer = nullptr;
+static struct gracht_link* g_serverLink = nullptr;
+
+static void __gracht_handle_disconnect(int client)
+{
+    // notify heimdall
+}
+
+#ifdef MOLLENOS
+static int __create_platform_link(void)
+{
+
+
+    return 0;
+}
+
+int initialize_server(void)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    
+    gracht_server_configuration_init(&config);
+
+    // Create the set descriptor we are listening to
+    gracht_server_configuration_set_aio_descriptor(&config, ioset(0));
+    if (config.set_descriptor < 0) {
+        vioarr_utils_error(VISTR("error creating event descriptor %i"), errno);
+        return -1;
+    }
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        vioarr_utils_error(VISTR("error initializing server library %i"), errno);
+        close(config.set_descriptor);
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        vioarr_utils_error(VISTR("error initializing server link %i"), errno);
+        close(config.set_descriptor);
+    }
+
+    *eventIodOut = config.set_descriptor;
+    return status;
+}
+#elif defined(_WIN32)
+static int __create_platform_link(void)
+{
+    struct gracht_link_socket* link;
+    struct sockaddr_in         addr = { 0 };
+
+    // initialize the WSA library
+    gracht_link_socket_setup();
+
+    // AF_INET is the Internet address family.
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = inet_addr(g_ipAddress);
+    addr.sin_port = htons(g_portNo);
+
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+    gracht_link_socket_set_domain(link, AF_INET);
+    gracht_link_socket_set_listen(link, 1);
+    
+    g_serverLink = static_cast<struct gracht_link*>(link);
+    return gracht_server_add_link(g_valiServer, g_serverLink);
+}
+
+int server_initialize(int* eventIodOut)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    
+    gracht_server_configuration_init(&config);
+
+
+
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        vioarr_utils_error(VISTR("error initializing server library %i"), errno);
+        close(config.set_descriptor);
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        vioarr_utils_error(VISTR("error initializing server link %i"), errno);
+        close(config.set_descriptor);
+    }
+
+    *eventIodOut = config.set_descriptor;
+    return status;
+}
+#else
+static int __create_platform_link(void)
+{
+    struct gracht_link_socket* link;
+    struct sockaddr_un         addr = { 0 };
+
+    // delete any preexisting file
+    unlink(g_serverPath);
+
+    addr.sun_family = AF_LOCAL;
+    strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
+    addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
+
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_un));
+    gracht_link_socket_set_domain(link, AF_LOCAL);
+    gracht_link_socket_set_listen(link, 1);
+
+    g_serverLink = reinterpret_cast<struct gracht_link*>(link);
+    return gracht_server_add_link(g_valiServer, g_serverLink);
+}
+
+int server_initialize(void)
+{
+    struct gracht_server_configuration config;
+    int                                status;
+    int                                fd;
+    
+    gracht_server_configuration_init(&config);
+
+    // Create the set descriptor we are listening to
+    fd = epoll_create1(0);
+    if (fd < 0) {
+        // trace this @todo
+        return -1;
+    }
+
+    gracht_server_configuration_set_aio_descriptor(&config, fd);
+
+    // Listen to client disconnects so we can remove resources
+    config.callbacks.clientDisconnected = __gracht_handle_disconnect;
+    
+    status = gracht_server_create(&config, &g_valiServer);
+    if (status) {
+        // trace this @todo
+        close(config.set_descriptor);
+        return -1;
+    }
+
+    // create the platform link
+    status = __create_platform_link();
+    if (status) {
+        // trace this @todo
+        close(config.set_descriptor);
+        return -1;
+    }
+    return fd;
+}
+#endif
 
 int main(int argc, char **argv)
 {
-    // initialize application
+    // initialize the server for heimdall
+    auto descriptor = server_initialize();
+    if (descriptor == GRACHT_HANDLE_INVALID) {
+        // trace this @todo
+        return -1;
+    }
+
+    // register supported protocols
+    //gracht_server_register_protocol(g_valiServer, &hd_core_server_protocol);
+
+    Asgaard::APP.SetSetting(Asgaard::Application::Settings::ASYNC_DESCRIPTOR, &descriptor);
     Asgaard::APP.Initialize();
 
     auto screen = Asgaard::APP.GetScreen();
     auto window = screen->CreateWindow<Heimdall>(
         Asgaard::Rectangle(0, 0, screen->GetCurrentWidth(), screen->GetCurrentHeight()));
+    Asgaard::APP.SetEventListener(gracht_link_get_handle(g_serverLink), window);
 
     // We only call exit() to get out, so release ownership of window
     window.reset();

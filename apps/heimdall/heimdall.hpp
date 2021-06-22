@@ -32,6 +32,7 @@
 #include <theming/theme_manager.hpp>
 #include <theming/theme.hpp>
 #include <widgets/cursor.hpp>
+#include <utils/descriptor_listener.hpp>
 #include <keycodes.h>
 
 #include "launcher/launcher_base.hpp"
@@ -43,7 +44,7 @@ using namespace Asgaard;
 constexpr auto CURSOR_SIZE = 16;
 constexpr auto STATUSBAR_HEIGHT = 25;
 
-class Heimdall final : public WindowBase, public std::enable_shared_from_this<Heimdall> {
+class Heimdall final : public WindowBase, public Utils::DescriptorListener, public std::enable_shared_from_this<Heimdall> {
 public:
     Heimdall(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
         : WindowBase(id, screen, dimensions) { }
@@ -146,6 +147,11 @@ private:
         if (keyEvent.KeyCode() == VKC_LALT && !keyEvent.Pressed()) {
             m_launcher->Toggle();
         }
+    }
+
+    void DescriptorEvent(int /* iod */, unsigned int events) override
+    {
+        // assume iod is server, the only way we get registered
     }
     
 private:

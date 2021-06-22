@@ -8,6 +8,7 @@ set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 include_directories (
     ${PROJECT_SOURCE_DIR}/libs/common/include
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
+    ${libgracht_SOURCE_DIR}/include
 )
 
 # Configure primary executable target
@@ -18,7 +19,7 @@ add_executable(heimdall
     main.cpp
 )
 #add_dependencies(heimdall protocols)
-target_link_libraries(heimdall asgaard)
+target_link_libraries(heimdall asgaard gracht)
 
 if (MOLLENOS)
   target_link_libraries(heimdall static_libddk)

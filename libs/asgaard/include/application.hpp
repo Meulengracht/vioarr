@@ -40,11 +40,14 @@ namespace Asgaard {
     
     class Application final : public Object {
     public:
+        enum class Settings : int {
+            ASYNC_DESCRIPTOR // Accepts a pointer to a descriptor.
+        };
+    public:
         Application();
         ~Application();
         
         /**
-         * Initialize
          * Initializes the asgaard application environment, and must be invoked before any other
          * call made in this class. 
          * @throw ApplicationException
@@ -52,14 +55,6 @@ namespace Asgaard {
         ASGAARD_API void Initialize();
 
         /**
-         * Destroy
-         * Handles application cleanup. This should not be invoked manually, will automatically be called
-         * upon exit of the application
-         */
-        void Destroy() override;
-
-        /**
-         * AddEventDescriptor
          * Adds a c-type io descriptor like a socket, pipe or file to listen for events on. 
          * DescriptorEvent callback is then invoked in the window-class given when an event occurs.
          * @param iod The C-io descriptor that should be listening for events on
@@ -67,21 +62,44 @@ namespace Asgaard {
          * @throw ApplicationException
          */
         ASGAARD_API void AddEventDescriptor(int iod, unsigned int events, const std::shared_ptr<Utils::DescriptorListener>&);
+        ASGAARD_API void SetEventListener(int iod, const std::shared_ptr<Utils::DescriptorListener>&);
 
         /**
-         * PumpMessages
          * Can be used to handle all currently queued application messages. This emulates a single
          * loop in Execute - and enables users to run this application "on-demand".
          */
         ASGAARD_API void PumpMessages();
 
         /**
-         * Execute
          * Starts the applications main loop. The application will run untill shutdown has been requested
          * or any fault happens (caught exception).
          * @return Status code of execution
          */
         ASGAARD_API int Execute();
+
+        /**
+         * Sets a new value for the given setting. This can be used before a call to Initialize to configure
+         * some OS-specific startup parameters. This cannot be called after Initialize() is called.
+         * 
+         * @param setting The setting that should be configured to the provided value.
+         * @param value   The new value of the setting, or nullptr to clear the setting.
+         */
+        ASGAARD_API void  SetSetting(Settings setting, void* value);
+
+        /**
+         * Retrieves the value of the specified setting.
+         * 
+         * @param setting The setting to retrieve the value of.
+         * @return void*  The value of the setting, or nullptr if none exists. 
+         */
+        ASGAARD_API void* GetSetting(Settings setting);
+
+        /**
+         * Destroy
+         * Handles application cleanup. This should not be invoked manually, will automatically be called
+         * upon exit of the application
+         */
+        void Destroy() override;
 
     public:
         gracht_client_t*               GrachtClient() const { return m_client; }
@@ -95,13 +113,15 @@ namespace Asgaard {
 
     private:
         bool IsInitialized() const;
+        void DestroyInternal();
 
     private:
+        std::map<int, void*>                                      m_settings;
         std::map<int, std::shared_ptr<Utils::DescriptorListener>> m_listeners;
         std::list<std::shared_ptr<Screen>>                        m_screens;
         std::list<std::shared_ptr<Object>>                        m_inputs;
         gracht_client_t*                                          m_client;
-        int                                                       m_ioset;
+        AsyncHandleType                                           m_ioset;
         volatile bool                                             m_syncRecieved;
         volatile bool                                             m_screenFound;
     };

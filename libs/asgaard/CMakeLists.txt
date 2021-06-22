@@ -70,12 +70,12 @@ add_sources (
 )
 
 if (MOLLENOS)
-    add_sources (memory_pool_vali.cpp)
+    add_sources (application_vali.cpp memory_pool_vali.cpp)
 elseif (WIN32)
-
+    add_sources (application_win32.cpp)
 elseif (UNIX)
     add_definitions(-Wno-unused-function)
-    add_sources (memory_pool_unix.cpp)
+    add_sources (application_unix.cpp memory_pool_unix.cpp)
 endif ()
 
 add_library(asgaard SHARED ${GENERATED_SOURCES} ${SRCS})

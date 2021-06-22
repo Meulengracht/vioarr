@@ -23,7 +23,6 @@
  */
 
 #include <errno.h>
-#include <gracht/link/socket.h>
 #include <gracht/server.h>
 #include <gracht/client.h>
 #include <stdio.h>

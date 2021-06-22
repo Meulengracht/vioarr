@@ -33,6 +33,9 @@
 #define ASGAARD_API
 #endif
 
+/**
+ * Define default filesystem paths.
+ */
 #if defined(MOLLENOS)
 #define DATA_DIRECTORY "$sys"
 #elif defined(_WIN32)
@@ -40,3 +43,19 @@
 #else
 #define DATA_DIRECTORY "."
 #endif
+
+/**
+ * Define the async and file descriptor type and values.
+ */
+namespace Asgaard {
+#if defined(MOLLENOS)
+    using AsyncHandleType = int;
+    constexpr int ASYNC_HANDLE_INVALID = -1;
+#elif defined(_WIN32)
+    using AsyncHandleType = void*;
+    constexpr void* ASYNC_HANDLE_INVALID = nullptr;
+#else
+    using AsyncHandleType = int;
+    constexpr int ASYNC_HANDLE_INVALID = -1;
+#endif
+}

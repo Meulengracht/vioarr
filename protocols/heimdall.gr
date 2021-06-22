@@ -12,15 +12,15 @@ enum context_type {
     ERROR,
     CONFIRM,
     INPUT
-};
+}
 
 enum buttons {
     NONE = 0,
     OK = 0x1,
-    APPLY = 0x2
+    APPLY = 0x2,
     CONFIRM = 0x4,
     INPUT = 0x8
-};
+}
 
 service core (90) {
     /**

@@ -1,11 +1,12 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set (GENERATED_SOURCES
-    #hd_core_protocol_server.c
+    ${CMAKE_BINARY_DIR}/protocols/hd_core_service_server.c
 )
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 
 include_directories (
+    ${CMAKE_BINARY_DIR}/protocols
     ${PROJECT_SOURCE_DIR}/libs/common/include
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
     ${libgracht_SOURCE_DIR}/include
@@ -18,7 +19,7 @@ add_executable(heimdall
     effects/guassian_blur.cpp
     main.cpp
 )
-#add_dependencies(heimdall protocols)
+add_dependencies(heimdall hd_server_service)
 target_link_libraries(heimdall asgaard gracht)
 
 if (MOLLENOS)

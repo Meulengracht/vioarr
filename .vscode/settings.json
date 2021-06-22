@@ -75,6 +75,7 @@
         "cinttypes": "cpp",
         "typeinfo": "cpp",
         "vioarr_utils.h": "c",
-        "errno.h": "c"
+        "errno.h": "c",
+        "link.h": "c"
     }
 }

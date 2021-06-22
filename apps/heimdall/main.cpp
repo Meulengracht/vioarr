@@ -44,6 +44,8 @@ static uint16_t    g_portNo    = 55556;
 static const char* g_serverPath = "/tmp/hd-srv";
 #endif
 
+#include "hd_core_service_server.h"
+
 static gracht_server_t*    g_valiServer = nullptr;
 static struct gracht_link* g_serverLink = nullptr;
 
@@ -217,7 +219,7 @@ int main(int argc, char **argv)
     }
 
     // register supported protocols
-    //gracht_server_register_protocol(g_valiServer, &hd_core_server_protocol);
+    gracht_server_register_protocol(g_valiServer, &hd_core_server_protocol);
 
     Asgaard::APP.SetSetting(Asgaard::Application::Settings::ASYNC_DESCRIPTOR, &descriptor);
     Asgaard::APP.Initialize();
@@ -230,4 +232,36 @@ int main(int argc, char **argv)
     // We only call exit() to get out, so release ownership of window
     window.reset();
     return Asgaard::APP.Execute();
+}
+
+extern "C" {
+    void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId)
+    {
+
+    }
+
+    void hd_core_unregister_app_invocation(struct gracht_message* message, const unsigned int appId)
+    {
+
+    }
+
+    void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
+    {
+        // mirror popups
+    }
+
+    void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
+    {
+        // mirror popups
+    }
+
+    void hd_core_notification_invocation(struct gracht_message* message, const unsigned int id, const char* content, const enum hd_buttons buttons)
+    {
+        // not yet implemented as we need to figure out custom notifications
+    }
+    
+    void hd_core_message_box_invocation(struct gracht_message* message, const char* title, const char* body, const enum hd_context_type type, const enum hd_buttons buttons)
+    {
+        // not yet implemented as we need to figure out local pop-ups vs global
+    }
 }

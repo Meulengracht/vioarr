@@ -46,8 +46,9 @@ static const char* g_serverPath = "/tmp/hd-srv";
 
 #include "hd_core_service_server.h"
 
-static gracht_server_t*    g_valiServer = nullptr;
-static struct gracht_link* g_serverLink = nullptr;
+static gracht_server_t*           g_valiServer = nullptr;
+static struct gracht_link*        g_serverLink = nullptr;
+static std::weak_ptr<HeimdallApp> g_heimdall;
 
 static void __gracht_handle_disconnect(int client)
 {
@@ -225,8 +226,11 @@ int main(int argc, char **argv)
     Asgaard::APP.Initialize();
 
     auto screen = Asgaard::APP.GetScreen();
-    auto window = screen->CreateWindow<Heimdall>(
+    auto window = screen->CreateWindow<HeimdallApp>(
         Asgaard::Rectangle(0, 0, screen->GetCurrentWidth(), screen->GetCurrentHeight()));
+    
+    g_heimdall = window;
+    window->SetServerInstance(g_valiServer);
     Asgaard::APP.SetEventListener(gracht_link_get_handle(g_serverLink), window);
 
     // We only call exit() to get out, so release ownership of window
@@ -237,22 +241,30 @@ int main(int argc, char **argv)
 extern "C" {
     void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
-
+        if (auto hd = g_heimdall.lock()) {
+            (*hd)->OnApplicationRegister(message->client, appId);
+        }
     }
 
     void hd_core_unregister_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
-
+        if (auto hd = g_heimdall.lock()) {
+            (*hd)->OnApplicationUnregister(message->client, appId);
+        }
     }
 
     void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
     {
-        // mirror popups
+        if (auto hd = g_heimdall.lock()) {
+            (*hd)->OnSurfaceRegister();
+        }
     }
 
     void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
     {
-        // mirror popups
+        if (auto hd = g_heimdall.lock()) {
+            (*hd)->OnSurfaceUnregister();
+        }
     }
 
     void hd_core_notification_invocation(struct gracht_message* message, const unsigned int id, const char* content, const enum hd_buttons buttons)

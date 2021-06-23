@@ -50,6 +50,9 @@ namespace Asgaard {
                 void RenderRectangle(const Rectangle& dimensions);
                 void RenderRectangle(int top, int left, int bottom, int right);
                 
+                void RenderCircleFill(int centerX, int centerY, int radius);
+                void RenderCircle(int midX, int midY, int radius);
+                
                 void RenderFillGradientV(const Rectangle& dimensions,
                     unsigned char r1, unsigned char g1, unsigned char b1,
                     unsigned char r2, unsigned char g2, unsigned char b2);

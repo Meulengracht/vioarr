@@ -22,11 +22,31 @@
 #pragma once
 
 #include <string>
+#include "spawner.hpp"
+
+#ifdef MOLLENOS
+#include <os/process.h>
+#else
+#include <unistd.h>
+#endif
 
 namespace Heimdall
 {
     namespace Utils
     {
-        void SpawnApplication(const std::string& path);
+        void SpawnApplication(const std::string& path)
+        {
+#ifdef MOLLENOS
+            UUId_t pid;
+            ProcessSpawn(path.c_str(), NULL, &pid);
+#else
+            auto childPid = fork();
+            if (!childPid) {
+                char* argv[] = { const_cast<char*>(path.c_str()), NULL };
+                auto  resultCode = execv(path.c_str(), argv);
+                exit(resultCode);
+            }
+#endif
+        }
     }
 }

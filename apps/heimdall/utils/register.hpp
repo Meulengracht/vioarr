@@ -21,12 +21,32 @@
  */
 #pragma once
 
+#include <map>
 #include <string>
+#include <drawing/image.hpp>
 
 namespace Heimdall
 {
-    namespace Utils
+    namespace Register
     {
-        void SpawnApplication(const std::string& path);
+        class Application
+        {
+        public:
+            Application();
+            ~Application();
+
+            const std::string&             GetName() const;
+            const std::string&             GetPath() const;
+            const Asgaard::Drawing::Image& GetIcon() const;
+
+        private:
+            std::string             m_name;
+            std::string             m_path;
+            Asgaard::Drawing::Image m_icon;
+        };
+
+        void Initialize();
+        void Update();
+        const Application& GetApplication(unsigned int id);
     }
 }

@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <gracht/server.h>
 #include <application.hpp>
 #include <window_base.hpp>
 #include <memory_pool.hpp>
@@ -38,20 +39,51 @@
 #include "launcher/launcher_base.hpp"
 #include "statusbar/statusbar.hpp"
 #include "utils/spawner.hpp"
+#include "utils/register.hpp"
 
 using namespace Asgaard;
 
 constexpr auto CURSOR_SIZE = 16;
 constexpr auto STATUSBAR_HEIGHT = 25;
 
-class Heimdall final : public WindowBase, public Utils::DescriptorListener, public std::enable_shared_from_this<Heimdall> {
+class HeimdallApp final : public WindowBase, public Utils::DescriptorListener, public std::enable_shared_from_this<HeimdallApp> {
 public:
-    Heimdall(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
-        : WindowBase(id, screen, dimensions) { }
+    HeimdallApp(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+        : WindowBase(id, screen, dimensions)
+        , m_serverInstance(nullptr)
+    {
+        // initialize subsystems
+        Heimdall::Register::Initialize();
+    }
     
-    ~Heimdall()
+    ~HeimdallApp()
     {
         // Override destroy
+    }
+
+    void SetServerInstance(gracht_server_t* server)
+    {
+        m_serverInstance = server;
+    }
+
+    void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId)
+    {
+
+    }
+
+    void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
+    {
+
+    }
+
+    void OnSurfaceRegister()
+    {
+
+    }
+
+    void OnSurfaceUnregister()
+    {
+
     }
     
 private:
@@ -149,9 +181,10 @@ private:
         }
     }
 
-    void DescriptorEvent(int /* iod */, unsigned int events) override
+    void DescriptorEvent(int iod, unsigned int events) override
     {
         // assume iod is server, the only way we get registered
+        gracht_server_handle_event(m_serverInstance, iod, events);
     }
     
 private:
@@ -160,4 +193,5 @@ private:
     std::shared_ptr<Widgets::Cursor> m_cursor;
     std::shared_ptr<LauncherBase>    m_launcher;
     std::shared_ptr<StatusBar>       m_statusBar;
+    gracht_server_t*                 m_serverInstance;
 };

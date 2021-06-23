@@ -28,6 +28,7 @@
 #include "../include/rectangle.hpp"
 #include <cstring>
 #include <string>
+#include <cmath>
 
 namespace {
     unsigned int AlphaBlendAXGX(unsigned int colorA, unsigned int colorB, unsigned int alpha)
@@ -208,6 +209,89 @@ namespace Asgaard {
                 right, top, 
                 right, bottom
             );
+        }
+
+        void Painter::RenderCircleFill(int centerX, int centerY, int radius)
+        {
+            auto radiusSqrt = radius * radius;
+            auto mid        = static_cast<uint8_t*>(m_canvas->Buffer(centerX, centerY));
+            auto slSize     = m_canvas->Stride();
+            auto bgColor    = m_fillColor.GetFormatted(m_canvas->Format());
+            auto bpp        = GetBytesPerPixel(m_canvas->Format());
+
+            for (int x = -radius; x < radius; x++)
+            {
+                auto height = (int)std::sqrt(radiusSqrt - x * x);
+                auto xOffset = x * bpp;
+
+                for (int y = -height, offset = ((slSize * (-height)) + xOffset); y < height; y++, offset += slSize) {
+                    if (x + centerX < m_canvas->Width() && x + centerX >= 0 &&
+                        y + centerY < m_canvas->Height() && y + centerY >= 0) {
+                        *(reinterpret_cast<uint32_t*>(mid + offset)) = bgColor;
+                    }
+                }
+            }
+        }
+
+        void Painter::RenderCircle(int centerX, int centerY, int radius)
+        {
+            int  x      = radius;
+            int  y      = 0;
+            auto mid    = static_cast<uint8_t*>(m_canvas->Buffer(centerX, centerY));
+            auto slSize = m_canvas->Stride();
+            auto color  = m_outlineColor.GetFormatted(m_canvas->Format());
+            auto bpp    = GetBytesPerPixel(m_canvas->Format());
+
+            auto plot = [&] (const int pX, const int pY) {
+                if (pX < m_canvas->Width() && pX >= 0 &&
+                    pY < m_canvas->Height() && pY >= 0) {
+                    int offset = ((slSize * pY) + (pX * bpp));
+                    *(reinterpret_cast<uint32_t*>(mid + offset)) = color;
+                }
+            };
+
+            plot(centerX + x, centerY + y);
+            if (radius > 0) {
+                plot(x + centerX, -y + centerY);
+                plot(y + centerX, x + centerY);
+                plot(-y + centerX, x + centerY);
+            }
+
+            auto P = 1 - radius;
+            while (x > y)
+            { 
+                y++;
+                
+                // Mid-point is inside or on the perimeter
+                if (P <= 0) {
+                    P = P + 2*y + 1;
+                }
+                else // Mid-point is outside the perimeter
+                {
+                    x--;
+                    P = P + 2*y - 2*x + 1;
+                }
+                
+                // All the perimeter points have already been printed
+                if (x < y) {
+                    break;
+                }
+                
+                plot(x + centerX, y + centerY);
+                plot(-x + centerX, y + centerY);
+                plot(x + centerX, -y + centerY);
+                plot(-x + centerX, -y + centerY);
+                
+                // If the generated point is on the line x = y then 
+                // the perimeter points have already been printed
+                if (x != y)
+                {
+                    plot(y + centerX, x + centerY);
+                    plot(-y + centerX, x + centerY);
+                    plot(y + centerX, -x + centerY);
+                    plot(-y + centerX, -x + centerY);
+                }
+            }
         }
 
         void Painter::RenderImage(const Image& image)

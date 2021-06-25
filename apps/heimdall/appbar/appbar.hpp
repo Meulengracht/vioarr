@@ -36,7 +36,12 @@
 #include <vector>
 #include <map>
 
+#include "appicon.hpp"
+#include "../utils/register.hpp"
+
 using namespace Asgaard;
+
+constexpr auto ICON_PADDING = 16;
 
 class ApplicationBar : public Surface {
 public:
@@ -44,6 +49,7 @@ public:
         : Surface(id, screen, dimensions)
     {
         LoadResources();
+        CalculateDimensions();
         Configure();
     }
 
@@ -58,12 +64,26 @@ public:
 
     void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId)
     {
+        auto app = Heimdall::Register::GetApplication(applicationId);
+        if (!app) {
+            // uh oh
+            return;
+        }
 
+        auto icon = SubSurface::Create<ApplicationIcon>(m_iconDimensions, app);
+        m_apps.push_back(icon);
+
+        // recalculate positions
+        RecalculateIconStart();
+        UpdateIconPositions();
     }
 
     void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
     {
 
+        // recalculate positions
+        RecalculateIconStart();
+        UpdateIconPositions();
     }
 
 public:
@@ -93,7 +113,58 @@ public:
         ApplyChanges();
     }
 
+    void CalculateDimensions()
+    {
+        std::vector<int> availableSizes = { 24, 32, 48, 64 };
+        auto height = Dimensions().Height();
+        auto targetHeight = availableSizes[0];
+        for (auto val : availableSizes) {
+            if (val > height) {
+                break;
+            }
+            targetHeight = val;
+        }
+
+        // place Y in mid
+        auto midY = (Dimensions().Height() / 2) - (targetHeight / 2);
+
+        // create NxN size
+        m_iconDimensions = Rectangle(0, midY, targetHeight, targetHeight);
+    }
+
+    void RecalculateIconStart()
+    {
+        auto spaceRequired = m_apps.size() * (m_iconDimensions.Width() + ICON_PADDING);
+        if (spaceRequired) {
+            spaceRequired -= ICON_PADDING; // remove the last padding
+        }
+
+        if (spaceRequired > Dimensions().Width()) {
+            // fuck what to do
+            spaceRequired = Dimensions().Width();
+        }
+
+        m_startX = (Dimensions().Width() / 2) - (spaceRequired / 2);
+    }
+
+    void UpdateIconPositions()
+    {
+        int index = 0;
+        for (const auto& app : m_apps) {
+            app->Move(GetIconPositionX(index++), m_iconDimensions.Y());
+            app->RequestRedraw();
+        }
+    }
+
+    int GetIconPositionX(int index)
+    {
+        return m_startX + (index * (m_iconDimensions.Width() + ICON_PADDING));
+    }
+
 private:
-    std::shared_ptr<Asgaard::MemoryPool>   m_memory;
-    std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
+    std::shared_ptr<Asgaard::MemoryPool>         m_memory;
+    std::shared_ptr<Asgaard::MemoryBuffer>       m_buffer;
+    std::vector<std::shared_ptr<ApplicationIcon> m_apps;
+    Rectangle                                    m_iconDimensions;
+    int                                          m_startX;
 };

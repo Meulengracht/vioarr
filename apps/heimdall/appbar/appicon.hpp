@@ -25,6 +25,7 @@
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
 #include <drawing/painter.hpp>
+#include <drawing/primitives/circle.hpp>
 #include <widgets/label.hpp>
 #include <widgets/icon.hpp>
 #include <notifications/notification.hpp>
@@ -138,23 +139,26 @@ private:
 
         // what we want is actually to draw the image here
         // and not keep it as a subsurface
-        paint.RenderImage(8, 8, m_icon);
+        paint.SetRegion(Drawing::Primitives::CircleShape(32, 32, 24));
+        paint.RenderImage(m_icon);
 
         // draw indicators
         //paint.RenderCircle()
+
+        // if hovering, draw mirrors
     }
 
 protected:
     void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override
     {
         m_isHovered = true;
-        RequestRedraw();
+        //RequestRedraw();
     }
 
     void OnMouseLeave(const std::shared_ptr<Pointer>&) override
     {
         m_isHovered = false;
-        RequestRedraw();
+        //RequestRedraw();
     }
 
     void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override

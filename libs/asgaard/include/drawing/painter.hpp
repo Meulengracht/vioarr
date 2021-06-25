@@ -25,6 +25,7 @@
 #include <memory>
 #include "../config.hpp"
 #include "color.hpp"
+#include "primitives/shape.hpp"
 
 namespace Asgaard {
     class MemoryBuffer;
@@ -46,35 +47,50 @@ namespace Asgaard {
                 void SetOutlineColor(unsigned char a, unsigned char r, unsigned char g, unsigned char b);
                 void SetOutlineColor(unsigned char r, unsigned char g, unsigned char b);
 
+                void SetFont(const std::shared_ptr<Font>& font);
+
+                /**
+                 * Sets the region that will be used for a variety of fill functions. The
+                 * default region is the entire canvas.
+                 */
+                void SetRegion(const Primitives::Shape& shape);
+
+                /**
+                 * Non-regional render functions that do not respect the given
+                 * region in SetRegion.
+                 */
                 void RenderLine(int x1, int y1, int x2, int y2);
+
                 void RenderRectangle(const Rectangle& dimensions);
                 void RenderRectangle(int top, int left, int bottom, int right);
-                
-                void RenderCircleFill(int centerX, int centerY, int radius);
+                void RenderRectangleFill(const Rectangle& dimensions);
+
                 void RenderCircle(int midX, int midY, int radius);
+                void RenderCircleFill(int centerX, int centerY, int radius);
                 
-                void RenderFillGradientV(const Rectangle& dimensions,
-                    unsigned char r1, unsigned char g1, unsigned char b1,
-                    unsigned char r2, unsigned char g2, unsigned char b2);
-                void RenderFillGradientV(
+                void RenderRectangleFillGradientV(const Rectangle& dimensions,
                     unsigned char r1, unsigned char g1, unsigned char b1,
                     unsigned char r2, unsigned char g2, unsigned char b2);
 
-                void RenderFill(const Rectangle& dimensions);
-                void RenderFill();
-
-                void RenderImage(const Image& image);
                 void RenderImage(int x, int y, const Image& image);
-                
-                void SetFont(const std::shared_ptr<Font>& font);
-                
                 void RenderCharacter(int x, int y, char character);
                 void RenderText(const Rectangle& dimensions, const std::string& text);
                 void RenderText(int x, int y, const std::string& text);
                 
+                /**
+                 * Below functions respect whatever Region is given in SetRegion and
+                 * allow for filling of non-trivial shapes.
+                 */
+                void RenderFill();
+                void RenderFillGradientV(
+                    unsigned char r1, unsigned char g1, unsigned char b1,
+                    unsigned char r2, unsigned char g2, unsigned char b2);
+                void RenderImage(const Image& image);
+                
             private:
                 std::shared_ptr<MemoryBuffer> m_canvas;
                 std::shared_ptr<Font>         m_font;
+                Primitives::Shape             m_shape;
                 Color                         m_fillColor;
                 Color                         m_outlineColor;
         };

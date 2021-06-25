@@ -211,7 +211,7 @@ void TerminalLine::Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
                 paint.SetFillColor(0xFF, 0xFF, 0xFF);
                 paint.SetOutlineColor(0, 0, 0);
                 if (!cell.m_character) {
-                    paint.RenderFill(Asgaard::Rectangle(x, m_dimensions.Y(), m_font->GetFontWidth(), m_font->GetFontHeight()));
+                    paint.RenderRectangleFill(Asgaard::Rectangle(x, m_dimensions.Y(), m_font->GetFontWidth(), m_font->GetFontHeight()));
                     return;
                 }
             }
@@ -230,7 +230,7 @@ void TerminalLine::Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>& buffer)
         };
         
         paint.SetFillColor(theme->GetColor(Asgaard::Theming::Theme::Colors::DEFAULT_FILL));
-        paint.RenderFill(m_dimensions);
+        paint.RenderRectangleFill(m_dimensions);
         
         paint.SetFont(m_font);
         for (const auto& cell : m_cells) {

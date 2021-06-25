@@ -1,6 +1,6 @@
 /* ValiOS
  *
- * Copyright 2018, Philip Meulengracht
+ * Copyright 2020, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,28 +22,27 @@
  */
 #pragma once
 
-namespace Asgaard {
-    class Rectangle {
-    public:
-        Rectangle(int x, int y, int width, int height)
-            : m_x(x), m_y(y), m_width(width), m_height(height) { }
-        Rectangle(const Rectangle& rectangle)
-            : Rectangle(rectangle.X(), rectangle.Y(), rectangle.Width(), rectangle.Height()) { }
-        Rectangle()
-            : Rectangle(0, 0, 0, 0) { }
-        
-        void SetWidth(int width) { m_width = width; }
-        void SetHeight(int height) { m_height = height; }
-        
-        int X() const { return m_x; }
-        int Y() const { return m_y; }
-        int Width() const { return m_width; };
-        int Height() const { return m_height; };
-        
-    private:
-        int m_x;
-        int m_y;
-        int m_width;
-        int m_height;
-    };
+namespace Asgaard
+{
+    namespace Drawing
+    {
+        namespace Primitives
+        {
+            enum class ShapeType {
+                RECTANGLE,
+                CIRCLE
+            };
+
+            class Shape {
+            public:
+                Shape(ShapeType type)
+                    : m_type(type) { }
+                virtual ~Shape() = default;
+
+                ShapeType GetType() { return m_type; }
+            private:
+                ShapeType m_type;
+            };
+        }
+    }
 }

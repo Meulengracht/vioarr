@@ -26,6 +26,8 @@
 #include "../include/drawing/image.hpp"
 #include "../include/memory_buffer.hpp"
 #include "../include/rectangle.hpp"
+#include "../include/drawing/primitives/rectangle.hpp"
+#include "../include/drawing/primitives/circle.hpp"
 #include <cstring>
 #include <string>
 #include <cmath>
@@ -51,6 +53,7 @@ namespace Asgaard {
         Painter::Painter(const std::shared_ptr<MemoryBuffer>& canvas)
             : m_canvas(canvas)
             , m_font(nullptr)
+            , m_shape(Primitives::RectangleShape(0, 0, canvas->Width(), canvas->Height()))
             , m_fillColor(0, 0, 0)
             , m_outlineColor(0, 0, 0)
         {
@@ -92,6 +95,11 @@ namespace Asgaard {
             m_font = font;
         }
 
+        void Painter::SetRegion(const Primitives::Shape& shape)
+        {
+            m_shape = shape;
+        }
+
         void Painter::RenderLine(int x1, int y1, int x2, int y2)
         {
             uint32_t* pointer = static_cast<uint32_t*>(m_canvas->Buffer());
@@ -114,7 +122,7 @@ namespace Asgaard {
             }
         }
 
-        void Painter::RenderFillGradientV(const Rectangle& dimensions,
+        void Painter::RenderRectangleFillGradientV(const Rectangle& dimensions,
                     unsigned char r1, unsigned char g1, unsigned char b1,
                     unsigned char r2, unsigned char g2, unsigned char b2)
         {
@@ -130,36 +138,13 @@ namespace Asgaard {
             m_fillColor = originalColor;
         }
         
-        void Painter::RenderFillGradientV(
-                    unsigned char r1, unsigned char g1, unsigned char b1,
-                    unsigned char r2, unsigned char g2, unsigned char b2)
-        {
-            Color originalColor = m_fillColor;
-            for (int y = 0; y < m_canvas->Height(); y++) {
-                float p = y / (float)(m_canvas->Height() - 1);
-                unsigned char r = (unsigned char)((1.0f - p) * r1 + p * r2 + 0.5);
-                unsigned char g = (unsigned char)((1.0f - p) * g1 + p * g2 + 0.5);
-                unsigned char b = (unsigned char)((1.0f - p) * b1 + p * b2 + 0.5);
-                SetFillColor(r, g, b);
-                RenderLine(0, y, m_canvas->Width(), y);
-            }
-            m_fillColor = originalColor;
-        }
-
-        void Painter::RenderFill(const Rectangle& dimensions)
+        void Painter::RenderRectangleFill(const Rectangle& dimensions)
         {
             for (int y = dimensions.Y(); y < (dimensions.Y() + dimensions.Height()); y++) {
                 RenderLine(dimensions.X(), y, dimensions.X() + dimensions.Width(), y);
             }
         }
         
-        void Painter::RenderFill()
-        {
-            for (int y = 0; y < m_canvas->Height(); y++) {
-                RenderLine(0, y, m_canvas->Width(), y);
-            }
-        }
-
         void Painter::RenderRectangle(const Rectangle& dimensions)
         {
             auto left = dimensions.X();
@@ -222,12 +207,13 @@ namespace Asgaard {
             for (int x = -radius; x < radius; x++)
             {
                 auto height = (int)std::sqrt(radiusSqrt - x * x);
-                auto xOffset = x * bpp;
+                auto xOffset = (centerX + x) * bpp;
 
-                for (int y = -height, offset = ((slSize * (-height)) + xOffset); y < height; y++, offset += slSize) {
+                auto canvasOffset = ((slSize * (centerY - height)) + xOffset);
+                for (int y = -height; y < height; y++, canvasOffset += slSize) {
                     if (x + centerX < m_canvas->Width() && x + centerX >= 0 &&
                         y + centerY < m_canvas->Height() && y + centerY >= 0) {
-                        *(reinterpret_cast<uint32_t*>(mid + offset)) = bgColor;
+                        *(reinterpret_cast<uint32_t*>(mid + canvasOffset)) = bgColor;
                     }
                 }
             }
@@ -294,6 +280,29 @@ namespace Asgaard {
             }
         }
 
+        void Painter::RenderFill()
+        {
+            switch (m_shape.GetType()) {
+                case Primitives::ShapeType::RECTANGLE: {
+                    const auto& rectangle = dynamic_cast<const Primitives::RectangleShape&>(m_shape);
+                    auto left = rectangle.X();
+                    auto right = rectangle.X() + m_canvas->Width();
+                    for (int y = 0; y < rectangle.Height(); y++) {
+                        RenderLine(
+                            left,
+                            rectangle.Y() + y,
+                            right,
+                            rectangle.Y() + y
+                        );
+                    }
+                } break;
+                case Primitives::ShapeType::CIRCLE: {
+                    const auto& circle = dynamic_cast<const Primitives::CircleShape&>(m_shape);
+                    RenderCircleFill(circle.CenterX(), circle.CenterY(), circle.Radius());
+                } break;
+            }
+        }
+
         void Painter::RenderImage(const Image& image)
         {
             // if faulty images are provided we just return
@@ -301,11 +310,66 @@ namespace Asgaard {
                 return;
             }
 
-            auto bytesInSource = image.Stride() * image.Height();
-            auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
-            memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
+            switch (m_shape.GetType()) {
+                case Primitives::ShapeType::RECTANGLE: {
+                    auto bytesInSource = image.Stride() * image.Height();
+                    auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
+                    memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
+                } break;
+                case Primitives::ShapeType::CIRCLE: {
+                    const auto& circle = dynamic_cast<const Primitives::CircleShape&>(m_shape);
+                    auto radiusSqrt = circle.Radius() * circle.Radius();
+                    auto midCanvas  = static_cast<uint8_t*>(m_canvas->Buffer(circle.CenterX(), circle.CenterY()));
+                    auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);
+                    auto imageLimit = (image.Height() * image.Width()) + image.Width();
+                    auto slSize     = m_canvas->Stride();
+                    auto bpp        = GetBytesPerPixel(m_canvas->Format());
+                    auto fillcolor  = m_fillColor.GetFormatted(m_canvas->Format());
+
+                    for (int x = -circle.Radius(); x < circle.Radius(); x++)
+                    {
+                        auto height = (int)std::sqrt(radiusSqrt - x * x);
+                        auto xOffset = (circle.CenterX() + x) * bpp;
+                        
+                        auto y = -height;
+                        auto canvasOffset = ((slSize * (circle.CenterY() - height)) + xOffset); // bytes
+                        auto imageOffset = midImage + (-height * image.Width()) + x; // pixels
+                        for (; y < height; y++, canvasOffset += slSize, imageOffset += image.Width()) {
+                            if (x + circle.CenterX() < m_canvas->Width() && x + circle.CenterX() >= 0 &&
+                                y + circle.CenterY() < m_canvas->Height() && y + circle.CenterY() >= 0 &&
+                                imageOffset >= 0 && imageOffset < imageLimit) {
+                                auto pixel = image.GetPixel(imageOffset);
+                                if (pixel.Alpha() == 255) {
+                                    *(reinterpret_cast<uint32_t*>(midCanvas + canvasOffset)) = pixel.GetFormatted(m_canvas->Format());
+                                }
+                                else if (pixel.Alpha() > 0) {
+                                    *(reinterpret_cast<uint32_t*>(midCanvas + canvasOffset)) = AlphaBlendAXGX(
+                                        pixel.GetFormatted(m_canvas->Format()), fillcolor, pixel.Alpha()
+                                    );
+                                }
+                            }
+                        }
+                    }
+                } break;
+            }
         }
         
+        void Painter::RenderFillGradientV(
+                    unsigned char r1, unsigned char g1, unsigned char b1,
+                    unsigned char r2, unsigned char g2, unsigned char b2)
+        {
+            Color originalColor = m_fillColor;
+            for (int y = 0; y < m_canvas->Height(); y++) {
+                float p = y / (float)(m_canvas->Height() - 1);
+                unsigned char r = (unsigned char)((1.0f - p) * r1 + p * r2 + 0.5);
+                unsigned char g = (unsigned char)((1.0f - p) * g1 + p * g2 + 0.5);
+                unsigned char b = (unsigned char)((1.0f - p) * b1 + p * b2 + 0.5);
+                SetFillColor(r, g, b);
+                RenderLine(0, y, m_canvas->Width(), y);
+            }
+            m_fillColor = originalColor;
+        }
+
         void Painter::RenderImage(int x, int y, const Image& image)
         {
             // if faulty images are provided we just return

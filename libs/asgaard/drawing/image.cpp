@@ -30,6 +30,9 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "stb_image_resize.h"
+
 #if 0
 static std::string ExtendFilename(std::string& path, std::string& extension)
 {
@@ -173,6 +176,33 @@ namespace Asgaard {
             if (m_data && m_ownsBuffer) {
                 free(m_data);
             }
+        }
+        
+        Image Image::Resize(int width, int height)
+        {
+            if (width <= 0 || height <= 0) {
+                return Image();
+            }
+
+            if (!m_columns || !m_rows) {
+                return Image();
+            }
+
+            if (m_columns == width && m_rows == height) {
+                return *this;
+            }
+
+            auto data = malloc(width * height * GetBytesPerPixel(m_format));
+            auto result = stbir_resize_uint8(
+                static_cast<const unsigned char*>(m_data),
+                m_columns, m_rows, 0,
+                static_cast<unsigned char*>(data),
+                width, height, 0,
+                4);
+            if (result) {
+                return Image(data, m_format, height, width, true);
+            }
+            return Image();
         }
 
         Image& Image::operator=(const Image& image)

@@ -112,6 +112,9 @@ private:
         // we create a transparent surface
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
+
+        // resize incoming icon
+        m_icon = image.Resize(48, 48);
     }
 
     void RedrawReady()
@@ -135,7 +138,7 @@ private:
 
         // what we want is actually to draw the image here
         // and not keep it as a subsurface
-        //paint.RenderImage(8, 8, m_icon);
+        paint.RenderImage(8, 8, m_icon);
 
         // draw indicators
         //paint.RenderCircle()
@@ -182,7 +185,7 @@ protected:
 private:
     std::shared_ptr<Asgaard::MemoryPool>   m_memory;
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
-    const Asgaard::Drawing::Image&         m_icon;
+    Asgaard::Drawing::Image                m_icon;
     std::string                            m_name;
     bool                                   m_isShown;
     bool                                   m_isHovered;

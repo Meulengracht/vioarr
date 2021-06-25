@@ -94,7 +94,7 @@ public:
             auto hasInfo = m_registeredAppInfos.find(objectId);
             if (hasInfo != std::end(m_registeredAppInfos)) {
                 Toggle();
-                Spawner::SpawnApplication((*hasInfo).second);
+                Heimdall::Utils::SpawnApplication((*hasInfo).second);
             }
         };
 

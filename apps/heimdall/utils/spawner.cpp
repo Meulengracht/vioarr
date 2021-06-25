@@ -19,7 +19,6 @@
  *  - Contains the implementation of the application environment to support
  *    graphical user interactions.
  */
-#pragma once
 
 #include <string>
 #include "spawner.hpp"

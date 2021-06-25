@@ -242,28 +242,28 @@ extern "C" {
     void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
         if (auto hd = g_heimdall.lock()) {
-            (*hd)->OnApplicationRegister(message->client, appId);
+            hd->OnApplicationRegister(message->client, appId);
         }
     }
 
     void hd_core_unregister_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
         if (auto hd = g_heimdall.lock()) {
-            (*hd)->OnApplicationUnregister(message->client, appId);
+            hd->OnApplicationUnregister(message->client, appId);
         }
     }
 
     void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
     {
         if (auto hd = g_heimdall.lock()) {
-            (*hd)->OnSurfaceRegister();
+            hd->OnSurfaceRegister();
         }
     }
 
     void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
     {
         if (auto hd = g_heimdall.lock()) {
-            (*hd)->OnSurfaceUnregister();
+            hd->OnSurfaceUnregister();
         }
     }
 

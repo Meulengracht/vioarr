@@ -37,6 +37,7 @@
 #include <keycodes.h>
 
 #include "launcher/launcher_base.hpp"
+#include "appbar/appbar.hpp"
 #include "statusbar/statusbar.hpp"
 #include "utils/spawner.hpp"
 #include "utils/register.hpp"
@@ -123,6 +124,11 @@ private:
             background
         );
 
+        // create the application bar
+        m_appBar = Surface::Create<ApplicationBar>(GetScreen(),
+            Rectangle(0, 0, 0, 0)
+        );
+
         // create the statusbar
         m_statusBar = Surface::Create<StatusBar>(GetScreen(), 
             Rectangle(0, 0, GetScreen()->GetCurrentWidth(), STATUSBAR_HEIGHT)
@@ -192,6 +198,7 @@ private:
     std::shared_ptr<MemoryBuffer>    m_buffer;
     std::shared_ptr<Widgets::Cursor> m_cursor;
     std::shared_ptr<LauncherBase>    m_launcher;
+    std::shared_ptr<ApplicationBar>  m_appBar;
     std::shared_ptr<StatusBar>       m_statusBar;
     gracht_server_t*                 m_serverInstance;
 };

@@ -39,15 +39,15 @@ using namespace Asgaard;
 class ApplicationIcon : public SubSurface {
 public:
     ApplicationIcon(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, 
-        const Heimdall::Register::Application& app) 
+        const std::shared_ptr<Heimdall::Register::Application>& app) 
         : SubSurface(id, screen, dimensions)
-        , m_name(app.GetName())
+        , m_name(app->GetName())
         , m_isShown(false)
         , m_isHovered(false)
         , m_redraw(false)
         , m_redrawReady(false)
     {
-        LoadResources(app.GetIcon());
+        LoadResources(app->GetIcon());
         MarkInputRegion(Dimensions());
         RedrawReady();
         Redraw();

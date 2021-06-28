@@ -19,34 +19,39 @@
  *  - Contains the implementation of the application environment to support
  *    graphical user interactions.
  */
-#pragma once
 
-#include <map>
-#include <string>
-#include <drawing/image.hpp>
+#include "register.hpp"
 
 namespace Heimdall
 {
     namespace Register
     {
-        class Application
+        namespace {
+            static std::map<unsigned int, std::shared_ptr<Application>> g_applicationRegister;
+        }
+
+        Application::Application(const std::string&, const std::string&, const Asgaard::Drawing::Image&)
         {
-        public:
-            Application(const std::string&, const std::string&, const Asgaard::Drawing::Image&);
-            ~Application() = default;
 
-            const std::string&             GetName() const { return m_name; }
-            const std::string&             GetPath() const { return m_path; }
-            const Asgaard::Drawing::Image& GetIcon() const { return m_icon; }
+        }
 
-        private:
-            std::string             m_name;
-            std::string             m_path;
-            Asgaard::Drawing::Image m_icon;
-        };
+        void Initialize()
+        {
+            g_applicationRegister.push_back(std::make_pair(0, new Asgaard::Drawing::Color(0xFF, 0, 0, 0)))
+        }
 
-        void                         Initialize();
-        void                         Update();
-        std::shared_ptr<Application> GetApplication(unsigned int id);
+        void Update()
+        {
+
+        }
+
+        std::shared_ptr<Application> GetApplication(unsigned int id)
+        {
+            auto app = g_applicationRegister.find(id);
+            if (app == std::end(g_applicationRegister)) {
+                return std::shared_ptr<Application>(nullptr);
+            }
+            return *app;
+        }
     }
 }

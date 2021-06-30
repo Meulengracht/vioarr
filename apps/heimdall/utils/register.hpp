@@ -21,9 +21,10 @@
  */
 #pragma once
 
+#include <drawing/image.hpp>
 #include <map>
 #include <string>
-#include <drawing/image.hpp>
+#include <memory>
 
 namespace Heimdall
 {

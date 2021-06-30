@@ -84,14 +84,18 @@ Asgaard::MemoryBuffer::MemoryBuffer(uint32_t id, const std::shared_ptr<MemoryPoo
         throw ApplicationException("MemoryBuffer::MemoryBuffer() size too large would overrun the memory in the pool", EINVAL);
     }
     
-    wm_memory_pool_create_buffer(APP.GrachtClient(), nullptr, memory->Id(),
-        id, memoryOffset, width, height, stride, wmFormat, 
-        static_cast<unsigned int>(flags));
+    if (!memory->IsInheritted()) {
+        wm_memory_pool_create_buffer(APP.GrachtClient(), nullptr, memory->Id(),
+            id, memoryOffset, width, height, stride, wmFormat, 
+            static_cast<unsigned int>(flags));
+    }
 }
 
 Asgaard::MemoryBuffer::~MemoryBuffer()
 {
-    wm_buffer_destroy(APP.GrachtClient(), nullptr, Id());
+    if (!m_memory->IsInheritted()) {
+        wm_buffer_destroy(APP.GrachtClient(), nullptr, Id());
+    }
 }
 
 void* Asgaard::MemoryBuffer::Buffer(int x, int y) {

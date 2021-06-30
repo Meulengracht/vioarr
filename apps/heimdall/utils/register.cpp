@@ -21,6 +21,7 @@
  */
 
 #include "register.hpp"
+#include <map>
 
 namespace Heimdall
 {
@@ -37,7 +38,7 @@ namespace Heimdall
 
         void Initialize()
         {
-            g_applicationRegister.push_back(std::make_pair(0, new Asgaard::Drawing::Color(0xFF, 0, 0, 0)))
+            //g_applicationRegister.insert(std::make_pair(0, new Application("", "", )))
         }
 
         void Update()
@@ -51,7 +52,7 @@ namespace Heimdall
             if (app == std::end(g_applicationRegister)) {
                 return std::shared_ptr<Application>(nullptr);
             }
-            return *app;
+            return app->second;
         }
     }
 }

@@ -21,6 +21,7 @@
  */
 #pragma once
 
+#include <gracht/server.h>
 #include <subsurface.hpp>
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
@@ -31,23 +32,22 @@
 #include <notifications/notification.hpp>
 #include <memory>
 #include <string>
-
-#include "../utils/register.hpp"
+#include <vector>
 
 using namespace Asgaard;
 
 class ApplicationIcon : public SubSurface {
 public:
     ApplicationIcon(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, 
-        const std::shared_ptr<Heimdall::Register::Application>& app) 
+        unsigned int applicationId, std::size_t memoryHandle, std::size_t size, int iconWidth, 
+        int iconHeight, PixelFormat format)
         : SubSurface(id, screen, dimensions)
-        , m_name(app->GetName())
         , m_isShown(false)
         , m_isHovered(false)
         , m_redraw(false)
         , m_redrawReady(false)
     {
-        LoadResources(app->GetIcon());
+        LoadResources(memoryHandle, size, iconWidth, iconHeight, format);
         MarkInputRegion(Dimensions());
         RedrawReady();
         Redraw();
@@ -88,6 +88,24 @@ public:
         m_isHovered = false;
     }
 
+    void AddSource(gracht_conn_t source)
+    {
+        m_sources.push_back(source);
+    }
+
+    void RemoveSource(gracht_conn_t source)
+    {
+        auto entry = std::find(std::begin(m_sources), std::end(m_sources), source);
+        if (entry != std::end(m_sources)) {
+            m_sources.erase(entry);
+        }
+    }
+
+    int GetSourceCount()
+    {
+        return m_sources.size();
+    }
+
     void RequestRedraw()
     {
         bool shouldRedraw = m_redrawReady.exchange(false);
@@ -104,7 +122,8 @@ public:
     bool IsShown() const { return m_isShown; }
 
 private:
-    void LoadResources(const Drawing::Image& image)
+    void LoadResources(std::size_t memoryHandle, std::size_t size, int iconWidth, 
+        int iconHeight, PixelFormat format)
     {
         // this box is fixed, so we allocate just enough in this case
         auto screenSize = Dimensions().Width() * Dimensions().Height() * 4;
@@ -114,8 +133,17 @@ private:
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
+        // inherit the icon buffer
+        auto iconMemoryPool = MemoryPool::Inherit(this, memoryHandle, size);
+        auto iconBuffer = MemoryBuffer::Create(this, iconMemoryPool, 0, iconWidth, iconHeight, format);
+        Drawing::Image icon(iconBuffer->Buffer(), format, iconHeight, iconWidth, false);
+
         // resize incoming icon
-        m_icon = image.Resize(48, 48);
+        m_icon = icon.Resize(48, 48);
+
+        // cleanup
+        iconBuffer->Destroy();
+        iconMemoryPool->Destroy();
     }
 
     void RedrawReady()
@@ -190,7 +218,7 @@ private:
     std::shared_ptr<Asgaard::MemoryPool>   m_memory;
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     Asgaard::Drawing::Image                m_icon;
-    std::string                            m_name;
+    std::vector<gracht_conn_t>             m_sources;
     bool                                   m_isShown;
     bool                                   m_isHovered;
     bool                                   m_redraw;

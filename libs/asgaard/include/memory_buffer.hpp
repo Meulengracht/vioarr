@@ -53,7 +53,8 @@ namespace Asgaard {
         
     public:
         static std::shared_ptr<MemoryBuffer> Create(Object* owner, const std::shared_ptr<MemoryPool>& memory,
-            int memoryOffset, int width, int height, enum PixelFormat format, enum Flags flags)
+            int memoryOffset, int width, int height, enum PixelFormat format, 
+            enum Flags flags = Flags::NONE)
         {
             auto buffer = OM.CreateClientObject<
                 MemoryBuffer, const std::shared_ptr<MemoryPool>&, int, int, int, enum PixelFormat>(

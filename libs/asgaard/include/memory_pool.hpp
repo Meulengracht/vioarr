@@ -37,6 +37,7 @@
 namespace Asgaard {
     class MemoryPool : public Object {
     public:
+        ASGAARD_API MemoryPool(uint32_t id, std::size_t handle, std::size_t size);
         ASGAARD_API MemoryPool(uint32_t id, std::size_t size);
         ASGAARD_API ~MemoryPool();
         
@@ -50,12 +51,22 @@ namespace Asgaard {
             memory->Subscribe(owner);
             return memory;
         }
+
+        static std::shared_ptr<MemoryPool> Inherit(Object* owner, std::size_t handle, std::size_t size)
+        {
+            // Create the memory pool we're going to use
+            auto memory = OM.CreateClientObject<MemoryPool, std::size_t, std::size_t>(handle, size);
+            memory->Subscribe(owner);
+            return memory;
+        }
         
     public:
         void* CreateBufferPointer(int memoryOffset);
+        bool  IsInheritted() const { return m_inheritted; }
         
     private:
         std::size_t           m_size;
+        bool                  m_inheritted;
         
 #ifdef MOLLENOS
         struct dma_attachment m_attachment;

@@ -17,6 +17,7 @@ add_executable(heimdall
     ${GENERATED_SOURCES}
     
     effects/guassian_blur.cpp
+    utils/register.cpp
     utils/spawner.cpp
     main.cpp
 )

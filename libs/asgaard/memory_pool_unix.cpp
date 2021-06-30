@@ -37,9 +37,31 @@
 #include <sys/shm.h>
 
 namespace Asgaard {
+    MemoryPool::MemoryPool(uint32_t id, std::size_t handle, std::size_t size)
+        : Object(id)
+        , m_size(size)
+        , m_inheritted(true)
+        , m_poolKey(static_cast<key_t>(handle))
+    {
+        if (size == 0) {
+            throw InvalidArgumentException("MemoryPool::MemoryPool 0-size provided");
+        }
+
+        m_shmFd = shmget(m_poolKey, m_size, S_IRUSR | S_IWUSR);
+        if (m_shmFd == -1) {
+            throw ApplicationException("MemoryPool::MemoryPool() failed to inherit memory pool", errno);
+        }
+
+        m_memory = shmat(m_shmFd, 0, 0);
+        if (m_memory == (void*)(-1)) {
+            throw ApplicationException("MemoryPool::MemoryPool() failed to inherit memory pool", errno);
+        }
+    }
+
     MemoryPool::MemoryPool(uint32_t id, std::size_t size)
         : Object(id)
         , m_size(size)
+        , m_inheritted(false)
     {
         if (size == 0) {
             throw InvalidArgumentException("MemoryPool::MemoryPool 0-size provided");

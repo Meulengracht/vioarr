@@ -22,13 +22,21 @@ enum buttons {
     INPUT = 0x8
 }
 
+struct app_icon {
+    ulong  poolHandle;
+    int    size; 
+    int    iconWidth;
+    int    iconHeight;
+    int    format;
+}
+
 service core (90) {
     /**
      * Functionality primary associated with the launcher functionality. When apps
      * register using these functions, the launcher supports advanced user functionality
      * integration with that application. Advanced swapping, application bar support etc.
      */
-    func register_app(uint appId) : () = 1;
+    func register_app(uint appId, app_icon icon) : () = 1;
     func unregister_app(uint appId) : () = 2;
 
     // todo for these to work we must support some kind of global reference

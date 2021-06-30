@@ -239,10 +239,12 @@ int main(int argc, char **argv)
 }
 
 extern "C" {
-    void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId)
+    void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId, const struct hd_app_icon* icon)
     {
         if (auto hd = g_heimdall.lock()) {
-            hd->OnApplicationRegister(message->client, appId);
+            hd->OnApplicationRegister(message->client, appId, icon->poolHandle, 
+                icon->size, icon->iconWidth, icon->iconHeight,
+                static_cast<Asgaard::PixelFormat>(icon->format));
         }
     }
 

@@ -37,7 +37,6 @@
 #include <map>
 
 #include "appicon.hpp"
-#include "../utils/register.hpp"
 
 using namespace Asgaard;
 
@@ -62,16 +61,20 @@ public:
         Surface::Destroy();
     }
 
-    void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId)
+    void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId, std::size_t memoryHandle,
+        std::size_t size, int iconWidth, int iconHeight, PixelFormat format)
     {
-        auto app = Heimdall::Register::GetApplication(applicationId);
-        if (!app) {
-            // uh oh
-            return;
+        // check if application id is registered already
+        auto app = m_apps.find(applicationId);
+        if (app == std::end(m_apps)) {
+            auto icon = SubSurface::Create<ApplicationIcon>(this, m_iconDimensions, applicationId, 
+                memoryHandle, size, iconWidth, iconHeight, format);
+            icon->AddSource(source);
+            m_apps.insert(std::make_pair(applicationId, icon));
         }
-
-        auto icon = SubSurface::Create<ApplicationIcon>(m_iconDimensions, app);
-        m_apps.push_back(icon);
+        else {
+            (*app).second->AddSource(source);
+        }
 
         // recalculate positions
         RecalculateIconStart();
@@ -80,10 +83,16 @@ public:
 
     void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
     {
-
-        // recalculate positions
-        RecalculateIconStart();
-        UpdateIconPositions();
+        auto app = m_apps.find(applicationId);
+        if (app != std::end(m_apps)) {
+            (*app).second->RemoveSource(source);
+            if ((*app).second->GetSourceCount() == 0)
+            {
+                m_apps.erase(app);
+                RecalculateIconStart();
+                UpdateIconPositions();
+            }
+        }
     }
 
 public:
@@ -139,7 +148,7 @@ public:
             spaceRequired -= ICON_PADDING; // remove the last padding
         }
 
-        if (spaceRequired > Dimensions().Width()) {
+        if (static_cast<int>(spaceRequired) > Dimensions().Width()) {
             // fuck what to do
             spaceRequired = Dimensions().Width();
         }
@@ -151,8 +160,8 @@ public:
     {
         int index = 0;
         for (const auto& app : m_apps) {
-            app->Move(GetIconPositionX(index++), m_iconDimensions.Y());
-            app->RequestRedraw();
+            app.second->Move(GetIconPositionX(index++), m_iconDimensions.Y());
+            app.second->RequestRedraw();
         }
     }
 
@@ -162,9 +171,9 @@ public:
     }
 
 private:
-    std::shared_ptr<Asgaard::MemoryPool>         m_memory;
-    std::shared_ptr<Asgaard::MemoryBuffer>       m_buffer;
-    std::vector<std::shared_ptr<ApplicationIcon> m_apps;
-    Rectangle                                    m_iconDimensions;
-    int                                          m_startX;
+    std::shared_ptr<Asgaard::MemoryPool>                     m_memory;
+    std::shared_ptr<Asgaard::MemoryBuffer>                   m_buffer;
+    std::map<unsigned int, std::shared_ptr<ApplicationIcon>> m_apps;
+    Rectangle                                                m_iconDimensions;
+    int                                                      m_startX;
 };

@@ -46,6 +46,7 @@ using namespace Asgaard;
 
 constexpr auto CURSOR_SIZE = 16;
 constexpr auto STATUSBAR_HEIGHT = 25;
+constexpr auto APPBAR_HEIGHT = 75;
 
 class HeimdallApp final : public WindowBase, public Utils::DescriptorListener, public std::enable_shared_from_this<HeimdallApp> {
 public:
@@ -67,14 +68,25 @@ public:
         m_serverInstance = server;
     }
 
-    void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId)
+    void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId, std::size_t memoryHandle,
+        std::size_t size, int iconWidth, int iconHeight, PixelFormat format)
     {
+        if (!m_appBar) {
+            return;
+        }
 
+        // this acts only as a direct proxy to the application bar
+        m_appBar->OnApplicationRegister(source, applicationId, memoryHandle, size, iconWidth, iconHeight, format);
     }
 
     void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
     {
+        if (!m_appBar) {
+            return;
+        }
 
+        // this acts only as a direct proxy to the application bar
+        m_appBar->OnApplicationUnregister(source, applicationId);
     }
 
     void OnSurfaceRegister()
@@ -125,8 +137,11 @@ private:
         );
 
         // create the application bar
+        auto barWidth = GetScreen()->GetCurrentWidth() >> 1;
+        auto barStartX = barWidth >> 1;
+        auto barStartY = GetScreen()->GetCurrentHeight() - APPBAR_HEIGHT;
         m_appBar = Surface::Create<ApplicationBar>(GetScreen(),
-            Rectangle(0, 0, 0, 0)
+            Rectangle(barStartX, barStartY, barWidth, APPBAR_HEIGHT)
         );
 
         // create the statusbar

@@ -70,7 +70,7 @@ namespace Asgaard {
         , m_transform(ScreenTransform::NONE)
     {
         // Get properties of the screen
-        wm_screen_get_properties(APP.GrachtClient(), nullptr, id);
+        wm_screen_get_properties(APP.VioarrClient(), nullptr, id);
     }
 
     Screen::~Screen()
@@ -143,8 +143,8 @@ namespace Asgaard {
                 m_transform   = ConvertProtocolTransform(properties.Transform());
                 
                 // continue this charade and ask for modes, end with a sync
-                wm_screen_get_modes(APP.GrachtClient(), nullptr, Id());
-                wm_core_sync(APP.GrachtClient(), nullptr, Id());
+                wm_screen_get_modes(APP.VioarrClient(), nullptr, Id());
+                wm_core_sync(APP.VioarrClient(), nullptr, Id());
             } break;
             
             case Event::Type::SCREEN_MODE: {

@@ -23,12 +23,18 @@
 
 #include "config.hpp"
 
-namespace Environment
+namespace Asgaard
 {
-    namespace Heimdall
+    namespace Environment
     {
-        void Initialize();
-        void RegisterApplication();
-        void UnregisterApplication();
+        namespace Heimdall
+        {
+            /**
+             * Initializes the Heimdall subsystem. If this has not been invoked then
+             * none of the functionality in the Heimdall namespace will be working.
+             * This is automatically controlled by Asgaard.
+             */
+            void Initialize();
+        }
     }
 }

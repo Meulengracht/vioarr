@@ -23,6 +23,7 @@ include_directories(
 )
 
 set (GENERATED_SOURCES
+    ${CMAKE_BINARY_DIR}/protocols/hd_core_service_client.c
     ${CMAKE_BINARY_DIR}/protocols/wm_core_service_client.c
     ${CMAKE_BINARY_DIR}/protocols/wm_screen_service_client.c
     ${CMAKE_BINARY_DIR}/protocols/wm_memory_service_client.c
@@ -54,6 +55,7 @@ add_sources (
     widgets/textbox.cpp
 
     application.cpp
+    environment.cpp
     key_event.cpp
     keyboard.cpp
     memory_buffer.cpp
@@ -79,7 +81,7 @@ elseif (UNIX)
 endif ()
 
 add_library(asgaard SHARED ${GENERATED_SOURCES} ${SRCS})
-add_dependencies(asgaard zip wm_client_service)
+add_dependencies(asgaard zip wm_client_service hd_client_service)
 target_compile_definitions(asgaard PRIVATE
     -DASGAARD_BUILD -DASGAARD_THEME_PASSWORD=\"$ENV{VALI_CODE}\"
 )

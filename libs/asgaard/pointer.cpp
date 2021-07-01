@@ -80,7 +80,7 @@ void Pointer::SetSurface(const std::shared_ptr<Widgets::Cursor>& cursor, int xOf
     }
     
     // calling with an id of 0 will result in clearing the pointer surface
-    wm_pointer_set_surface(APP.GrachtClient(), nullptr, Id(), id, xOffset, yOffset);
+    wm_pointer_set_surface(APP.VioarrClient(), nullptr, Id(), id, xOffset, yOffset);
     
     if (cursor) {
         m_currentCursor = cursor;

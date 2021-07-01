@@ -39,8 +39,16 @@ namespace Asgaard {
     
     class Application final : public Object {
     public:
+        /**
+         * Most of these applications have very specific purposes and does never
+         * really need to be manipulated. Some of these should be changed only if
+         * you've been instructed to do so.
+         */
         enum class Settings : int {
-            ASYNC_DESCRIPTOR // Accepts a pointer to a descriptor.
+            ASYNC_DESCRIPTOR, // Accepts a pointer to a descriptor.
+            HEIMDALL_VISIBLE, // Accepts a bool value; Wheter or not application is registered with Heimdall
+            APPLICATION_GUID, // Accepts a pointer to a std::string instance; sets the GUID of the application
+            APPLICATION_ICON  // Accepts a pointer to a std::string instance; controls which application icon is showed.
         };
     public:
         Application();
@@ -85,6 +93,13 @@ namespace Asgaard {
          */
         ASGAARD_API void  SetSetting(Settings setting, void* value);
 
+        template<typename T>
+        void SetSettingValue(Settings setting, T value)
+        {
+            auto asValue = static_cast<std::uintptr_t>(value);
+            SetSetting(setting, reinterpret_cast<void*>(asValue));
+        }
+
         /**
          * Retrieves the value of the specified setting.
          * 
@@ -92,6 +107,13 @@ namespace Asgaard {
          * @return void*  The value of the setting, or nullptr if none exists. 
          */
         ASGAARD_API void* GetSetting(Settings setting);
+
+        template<typename T>
+        T GetSettingValue(Settings setting)
+        {
+            auto asValue = reinterpret_cast<std::uintptr_t>(GetSetting(setting));
+            return static_cast<T>(asValue);
+        }
 
         /**
          * Destroy
@@ -101,7 +123,7 @@ namespace Asgaard {
         void Destroy() override;
 
     public:
-        gracht_client_t*               GrachtClient() const { return m_client; }
+        gracht_client_t*               VioarrClient() const { return m_client; }
         const std::shared_ptr<Screen>& GetScreen() const    { return m_screens.front(); }
         std::shared_ptr<Keyboard>      GetKeyboard() const;
         std::shared_ptr<Pointer>       GetPointer() const;
@@ -112,6 +134,7 @@ namespace Asgaard {
 
     private:
         bool IsInitialized() const;
+        void InitializeInternal();
         void DestroyInternal();
 
     private:

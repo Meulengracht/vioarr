@@ -80,7 +80,7 @@ namespace Asgaard {
             throw ApplicationException("MemoryPool::MemoryPool() failed to map the new memory pool", errno);
         }
 
-        wm_memory_create_pool(APP.GrachtClient(), nullptr, id, m_poolKey, size);
+        wm_memory_create_pool(APP.VioarrClient(), nullptr, id, m_poolKey, size);
     }
     
     MemoryPool::~MemoryPool()
@@ -89,7 +89,7 @@ namespace Asgaard {
             // destruction is handled by wm server
             shmdt(m_memory);
         }
-        wm_memory_pool_destroy(APP.GrachtClient(), nullptr, Id());
+        wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
     }
     
     void* MemoryPool::CreateBufferPointer(int memoryOffset)

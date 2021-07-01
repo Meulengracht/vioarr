@@ -1,5 +1,4 @@
-/* ValiOS
- *
+/**
  * Copyright 2018, Philip Meulengracht
  *
  * This program is free software : you can redistribute it and / or modify
@@ -49,6 +48,7 @@
 #include "include/events/pointer_click_event.hpp"
 #include "include/events/pointer_scroll_event.hpp"
 #include "include/events/key_event.hpp"
+#include "include/environment.hpp"
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"
@@ -67,7 +67,8 @@ namespace Asgaard {
         , m_syncRecieved(false)
         , m_screenFound(false)
     {
-        
+        // initialize default settings
+
     }
 
     Application::~Application()
@@ -91,6 +92,31 @@ namespace Asgaard {
         
         // allow os-specific cleanup
         DestroyInternal();
+    }
+
+    void Application::Initialize()
+    {
+        if (IsInitialized()) {
+            throw ApplicationException("Initialize has been called twice", -1);
+        }
+
+        // perform per-platform initialization
+        InitializeInternal();
+        
+        // kick off a chain reaction by asking for all objects
+        wm_core_get_objects(m_client, nullptr);
+        wm_core_sync(m_client, nullptr, 0);
+
+        // wait for initialization to complete
+        while (!IsInitialized()) {
+            (void)gracht_client_wait_message(m_client, NULL, 0);
+        }
+
+        // initialize heimdall
+        auto initializeHeimdall = GetSettingValue<bool>(Settings::HEIMDALL_VISIBLE);
+        if (initializeHeimdall) {
+            Environment::Heimdall::Initialize();
+        }
     }
 
     bool Application::IsInitialized() const

@@ -32,11 +32,11 @@ namespace Asgaard {
 
     void SubSurface::Resize(int width, int height)
     {
-        wm_surface_resize_subsurface(APP.GrachtClient(), nullptr, Id(), width, height);
+        wm_surface_resize_subsurface(APP.VioarrClient(), nullptr, Id(), width, height);
     }
 
     void SubSurface::Move(int parentX, int parentY)
     {
-        wm_surface_move_subsurface(APP.GrachtClient(), nullptr, Id(), parentX, parentY);
+        wm_surface_move_subsurface(APP.VioarrClient(), nullptr, Id(), parentX, parentY);
     }
 }

@@ -85,7 +85,7 @@ Asgaard::MemoryBuffer::MemoryBuffer(uint32_t id, const std::shared_ptr<MemoryPoo
     }
     
     if (!memory->IsInheritted()) {
-        wm_memory_pool_create_buffer(APP.GrachtClient(), nullptr, memory->Id(),
+        wm_memory_pool_create_buffer(APP.VioarrClient(), nullptr, memory->Id(),
             id, memoryOffset, width, height, stride, wmFormat, 
             static_cast<unsigned int>(flags));
     }
@@ -94,7 +94,7 @@ Asgaard::MemoryBuffer::MemoryBuffer(uint32_t id, const std::shared_ptr<MemoryPoo
 Asgaard::MemoryBuffer::~MemoryBuffer()
 {
     if (!m_memory->IsInheritted()) {
-        wm_buffer_destroy(APP.GrachtClient(), nullptr, Id());
+        wm_buffer_destroy(APP.VioarrClient(), nullptr, Id());
     }
 }
 

@@ -49,17 +49,13 @@ static const char* g_serverPath = "/tmp/vi-srv";
 #include "wm_keyboard_service_client.h"
 
 namespace Asgaard {
-    void Application::Initialize()
+    void Application::InitializeInternal()
     {
         struct gracht_client_configuration clientConfiguration;
         struct gracht_link_socket*         link;
         int                                status;
         struct sockaddr_un                 addr = { 0 };
 
-        if (IsInitialized()) {
-            throw ApplicationException("Initialize has been called twice", -1);
-        }
-        
         addr.sun_family = AF_LOCAL;
         strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
         addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
@@ -92,9 +88,9 @@ namespace Asgaard {
 
         // Prepare the ioset to listen to multiple events
         // handle setting
-        auto descriptorPointer = GetSetting(Application::Settings::ASYNC_DESCRIPTOR);
+        auto descriptorPointer = GetSettingValue<int*>(Application::Settings::ASYNC_DESCRIPTOR);
         if (descriptorPointer) {
-            m_ioset = *static_cast<int*>(descriptorPointer);
+            m_ioset = *descriptorPointer;
             if (m_ioset <= 0) {
                 throw ApplicationException("settings: invalid ioset descriptor", errno);
             }
@@ -111,15 +107,6 @@ namespace Asgaard {
             gracht_client_iod(m_client), 
             EPOLLIN | EPOLLRDHUP,
             std::shared_ptr<Utils::DescriptorListener>(nullptr));
-
-        // kick off a chain reaction by asking for all objects
-        wm_core_get_objects(m_client, nullptr);
-        wm_core_sync(m_client, nullptr, 0);
-
-        // wait for initialization to complete
-        while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_client, NULL, GRACHT_MESSAGE_BLOCK);
-        }
     }
 
     int Application::Execute()

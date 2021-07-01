@@ -53,7 +53,7 @@ namespace Asgaard {
             throw ApplicationException("MemoryPool::MemoryPool() failed to create a new memory pool", OsStatusToErrno(status));
         }
 
-        wm_memory_create_pool(APP.GrachtClient(), nullptr, id, m_attachment.handle, size);
+        wm_memory_create_pool(APP.VioarrClient(), nullptr, id, m_attachment.handle, size);
     }
     
     MemoryPool::~MemoryPool()
@@ -62,7 +62,7 @@ namespace Asgaard {
             dma_attachment_unmap(&m_attachment);
             dma_detach(&m_attachment);
         }
-        wm_memory_pool_destroy(APP.GrachtClient(), nullptr, Id());
+        wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
     }
     
     void* MemoryPool::CreateBufferPointer(int memoryOffset)

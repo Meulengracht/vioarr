@@ -39,10 +39,10 @@ Keyboard::~Keyboard()
 
 void Keyboard::Hook(const std::shared_ptr<Surface>& surface)
 {
-    wm_keyboard_hook(APP.GrachtClient(), nullptr, Id(), surface->Id());
+    wm_keyboard_hook(APP.VioarrClient(), nullptr, Id(), surface->Id());
 }
 
 void Keyboard::Unhook(const std::shared_ptr<Surface>& surface)
 {
-    wm_keyboard_unhook(APP.GrachtClient(), nullptr, Id(), surface->Id());
+    wm_keyboard_unhook(APP.VioarrClient(), nullptr, Id(), surface->Id());
 }

@@ -66,7 +66,7 @@ namespace Asgaard {
 
     Surface::~Surface()
     {
-        wm_surface_destroy(APP.GrachtClient(), nullptr, Id());
+        wm_surface_destroy(APP.VioarrClient(), nullptr, Id());
     }
     
     void Surface::BindToScreen(const std::shared_ptr<Screen>& screen)
@@ -82,7 +82,7 @@ namespace Asgaard {
                 m_dimensions.SetHeight(screen->GetCurrentHeight());
             }
 
-            wm_screen_create_surface(APP.GrachtClient(), nullptr, screen->Id(), Id(),    
+            wm_screen_create_surface(APP.VioarrClient(), nullptr, screen->Id(), Id(),    
                 m_dimensions.X(), m_dimensions.Y(), m_dimensions.Width(), m_dimensions.Height());
         }
         m_screen = screen;
@@ -96,7 +96,7 @@ namespace Asgaard {
         }
 
         // request subsurface
-        wm_surface_add_subsurface(APP.GrachtClient(), nullptr, 
+        wm_surface_add_subsurface(APP.VioarrClient(), nullptr, 
             Id(),
             child->Id(),
             child->Dimensions().X(),
@@ -227,63 +227,63 @@ namespace Asgaard {
             id = buffer->Id();
         }
 
-        wm_surface_set_buffer(APP.GrachtClient(), nullptr, Id(), id);
+        wm_surface_set_buffer(APP.VioarrClient(), nullptr, Id(), id);
     }
     
     void Surface::MarkDamaged(const Rectangle& dimensions)
     {
-        wm_surface_invalidate(APP.GrachtClient(), nullptr, Id(),
+        wm_surface_invalidate(APP.VioarrClient(), nullptr, Id(),
             dimensions.X(), dimensions.Y(),
             dimensions.Width(), dimensions.Height());
     }
     
     void Surface::MarkInputRegion(const Rectangle& dimensions)
     {
-        wm_surface_set_input_region(APP.GrachtClient(), nullptr, Id(),
+        wm_surface_set_input_region(APP.VioarrClient(), nullptr, Id(),
             dimensions.X(), dimensions.Y(),
             dimensions.Width(), dimensions.Height());
     }
 
     void Surface::SetDropShadow(const Rectangle& dimensions)
     {
-        wm_surface_set_drop_shadow(APP.GrachtClient(), nullptr, Id(),
+        wm_surface_set_drop_shadow(APP.VioarrClient(), nullptr, Id(),
             dimensions.X(), dimensions.Y(), dimensions.Width(), dimensions.Height());
     }
 
     void Surface::RequestPriorityLevel(enum PriorityLevel level)
     {
-        wm_surface_request_level(APP.GrachtClient(), nullptr, Id(),
+        wm_surface_request_level(APP.VioarrClient(), nullptr, Id(),
             static_cast<int>(level));
     }
 
     void Surface::RequestFullscreenMode(enum FullscreenMode mode)
     {
-        wm_surface_request_fullscreen_mode(APP.GrachtClient(), nullptr, Id(), 
+        wm_surface_request_fullscreen_mode(APP.VioarrClient(), nullptr, Id(), 
             static_cast<wm_fullscreen_mode>(mode));
     }
 
     void Surface::RequestFocus()
     {
-        wm_surface_request_focus(APP.GrachtClient(), nullptr, Id());
+        wm_surface_request_focus(APP.VioarrClient(), nullptr, Id());
     }
     
     void Surface::ApplyChanges()
     {
-        wm_surface_commit(APP.GrachtClient(), nullptr, Id());
+        wm_surface_commit(APP.VioarrClient(), nullptr, Id());
     }
     
     void Surface::RequestFrame()
     {
-        wm_surface_request_frame(APP.GrachtClient(), nullptr, Id());
+        wm_surface_request_frame(APP.VioarrClient(), nullptr, Id());
     }
 
     void Surface::GrabPointer(const std::shared_ptr<Pointer>& pointer)
     {
-        wm_pointer_grab(APP.GrachtClient(), nullptr, pointer->Id(), Id());
+        wm_pointer_grab(APP.VioarrClient(), nullptr, pointer->Id(), Id());
     }
 
     void Surface::UngrabPointer(const std::shared_ptr<Pointer>& pointer)
     {
-        wm_pointer_ungrab(APP.GrachtClient(), nullptr, pointer->Id(), Id());
+        wm_pointer_ungrab(APP.VioarrClient(), nullptr, pointer->Id(), Id());
     }
 }

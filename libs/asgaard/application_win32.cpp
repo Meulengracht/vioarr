@@ -47,17 +47,13 @@ static uint16_t    g_portNo    = 55555;
 #include "wm_keyboard_service_client.h"
 
 namespace Asgaard {
-    void Application::Initialize()
+    void Application::InitializeInternal()
     {
         struct gracht_client_configuration clientConfiguration;
         struct gracht_link_socket*         link;
         struct sockaddr_in                 addr = { 0 };
         int                                status;
 
-        if (IsInitialized()) {
-            throw ApplicationException("Initialize has been called twice", -1);
-        }
-        
         // initialize the WSA library
         gracht_link_socket_setup();
 
@@ -95,15 +91,6 @@ namespace Asgaard {
             gracht_client_iod(m_client), 
             IOSETIN | IOSETCTL | IOSETLVT,
             std::shared_ptr<Utils::DescriptorListener>(nullptr));
-
-        // kick off a chain reaction by asking for all objects
-        wm_core_get_objects(m_client, nullptr);
-        wm_core_sync(m_client, nullptr, 0);
-
-        // wait for initialization to complete
-        while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_client, NULL, 0);
-        }
     }
     
     int Application::Execute()

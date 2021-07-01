@@ -60,8 +60,8 @@ namespace Asgaard {
         m_edge = SubSurface::Create<Asgaard::WindowEdge>(this, edgeDimensions);
 
         // retrieve a list of supported window content formats
-        wm_surface_get_formats(APP.GrachtClient(), nullptr, Id());
-        wm_core_sync(APP.GrachtClient(), nullptr, Id());
+        wm_surface_get_formats(APP.VioarrClient(), nullptr, Id());
+        wm_core_sync(APP.VioarrClient(), nullptr, Id());
     }
 
     WindowBase::~WindowBase()
@@ -100,12 +100,12 @@ namespace Asgaard {
 
     void WindowBase::InitiateResize(const std::shared_ptr<Pointer>& pointer, enum SurfaceEdges edges)
     {
-        wm_surface_resize(APP.GrachtClient(), nullptr, Id(), pointer->Id(), ToWindowEdges(edges));
+        wm_surface_resize(APP.VioarrClient(), nullptr, Id(), pointer->Id(), ToWindowEdges(edges));
     }
     
     void WindowBase::InitiateMove(const std::shared_ptr<Pointer>& pointer)
     {
-        wm_surface_move(APP.GrachtClient(), nullptr, Id(), pointer->Id());
+        wm_surface_move(APP.VioarrClient(), nullptr, Id(), pointer->Id());
     }
     
     void WindowBase::Notification(const Publisher* source, const Asgaard::Notification& notification)

@@ -65,17 +65,17 @@ namespace Asgaard {
         gracht_client_configuration_init(&clientConfiguration);
         gracht_client_configuration_set_link(&clientConfiguration, link);
         
-        status = gracht_client_create(&clientConfiguration, &m_client);
+        status = gracht_client_create(&clientConfiguration, &m_vClient);
         if (status) {
             throw ApplicationException("failed to initialize gracht client library", status);
         }
         
-        gracht_client_register_protocol(m_client, &wm_core_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_screen_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_surface_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_buffer_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_pointer_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_keyboard_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_core_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_screen_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_surface_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_buffer_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_pointer_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_keyboard_client_protocol);
 
         // Prepare the ioset to listen to multiple events
         m_ioset = ioset(0);
@@ -85,7 +85,7 @@ namespace Asgaard {
         
         // add the client as a target
         AddEventDescriptor(
-            gracht_client_iod(m_client), 
+            gracht_client_iod(m_vClient), 
             IOSETIN | IOSETCTL | IOSETLVT,
             std::shared_ptr<Utils::DescriptorListener>(nullptr));
     }
@@ -101,8 +101,8 @@ namespace Asgaard {
         while (true) {
             int num_events = ioset_wait(m_ioset, &events[0], 8, 0);
             for (int i = 0; i < num_events; i++) {
-                if (events[i].data.iod == gracht_client_iod(m_client)) {
-                    gracht_client_wait_message(m_client, NULL, m_messageBuffer, 0);
+                if (events[i].data.iod == gracht_client_iod(m_vClient)) {
+                    gracht_client_wait_message(m_vClient, NULL, m_messageBuffer, 0);
                 }
                 else {
                     auto listener = m_listeners.find(events[i].data.iod);

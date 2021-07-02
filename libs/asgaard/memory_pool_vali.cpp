@@ -65,6 +65,11 @@ namespace Asgaard {
         wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
     }
     
+    std::size_t MemoryPool::Handle() const
+    {
+        return static_cast<std::size_t>(m_attachment.handle);
+    }
+    
     void* MemoryPool::CreateBufferPointer(int memoryOffset)
     {
         uint8_t* bufferPointer = static_cast<uint8_t*>(m_attachment.buffer);

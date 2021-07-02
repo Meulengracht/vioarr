@@ -62,13 +62,14 @@ namespace Asgaard {
     
     Application::Application() 
         : Object(0)
-        , m_client(nullptr)
+        , m_vClient(nullptr)
+        , m_hClient(nullptr)
         , m_ioset(ASYNC_HANDLE_INVALID)
         , m_syncRecieved(false)
         , m_screenFound(false)
     {
         // initialize default settings
-
+        SetSettingBoolean(Settings::HEIMDALL_VISIBLE, true);
     }
 
     Application::~Application()
@@ -86,8 +87,12 @@ namespace Asgaard {
         m_listeners.clear();
         m_screens.clear();
         
-        if (m_client != nullptr) {
-            gracht_client_shutdown(m_client);
+        if (m_vClient != nullptr) {
+            gracht_client_shutdown(m_vClient);
+        }
+
+        if (m_hClient != nullptr) {
+            gracht_client_shutdown(m_hClient);
         }
         
         // allow os-specific cleanup
@@ -104,16 +109,16 @@ namespace Asgaard {
         InitializeInternal();
         
         // kick off a chain reaction by asking for all objects
-        wm_core_get_objects(m_client, nullptr);
-        wm_core_sync(m_client, nullptr, 0);
+        wm_core_get_objects(m_vClient, nullptr);
+        wm_core_sync(m_vClient, nullptr, 0);
 
         // wait for initialization to complete
         while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_client, NULL, 0);
+            (void)gracht_client_wait_message(m_vClient, NULL, 0);
         }
 
         // initialize heimdall
-        auto initializeHeimdall = GetSettingValue<bool>(Settings::HEIMDALL_VISIBLE);
+        auto initializeHeimdall = GetSettingBoolean(Settings::HEIMDALL_VISIBLE);
         if (initializeHeimdall) {
             Environment::Heimdall::Initialize();
         }
@@ -133,7 +138,7 @@ namespace Asgaard {
         }
 
         while (!status) {
-            status = gracht_client_wait_message(m_client, NULL, 0);
+            status = gracht_client_wait_message(m_vClient, NULL, 0);
         }
     }
 
@@ -142,7 +147,7 @@ namespace Asgaard {
         m_listeners[iod] = listener;
     }
 
-    void Application::SetSetting(Settings setting, void* value)
+    void Application::SetSettingPointer(Settings setting, void* value)
     {
         // this operation is only valid before setup
         if (IsInitialized()) {
@@ -150,16 +155,88 @@ namespace Asgaard {
             return;
         }
 
-        m_settings[static_cast<int>(setting)] = value;
+        SettingValue settingValue{};
+        settingValue.data.pValue = value;
+
+        m_settings[static_cast<int>(setting)] = settingValue;
     }
 
-    void* Application::GetSetting(Settings setting)
+    void Application::SetSettingString(Settings setting, std::string value)
+    {
+        // this operation is only valid before setup
+        if (IsInitialized()) {
+            // throw?
+            return;
+        }
+
+        SettingValue settingValue{};
+        settingValue.data.strValue = value;
+
+        m_settings[static_cast<int>(setting)] = settingValue;
+    }
+
+    void Application::SetSettingBoolean(Settings setting, bool value)
+    {
+        // this operation is only valid before setup
+        if (IsInitialized()) {
+            // throw?
+            return;
+        }
+
+        SettingValue settingValue{};
+        settingValue.data.bValue = value;
+
+        m_settings[static_cast<int>(setting)] = settingValue;
+    }
+
+    void Application::SetSettingInteger(Settings setting, int value)
+    {
+        // this operation is only valid before setup
+        if (IsInitialized()) {
+            // throw?
+            return;
+        }
+
+        SettingValue settingValue{};
+        settingValue.data.iValue = value;
+
+        m_settings[static_cast<int>(setting)] = settingValue;
+    }
+
+    void* Application::GetSettingPointer(Settings setting)
     {
         auto entry = m_settings.find(static_cast<int>(setting));
         if (entry == std::end(m_settings)) {
             return nullptr;
         }
-        return (*entry).second;
+        return (*entry).second.data.pValue;
+    }
+
+    std::string Application::GetSettingString(Settings setting)
+    {
+        auto entry = m_settings.find(static_cast<int>(setting));
+        if (entry == std::end(m_settings)) {
+            return std::string{};
+        }
+        return (*entry).second.data.strValue;
+    }
+
+    bool Application::GetSettingBoolean(Settings setting)
+    {
+        auto entry = m_settings.find(static_cast<int>(setting));
+        if (entry == std::end(m_settings)) {
+            return false;
+        }
+        return (*entry).second.data.bValue;
+    }
+
+    int Application::GetSettingInteger(Settings setting)
+    {
+        auto entry = m_settings.find(static_cast<int>(setting));
+        if (entry == std::end(m_settings)) {
+            return 0;
+        }
+        return (*entry).second.data.iValue;
     }
 
     std::shared_ptr<Keyboard> Application::GetKeyboard() const

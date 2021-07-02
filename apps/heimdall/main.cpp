@@ -222,7 +222,8 @@ int main(int argc, char **argv)
     // register supported protocols
     gracht_server_register_protocol(g_valiServer, &hd_core_server_protocol);
 
-    Asgaard::APP.SetSetting(Asgaard::Application::Settings::ASYNC_DESCRIPTOR, &descriptor);
+    Asgaard::APP.SetSettingInteger(Asgaard::Application::Settings::ASYNC_DESCRIPTOR, descriptor);
+    Asgaard::APP.SetSettingBoolean(Asgaard::Application::Settings::HEIMDALL_VISIBLE, false);
     Asgaard::APP.Initialize();
 
     auto screen = Asgaard::APP.GetScreen();

@@ -25,6 +25,7 @@
 #include "object.hpp"
 #include <map>
 #include <memory>
+#include <cstring>
 
 typedef struct gracht_client gracht_client_t;
 
@@ -45,10 +46,10 @@ namespace Asgaard {
          * you've been instructed to do so.
          */
         enum class Settings : int {
-            ASYNC_DESCRIPTOR, // Accepts a pointer to a descriptor.
+            ASYNC_DESCRIPTOR, // Accepts an integer descriptor.
             HEIMDALL_VISIBLE, // Accepts a bool value; Wheter or not application is registered with Heimdall
-            APPLICATION_GUID, // Accepts a pointer to a std::string instance; sets the GUID of the application
-            APPLICATION_ICON  // Accepts a pointer to a std::string instance; controls which application icon is showed.
+            APPLICATION_GUID, // Accepts a std::string instance; sets the GUID of the application
+            APPLICATION_ICON  // Accepts a std::string instance; controls which application icon is showed.
         };
     public:
         Application();
@@ -56,7 +57,7 @@ namespace Asgaard {
         
         /**
          * Initializes the asgaard application environment, and must be invoked before any other
-         * call made in this class. 
+         * call made in this class, except for Set/Get settings.
          * @throw ApplicationException
          */
         ASGAARD_API void Initialize();
@@ -89,31 +90,23 @@ namespace Asgaard {
          * some OS-specific startup parameters. This cannot be called after Initialize() is called.
          * 
          * @param setting The setting that should be configured to the provided value.
-         * @param value   The new value of the setting, or nullptr to clear the setting.
+         * @param value   The new value of the setting.
          */
-        ASGAARD_API void  SetSetting(Settings setting, void* value);
-
-        template<typename T>
-        void SetSettingValue(Settings setting, T value)
-        {
-            auto asValue = static_cast<std::uintptr_t>(value);
-            SetSetting(setting, reinterpret_cast<void*>(asValue));
-        }
-
+        ASGAARD_API void SetSettingPointer(Settings setting, void* value);
+        ASGAARD_API void SetSettingString(Settings setting, std::string value);
+        ASGAARD_API void SetSettingBoolean(Settings setting, bool value);
+        ASGAARD_API void SetSettingInteger(Settings setting, int value);
+        
         /**
          * Retrieves the value of the specified setting.
          * 
          * @param setting The setting to retrieve the value of.
-         * @return void*  The value of the setting, or nullptr if none exists. 
+         * @return T      The value of the setting. 
          */
-        ASGAARD_API void* GetSetting(Settings setting);
-
-        template<typename T>
-        T GetSettingValue(Settings setting)
-        {
-            auto asValue = reinterpret_cast<std::uintptr_t>(GetSetting(setting));
-            return static_cast<T>(asValue);
-        }
+        ASGAARD_API void*       GetSettingPointer(Settings setting);
+        ASGAARD_API std::string GetSettingString(Settings setting);
+        ASGAARD_API bool        GetSettingBoolean(Settings setting);
+        ASGAARD_API int         GetSettingInteger(Settings setting);
 
         /**
          * Destroy
@@ -123,7 +116,8 @@ namespace Asgaard {
         void Destroy() override;
 
     public:
-        gracht_client_t*               VioarrClient() const { return m_client; }
+        gracht_client_t*               VioarrClient() const { return m_vClient; }
+        gracht_client_t*               HeimdallClient() const { return m_hClient; }
         const std::shared_ptr<Screen>& GetScreen() const    { return m_screens.front(); }
         std::shared_ptr<Keyboard>      GetKeyboard() const;
         std::shared_ptr<Pointer>       GetPointer() const;
@@ -138,11 +132,36 @@ namespace Asgaard {
         void DestroyInternal();
 
     private:
-        std::map<int, void*>                                      m_settings;
+        struct SettingValue {
+            union SettingValueTypes {
+                bool bValue;
+                int  iValue;
+                void* pValue;
+                std::string strValue;
+
+                /**
+                 * Unforunately unions that contain members with non-trival constructs
+                 * need a bit of hoops to hop through. We need to define custom cctor and dctor
+                 * including copy assignments due to how we use it.
+                 */
+                SettingValueTypes() : strValue{} { }
+                SettingValueTypes(const SettingValueTypes& other) {
+                    memcpy((char*)this, (char*)&other, sizeof(SettingValueTypes));
+                }
+                SettingValueTypes& operator=(const SettingValueTypes& other) {
+                    memcpy((char*)this, (char*)&other, sizeof(SettingValueTypes));
+                    return *this;
+                }
+                ~SettingValueTypes() { }
+            } data;
+        };
+
+        std::map<int, SettingValue>                               m_settings;
         std::map<int, std::shared_ptr<Utils::DescriptorListener>> m_listeners;
         std::list<std::shared_ptr<Screen>>                        m_screens;
         std::list<std::shared_ptr<Object>>                        m_inputs;
-        gracht_client_t*                                          m_client;
+        gracht_client_t*                                          m_vClient;
+        gracht_client_t*                                          m_hClient;
         AsyncHandleType                                           m_ioset;
         volatile bool                                             m_syncRecieved;
         volatile bool                                             m_screenFound;

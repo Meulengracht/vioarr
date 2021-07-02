@@ -41,7 +41,9 @@ namespace Asgaard {
         ASGAARD_API MemoryPool(uint32_t id, std::size_t size);
         ASGAARD_API ~MemoryPool();
         
+        std::size_t Handle() const;
         std::size_t Size() const { return m_size; }
+        bool        IsInheritted() const { return m_inheritted; }
 
     public:
         static std::shared_ptr<MemoryPool> Create(Object* owner, std::size_t size)
@@ -62,7 +64,6 @@ namespace Asgaard {
         
     public:
         void* CreateBufferPointer(int memoryOffset);
-        bool  IsInheritted() const { return m_inheritted; }
         
     private:
         std::size_t           m_size;

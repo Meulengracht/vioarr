@@ -39,7 +39,8 @@
 #include <sys/epoll.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-static const char* g_serverPath = "/tmp/vi-srv";
+static const char* g_vioarrPath = "/tmp/vi-srv";
+static const char* g_heimdallPath = "/tmp/hd-srv";
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"
@@ -48,8 +49,11 @@ static const char* g_serverPath = "/tmp/vi-srv";
 #include "wm_pointer_service_client.h"
 #include "wm_keyboard_service_client.h"
 
-namespace Asgaard {
-    void Application::InitializeInternal()
+#include "hd_core_service_client.h"
+
+namespace
+{
+    void InitializeClient(const char* address, gracht_client_t** clientOut)
     {
         struct gracht_client_configuration clientConfiguration;
         struct gracht_link_socket*         link;
@@ -57,7 +61,7 @@ namespace Asgaard {
         struct sockaddr_un                 addr = { 0 };
 
         addr.sun_family = AF_LOCAL;
-        strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));
+        strncpy (addr.sun_path, address, sizeof(addr.sun_path));
         addr.sun_path[sizeof(addr.sun_path) - 1] = '\0';
 
         gracht_link_socket_create(&link);
@@ -68,34 +72,42 @@ namespace Asgaard {
         gracht_client_configuration_init(&clientConfiguration);
         gracht_client_configuration_set_link(&clientConfiguration, (struct gracht_link*)link);
         
-        status = gracht_client_create(&clientConfiguration, &m_client);
+        status = gracht_client_create(&clientConfiguration, clientOut);
         if (status) {
-            throw ApplicationException("failed to initialize gracht client library", status);
+            throw Asgaard::ApplicationException("failed to initialize gracht client", status);
         }
+    }
+}
+
+namespace Asgaard
+{
+    void Application::InitializeInternal()
+    {
+        // initialize the heimdall client
+        InitializeClient(g_heimdallPath, &m_hClient);
+
+        gracht_client_register_protocol(m_hClient, &hd_core_client_protocol);
+
+        // initialize the vioarr client
+        InitializeClient(g_vioarrPath, &m_vClient);
         
-        gracht_client_register_protocol(m_client, &wm_core_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_screen_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_surface_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_buffer_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_pointer_client_protocol);
-        gracht_client_register_protocol(m_client, &wm_keyboard_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_core_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_screen_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_surface_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_buffer_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_pointer_client_protocol);
+        gracht_client_register_protocol(m_vClient, &wm_keyboard_client_protocol);
 
         // connect the client
-        status = gracht_client_connect(m_client);
+        auto status = gracht_client_connect(m_vClient);
         if (status) {
-            throw ApplicationException("failed to connect to gracht server", status);
+            throw ApplicationException("failed to connect to vioarr server", status);
         }
 
         // Prepare the ioset to listen to multiple events
         // handle setting
-        auto descriptorPointer = GetSettingValue<int*>(Application::Settings::ASYNC_DESCRIPTOR);
-        if (descriptorPointer) {
-            m_ioset = *descriptorPointer;
-            if (m_ioset <= 0) {
-                throw ApplicationException("settings: invalid ioset descriptor", errno);
-            }
-        }
-        else {
+        m_ioset = GetSettingInteger(Application::Settings::ASYNC_DESCRIPTOR);
+        if (m_ioset <= 0) {
             m_ioset = epoll_create1(EPOLL_CLOEXEC);
             if (m_ioset <= 0) {
                 throw ApplicationException("failed to initialize the ioset descriptor", errno);
@@ -104,7 +116,7 @@ namespace Asgaard {
 
         // add the client as a target
         AddEventDescriptor(
-            gracht_client_iod(m_client), 
+            gracht_client_iod(m_vClient), 
             EPOLLIN | EPOLLRDHUP,
             std::shared_ptr<Utils::DescriptorListener>(nullptr));
     }
@@ -120,8 +132,8 @@ namespace Asgaard {
         while (true) {
             int num_events = epoll_wait(m_ioset, &events[0], 8, -1); // 0 && EINTR on timeout
             for (int i = 0; i < num_events; i++) {
-                if (events[i].data.fd == gracht_client_iod(m_client)) {
-                    gracht_client_wait_message(m_client, NULL, 0);
+                if (events[i].data.fd == gracht_client_iod(m_vClient)) {
+                    gracht_client_wait_message(m_vClient, NULL, 0);
                 }
                 else {
                     auto listener = m_listeners.find(events[i].data.fd);
@@ -157,8 +169,8 @@ namespace Asgaard {
     void Application::DestroyInternal()
     {
         if (m_ioset != -1) {
-            auto descriptorPointer = GetSetting(Application::Settings::ASYNC_DESCRIPTOR);
-            if (!descriptorPointer) {
+            auto providedDescriptor = GetSettingInteger(Application::Settings::ASYNC_DESCRIPTOR);
+            if (providedDescriptor <= 0) {
                 // destroy if we are the owner
                 close(m_ioset);
             }

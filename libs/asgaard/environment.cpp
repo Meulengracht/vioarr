@@ -25,6 +25,10 @@
 #include "include/memory_pool.hpp"
 #include "include/memory_buffer.hpp"
 
+#include "include/drawing/image.hpp"
+
+#include "include/exceptions/application_exception.h"
+
 #include "hd_core_service_client.h"
 
 #include <functional>
@@ -57,39 +61,70 @@ void UnregisterApplication()
 void Initialize()
 {
     if (g_isInitialized) {
-        return;
+        throw ApplicationException("Heimdall::Initialize was called a second time!", -1);
     }
 
     // connect to heimdall
+    auto status = gracht_client_connect(APP.HeimdallClient());
+    if (status) {
+        throw ApplicationException("failed to connect to heimdall server", status);
+    }
 
     // load GUID and hash
-    auto guidPointer = APP.GetSettingValue<std::string*>(Application::Settings::APPLICATION_GUID);
+    auto providedGuid = APP.GetSettingString(Application::Settings::APPLICATION_GUID);
     auto guid = g_defaultGuid;
-    if (guidPointer) {
-        guid = *guidPointer;
+    if (providedGuid.size()) {
+        guid = providedGuid;
     }
 
     auto applicationId = std::hash<std::string>{}(guid);
 
     // load ICON
-    auto iconPathPointer = APP.GetSettingValue<std::string*>(Application::Settings::APPLICATION_ICON);
-    if (iconPathPointer)
+    hd_app_icon iconDescriptor{};
+    auto iconPath = APP.GetSettingString(Application::Settings::APPLICATION_ICON);
+    if (iconPath.size())
     {
-        auto iconPath = *iconPathPointer;
         Drawing::Image icon(iconPath);
+        if (icon.Width() == 0) {
+            // invalid path
+            throw ApplicationException("Settings::APPLICATION_ICON was given an invalid path", -1);
+        }
         
-        g_iconPool = OM.CreateClientObject<MemoryPool, std::size_t>(0);
+        auto size = icon.Stride() * icon.Height();
+        g_iconPool = OM.CreateClientObject<MemoryPool, std::size_t>(size);
         g_iconBuffer = OM.CreateClientObject<MemoryBuffer, 
             const std::shared_ptr<MemoryPool>&, int, int, int, enum PixelFormat>(
-                g_iconPool, 0, width, height, PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE
+                g_iconPool, 0, icon.Width(), icon.Height(), PixelFormat::A8B8G8R8, 
+                MemoryBuffer::Flags::NONE
             );
+        
+        // configure the struct
+        iconDescriptor.poolHandle = g_iconPool->Handle();
+        iconDescriptor.size       = size;
+        iconDescriptor.iconWidth  = icon.Width();
+        iconDescriptor.iconHeight = icon.Height();
+        iconDescriptor.format     = static_cast<int>(PixelFormat::A8B8G8R8);
     }
 
     // register application
-    hd_core_register_app(nullptr, nullptr, applicationId, nullptr);
+    hd_core_register_app(APP.HeimdallClient(), nullptr, applicationId, &iconDescriptor);
 
+    // setup done
     g_isInitialized = true;
 }
 
 // end of namespace
 } } }
+
+extern "C"
+{
+    void hd_core_event_notification_input_invocation(gracht_client_t* client, const unsigned int id, const char* input)
+    {
+
+    }
+
+    void hd_core_event_notification_response_invocation(gracht_client_t* client, const unsigned int id, const enum hd_buttons button)
+    {
+
+    }
+}

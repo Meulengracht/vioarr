@@ -30,6 +30,8 @@
 #include <widgets/label.hpp>
 #include <widgets/icon.hpp>
 #include <notifications/notification.hpp>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
 #include <memory>
 #include <string>
 #include <vector>
@@ -148,6 +150,11 @@ private:
         }
         else {
             // load default icon
+            const auto theme = Theming::TM.GetTheme();
+            auto icon = theme->GetImage(Theming::Theme::Elements::IMAGE_TERMINAL);
+
+            // resize incoming icon
+            m_icon = icon.Resize(48, 48);
         }
     }
 
@@ -197,7 +204,11 @@ protected:
     void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) override
     {
         if (button == Pointer::Buttons::LEFT && !pressed) {
-            // notify global surface
+            // transfer focus to first surface
+            auto first = std::begin(m_surfaces);
+            if (first != std::end(m_surfaces)) {
+                TransferFocus(first->second);
+            }
         }
     }
 

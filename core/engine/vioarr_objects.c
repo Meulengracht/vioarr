@@ -37,6 +37,7 @@
 typedef struct vioarr_object {
     int                 client;
     uint32_t            id;
+    uint32_t            global_id;
     enum wm_object_type type;
     void*               object;
     mhandle_t           handle;
@@ -51,23 +52,26 @@ static uint32_t vioarr_utils_get_object_id(void)
     return atomic_fetch_add(&object_id, 1);
 }
 
-void vioarr_objects_create_client_object(int client, uint32_t id, void* object, enum wm_object_type type)
+uint32_t vioarr_objects_create_client_object(int client, uint32_t id, void* object, enum wm_object_type type)
 {
     vioarr_object_t* resource;
     
     resource = malloc(sizeof(vioarr_object_t));
     if (!resource) {
-        return;
+        return 0;
     }
     
-    resource->client = client;
-    resource->id     = id;
-    resource->object = object;
-    resource->type   = type;
-    resource->handle = 0;
+    resource->client    = client;
+    resource->id        = id;
+    resource->global_id = ((uint32_t)client << 16 | id);
+    resource->object    = object;
+    resource->type      = type;
+    resource->handle    = 0;
     ELEMENT_INIT(&resource->link, (uintptr_t)resource->id, resource);
     
     list_append(&objects, &resource->link);
+
+    return resource->global_id;
 }
 
 uint32_t vioarr_objects_create_server_object(void* object, enum wm_object_type type)
@@ -79,16 +83,22 @@ uint32_t vioarr_objects_create_server_object(void* object, enum wm_object_type t
         return 0;
     }
     
-    resource->client = -1;
-    resource->id     = vioarr_utils_get_object_id();
-    resource->object = object;
-    resource->type   = type;
-    resource->handle = 0;
+    resource->client    = -1;
+    resource->id        = vioarr_utils_get_object_id();
+    resource->global_id = 0;
+    resource->object    = object;
+    resource->type      = type;
+    resource->handle    = 0;
     ELEMENT_INIT(&resource->link, (uintptr_t)resource->id, resource);
     list_append(&objects, &resource->link);
 
     // publish the object
-    wm_core_event_object_all(vioarr_get_server_handle(), resource->id, 0, type);
+    wm_core_event_object_all(vioarr_get_server_handle(), 
+        resource->id,
+        resource->global_id,
+        0,
+        type
+    );
 
     return resource->id;
 }
@@ -100,7 +110,8 @@ static vioarr_object_t* get_object(int client, uint32_t id)
     foreach(i, &objects) {
         vioarr_object_t* object = i->value;
         if ((id >= SERVER_ID_START && object->id == id) ||
-            (object->client == client && object->id == id)) {
+            (object->client == client && object->id == id) ||
+            (object->global_id != 0 && id == object->global_id)) {
             return object;
         }
     }
@@ -171,7 +182,12 @@ void vioarr_objects_publish(int client)
     foreach(i, &objects) {
         vioarr_object_t* object = i->value;
         if (object->client == -1) {
-            wm_core_event_object_single(vioarr_get_server_handle(), client, object->id, object->handle, object->type);
+            wm_core_event_object_single(vioarr_get_server_handle(), client, 
+                object->id,
+                object->global_id,
+                object->handle, 
+                object->type
+            );
         }
     }
 }

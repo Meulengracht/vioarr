@@ -111,6 +111,7 @@ void wm_screen_create_surface_invocation(struct gracht_message* message,
     int                status;
     int                spawnX = x;
     int                spawnY = y;
+    uint32_t           globalId;
     if (!screen) {
         vioarr_utils_error(VISTR("wm_screen_create_surface_callback: screen was not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, screenId, ENOENT, "wm_screen: object does not exist");
@@ -137,6 +138,11 @@ void wm_screen_create_surface_invocation(struct gracht_message* message,
 
     // notify of new surface
     vioarr_manager_register_surface(surface);
-    vioarr_objects_create_client_object(message->client, surfaceId, surface, WM_OBJECT_TYPE_SURFACE);
-    wm_core_event_object_single(vioarr_get_server_handle(), message->client, surfaceId, 0, WM_OBJECT_TYPE_SURFACE);
+    globalId = vioarr_objects_create_client_object(message->client, surfaceId, surface, WM_OBJECT_TYPE_SURFACE);
+    wm_core_event_object_single(vioarr_get_server_handle(), message->client, 
+        surfaceId,
+        globalId,
+        0,
+        WM_OBJECT_TYPE_SURFACE
+    );
 }

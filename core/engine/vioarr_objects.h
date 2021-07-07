@@ -28,7 +28,7 @@
 #include <stdint.h>
 #include "wm_core_service.h"
 
-void     vioarr_objects_create_client_object(int, uint32_t, void*, enum wm_object_type);
+uint32_t vioarr_objects_create_client_object(int, uint32_t, void*, enum wm_object_type);
 uint32_t vioarr_objects_create_server_object(void*, enum wm_object_type);
 int      vioarr_objects_remove_object(int, uint32_t);
 void     vioarr_objects_remove_by_client(int);

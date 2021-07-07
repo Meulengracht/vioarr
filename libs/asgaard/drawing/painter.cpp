@@ -284,7 +284,7 @@ namespace Asgaard {
         {
             switch (m_shape.GetType()) {
                 case Primitives::ShapeType::RECTANGLE: {
-                    const auto& rectangle = dynamic_cast<const Primitives::RectangleShape&>(m_shape);
+                    const auto& rectangle = static_cast<const Primitives::RectangleShape&>(m_shape);
                     auto left = rectangle.X();
                     auto right = rectangle.X() + m_canvas->Width();
                     for (int y = 0; y < rectangle.Height(); y++) {
@@ -297,7 +297,7 @@ namespace Asgaard {
                     }
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
-                    const auto& circle = dynamic_cast<const Primitives::CircleShape&>(m_shape);
+                    const auto& circle = static_cast<const Primitives::CircleShape&>(m_shape);
                     RenderCircleFill(circle.CenterX(), circle.CenterY(), circle.Radius());
                 } break;
             }
@@ -317,7 +317,7 @@ namespace Asgaard {
                     memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
-                    const auto& circle = dynamic_cast<const Primitives::CircleShape&>(m_shape);
+                    const auto& circle = static_cast<const Primitives::CircleShape&>(m_shape);
                     auto radiusSqrt = circle.Radius() * circle.Radius();
                     auto midCanvas  = static_cast<uint8_t*>(m_canvas->Buffer(circle.CenterX(), circle.CenterY()));
                     auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);

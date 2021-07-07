@@ -37,6 +37,7 @@ void wm_memory_create_pool_invocation(struct gracht_message* message, const uint
     vioarr_utils_trace(VISTR("[wm_memory_create_pool_callback] client %i"), message->client);
     vioarr_memory_pool_t* pool;
     int                   status;
+    uint32_t              globalId;
     
     status = vioarr_memory_create_pool(message->client, poolId, handle, size, &pool);
     if (status) {
@@ -44,8 +45,13 @@ void wm_memory_create_pool_invocation(struct gracht_message* message, const uint
         return;
     }
     
-    vioarr_objects_create_client_object(message->client, poolId, pool, WM_OBJECT_TYPE_MEMORY_POOL);
-    wm_core_event_object_single(vioarr_get_server_handle(), message->client, poolId, vioarr_memory_pool_handle(pool), WM_OBJECT_TYPE_MEMORY_POOL);
+    globalId = vioarr_objects_create_client_object(message->client, poolId, pool, WM_OBJECT_TYPE_MEMORY_POOL);
+    wm_core_event_object_single(vioarr_get_server_handle(), message->client, 
+        poolId,
+        globalId,
+        vioarr_memory_pool_handle(pool), 
+        WM_OBJECT_TYPE_MEMORY_POOL
+    );
 }
 
 void wm_memory_pool_create_buffer_invocation(struct gracht_message* message, const uint32_t poolId, const uint32_t bufferId, const int offset, const int width, const int height, const int stride, const enum wm_pixel_format format, const unsigned int flags)
@@ -54,6 +60,7 @@ void wm_memory_pool_create_buffer_invocation(struct gracht_message* message, con
     vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, poolId);
     vioarr_buffer_t*      buffer;
     int                   status;
+    uint32_t              globalId;
     if (!pool) {
         vioarr_utils_error(VISTR("wm_memory_pool_create_buffer_callback: pool not found"));
         wm_core_event_error_single(vioarr_get_server_handle(), message->client, poolId, ENOENT, "wm_memory: object does not exist");
@@ -68,8 +75,13 @@ void wm_memory_pool_create_buffer_invocation(struct gracht_message* message, con
         return;
     }
     
-    vioarr_objects_create_client_object(message->client, bufferId, buffer, WM_OBJECT_TYPE_BUFFER);
-    wm_core_event_object_single(vioarr_get_server_handle(), message->client, bufferId, 0, WM_OBJECT_TYPE_BUFFER);
+    globalId = vioarr_objects_create_client_object(message->client, bufferId, buffer, WM_OBJECT_TYPE_BUFFER);
+    wm_core_event_object_single(vioarr_get_server_handle(), message->client, 
+        bufferId, 
+        globalId,
+        0,
+        WM_OBJECT_TYPE_BUFFER
+    );
 }
 
 void wm_memory_pool_destroy_invocation(struct gracht_message* message, const uint32_t id)

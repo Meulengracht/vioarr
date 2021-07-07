@@ -36,6 +36,7 @@ namespace Asgaard {
 
     public:
         uint32_t Id() const { return m_id; }
+        uint32_t GlobalId() const { return m_globalId; }
         
     public:
         virtual void Destroy();
@@ -43,5 +44,6 @@ namespace Asgaard {
         
     private:
         uint32_t m_id;
+        uint32_t m_globalId;
     };
 }

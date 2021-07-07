@@ -24,19 +24,25 @@
 #include "include/object.hpp"
 #include "include/error.hpp"
 #include "include/events/event.hpp"
+#include "include/events/object_event.hpp"
 #include "include/events/error_event.hpp"
 #include "include/notifications/error_notification.hpp"
 #include "wm_core_service_client.h"
 
 using namespace Asgaard;
 
-Object::Object(uint32_t id) : m_id(id) { }
+Object::Object(uint32_t id) : m_id(id), m_globalId(0) { }
 Object::~Object() { }
 
 void Object::ExternalEvent(const Event& event) {
     switch (event.GetType())
     {
         case Event::Type::CREATION: {
+            const auto& creationEvent = static_cast<const ObjectEvent&>(event);
+
+            // store the global id provided by the server, and then notify everyone
+            // about our creation
+            m_globalId = creationEvent.GlobalId();
             Notify(CreatedNotification(Id()));
         } break;
 

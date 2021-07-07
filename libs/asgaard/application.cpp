@@ -114,7 +114,7 @@ namespace Asgaard {
 
         // wait for initialization to complete
         while (!IsInitialized()) {
-            (void)gracht_client_wait_message(m_vClient, NULL, 0);
+            (void)gracht_client_wait_message(m_vClient, nullptr, GRACHT_MESSAGE_BLOCK);
         }
 
         // initialize heimdall
@@ -367,13 +367,15 @@ extern "C"
         object->ExternalEvent(Asgaard::ErrorEvent(errorCode, description));
     }
     
-    void wm_core_event_object_invocation(gracht_client_t* client, const uint32_t id, const size_t handle, const enum wm_object_type type)
+    void wm_core_event_object_invocation(gracht_client_t* client, const uint32_t id, 
+        const uint32_t gid, const size_t handle, const enum wm_object_type type)
     {
         switch (type) {
             // Handle new server objects
             case WM_OBJECT_TYPE_SCREEN:
             case WM_OBJECT_TYPE_KEYBOARD:
             case WM_OBJECT_TYPE_POINTER: {
+                // server objects do not have seperate global identifiers
                 Asgaard::APP.ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
             } break;
             
@@ -384,7 +386,7 @@ extern "C"
                     // log
                     return;
                 }
-                object->ExternalEvent(Asgaard::ObjectEvent(id, handle, type));
+                object->ExternalEvent(Asgaard::ObjectEvent(id, gid, handle, type));
             } break;
         }
     }

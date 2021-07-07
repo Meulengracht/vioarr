@@ -36,21 +36,41 @@
 #include "../vioarr_utils.h"
 #include <time.h>
 
+struct start_sync_context {
+    mtx_t lock;
+    cnd_t signal;
+};
+
 static int vioarr_engine_setup_screens(void);
 static int vioarr_engine_update(void*);
 
-static vioarr_screen_t* primary_screen;
-static thrd_t           screen_thread;
+static vioarr_screen_t*          primary_screen;
+static thrd_t                    screen_thread;
+static struct start_sync_context startup_context;
 
 int vioarr_engine_initialize(void)
 {
+    int status;
+
     // initialize systems
     vioarr_manager_initialize();
     
-    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating renderer thread"));
-    return thrd_create(&screen_thread, vioarr_engine_update, NULL);
-}
+    mtx_init(&startup_context.lock, mtx_plain);
+    cnd_init(&startup_context.signal);
 
+    // create the renderer thread and allow it to initialize before ending engine init
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating renderer thread"));
+    status = thrd_create(&screen_thread, vioarr_engine_update, NULL);
+    if (status != thrd_success) {
+        return status;
+    }
+
+    // wait for startup sequence to finish
+    mtx_lock(&startup_context.lock);
+    cnd_wait(&startup_context.signal, &startup_context.lock);
+    mtx_unlock(&startup_context.lock);
+    return 0;
+}
 
 int vioarr_engine_x_minimum(void)
 {
@@ -95,6 +115,13 @@ static int vioarr_engine_setup_screens(void)
     return 0;
 }
 
+static void signal_init_thread(void)
+{
+    mtx_lock(&startup_context.lock);
+    cnd_signal(&startup_context.signal);
+    mtx_unlock(&startup_context.lock);
+}
+
 static int vioarr_engine_update(void* context)
 {
     int status;
@@ -103,6 +130,7 @@ static int vioarr_engine_update(void* context)
     // Initialise GLFW
     if (!glfwInit()) {
         vioarr_utils_error(VISTR("Failed to initialize GLFW\n"));
+        signal_init_thread();
         return -1;
     }
 
@@ -118,10 +146,12 @@ static int vioarr_engine_update(void* context)
     status = vioarr_engine_setup_screens();
     if (status) {
         vioarr_utils_error(VISTR("vioarr_engine_update failed to initialize screens, code %i"), status);
+        signal_init_thread();
         return status;
     }
     
     vioarr_utils_trace(VISTR("vioarr_engine_update started"));
+    signal_init_thread();
     while (vioarr_screen_valid(primary_screen)) {
         vioarr_screen_frame(primary_screen);
         glfwPollEvents();

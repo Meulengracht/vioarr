@@ -13,7 +13,10 @@ namespace wm
  * and are scoped to each client, thus it is up to the client to use their
  * own Id system. The Id system must hold up these rules to work properly, otherwise
  * the id will be rejected by the server. Id's must be non-zero, and they must not be
- * higher than 0x80000000, as id's above this are reserved for global entities.
+ * higher than 0x80000000, as id's above this are reserved for server entities.
+ *
+ * All client entities also possess a GId (Global Identifier), which can be used to share surfaces
+ * with other services in some rare cases (mostly used by environment applications)
  */
 service core (80) {
     func get_objects() : () = 1;
@@ -21,7 +24,7 @@ service core (80) {
 
     event sync : (uint32 serial) = 3;
     event error : (uint32 id, int errorCode, string description) = 4;
-    event object : (uint32 id, ulong handle, object_type type) = 5;
+    event object : (uint32 id, uint32 gid, ulong handle, object_type type) = 5;
     event destroy : (uint32 id) = 6;
 }
 
@@ -68,16 +71,15 @@ service surface (84) {
     func request_level(uint32 id, int level) : () = 10;
     func request_frame(uint32 id) : () = 11;
     func request_focus(uint32 id) : () = 12;
-    func transfer_focus(uint32 gid) : () = 13;
-    func commit(uint32 id) : () = 14;
-    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 15;
-    func move(uint32 id, uint32 pointerId) : () = 16;
-    func destroy(uint32 id) : () = 17;
+    func commit(uint32 id) : () = 13;
+    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 14;
+    func move(uint32 id, uint32 pointerId) : () = 15;
+    func destroy(uint32 id) : () = 16;
 
-    event format : (uint32 id, pixel_format format) = 18;
-    event frame : (uint32 id) = 19;
-    event resize : (uint32 id, int width, int height, surface_edge edges) = 20;
-    event focus : (uint32 id, bool focus) = 21;
+    event format : (uint32 id, pixel_format format) = 17;
+    event frame : (uint32 id) = 18;
+    event resize : (uint32 id, int width, int height, surface_edge edges) = 19;
+    event focus : (uint32 id, bool focus) = 20;
 }
 
 service buffer (85) {

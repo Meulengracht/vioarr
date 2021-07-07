@@ -267,6 +267,11 @@ namespace Asgaard {
         wm_surface_request_focus(APP.VioarrClient(), nullptr, Id());
     }
     
+    void Surface::TransferFocus(uint32_t globalId)
+    {
+        wm_surface_request_focus(APP.VioarrClient(), nullptr, globalId);
+    }
+    
     void Surface::ApplyChanges()
     {
         wm_surface_commit(APP.VioarrClient(), nullptr, Id());

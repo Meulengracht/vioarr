@@ -70,6 +70,7 @@ namespace Asgaard {
         ASGAARD_API void RequestPriorityLevel(enum PriorityLevel);
         ASGAARD_API void RequestFullscreenMode(enum FullscreenMode);
         ASGAARD_API void RequestFocus();
+        ASGAARD_API void TransferFocus(uint32_t globalId);
         ASGAARD_API void ApplyChanges();
         
         ASGAARD_API void RequestFrame();

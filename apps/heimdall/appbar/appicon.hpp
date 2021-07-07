@@ -134,16 +134,21 @@ private:
             Dimensions().Height(), PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
         // inherit the icon buffer
-        auto iconMemoryPool = MemoryPool::Inherit(this, memoryHandle, size);
-        auto iconBuffer = MemoryBuffer::Create(this, iconMemoryPool, 0, iconWidth, iconHeight, format);
-        Drawing::Image icon(iconBuffer->Buffer(), format, iconHeight, iconWidth, false);
+        if (memoryHandle != 0) {
+            auto iconMemoryPool = MemoryPool::Inherit(this, memoryHandle, size);
+            auto iconBuffer = MemoryBuffer::Create(this, iconMemoryPool, 0, iconWidth, iconHeight, format);
+            Drawing::Image icon(iconBuffer->Buffer(), format, iconHeight, iconWidth, false);
 
-        // resize incoming icon
-        m_icon = icon.Resize(48, 48);
+            // resize incoming icon
+            m_icon = icon.Resize(48, 48);
 
-        // cleanup
-        iconBuffer->Destroy();
-        iconMemoryPool->Destroy();
+            // cleanup
+            iconBuffer->Destroy();
+            iconMemoryPool->Destroy();
+        }
+        else {
+            // load default icon
+        }
     }
 
     void RedrawReady()
@@ -219,6 +224,7 @@ private:
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     Asgaard::Drawing::Image                m_icon;
     std::vector<gracht_conn_t>             m_sources;
+    std::map<gracht_conn_t, uint32_t>      m_surfaces;
     bool                                   m_isShown;
     bool                                   m_isHovered;
     bool                                   m_redraw;

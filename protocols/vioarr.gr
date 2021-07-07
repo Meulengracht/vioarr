@@ -8,6 +8,13 @@ import "types"
 
 namespace wm
 
+/**
+ * Id's in Vioarr must be non-zero, they are determined by each client
+ * and are scoped to each client, thus it is up to the client to use their
+ * own Id system. The Id system must hold up these rules to work properly, otherwise
+ * the id will be rejected by the server. Id's must be non-zero, and they must not be
+ * higher than 0x80000000, as id's above this are reserved for global entities.
+ */
 service core (80) {
     func get_objects() : () = 1;
     func sync(uint32 serial) : () = 2;
@@ -61,15 +68,16 @@ service surface (84) {
     func request_level(uint32 id, int level) : () = 10;
     func request_frame(uint32 id) : () = 11;
     func request_focus(uint32 id) : () = 12;
-    func commit(uint32 id) : () = 13;
-    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 14;
-    func move(uint32 id, uint32 pointerId) : () = 15;
-    func destroy(uint32 id) : () = 16;
+    func transfer_focus(uint32 gid) : () = 13;
+    func commit(uint32 id) : () = 14;
+    func resize(uint32 id, uint32 pointerId, surface_edge edges) : () = 15;
+    func move(uint32 id, uint32 pointerId) : () = 16;
+    func destroy(uint32 id) : () = 17;
 
-    event format : (uint32 id, pixel_format format) = 17;
-    event frame : (uint32 id) = 18;
-    event resize : (uint32 id, int width, int height, surface_edge edges) = 19;
-    event focus : (uint32 id, bool focus) = 20;
+    event format : (uint32 id, pixel_format format) = 18;
+    event frame : (uint32 id) = 19;
+    event resize : (uint32 id, int width, int height, surface_edge edges) = 20;
+    event focus : (uint32 id, bool focus) = 21;
 }
 
 service buffer (85) {

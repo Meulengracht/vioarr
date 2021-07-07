@@ -245,27 +245,20 @@ void vioarr_manager_focus_surface(vioarr_surface_t* surface)
 
 /**
  * Occurs when a surface has explicitly requested focus, but in order for
- * the focus to be granted, we must check their relation to each other. If
- * they share ancestry or origin then we allow it.
+ * the focus to be granted, we must check some minor permissions. If the current
+ * focused surface is owned by the requester, then we immediately allow this.
  */
 void vioarr_manager_request_focus(int client, vioarr_surface_t* surface)
 {
     vioarr_surface_t* currentFocus = vioarr_manager_get_focused();
-    vioarr_surface_t* requestParent;
-    vioarr_surface_t* currentParent;
     if (!currentFocus || currentFocus == surface) {
         return; // do not allow this
     }
 
     // lets get the elder parent of both
-    requestParent = vioarr_surface_parent(surface, 1);
-    currentParent = vioarr_surface_parent(currentFocus, 1);
-    if (requestParent != currentParent) {
-        // ok they might not share ancestry, but do they share origin?
-        int currentOrigin = vioarr_surface_client(currentFocus);
-        if (currentOrigin != client) {
-            return; // ok we can't allow this heresay
-        }
+    int currentOrigin = vioarr_surface_client(currentFocus);
+    if (currentOrigin != client) {
+        return; // ok we can't allow this heresay
     }
 
     vioarr_manager_focus_surface(surface);

@@ -35,6 +35,8 @@ namespace Asgaard
              * This is automatically controlled by Asgaard.
              */
             void Initialize();
+
+            void RegisterSurface(uint32_t globalId);
         }
     }
 }

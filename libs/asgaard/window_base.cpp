@@ -157,6 +157,11 @@ namespace Asgaard {
             } break;
             
             case Event::Type::SYNC: {
+                // So once we receive the sync we are created properly, what we do now
+                // is register this application with Heimdall if enabled
+                if (APP.GetSettingBoolean(Application::Settings::HEIMDALL_VISIBLE)) {
+                    Environment::Heimdall::RegisterSurface(GlobalId());
+                }
                 OnCreated();
             } break;
             

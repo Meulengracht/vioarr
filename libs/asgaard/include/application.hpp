@@ -47,7 +47,7 @@ namespace Asgaard {
          */
         enum class Settings : int {
             ASYNC_DESCRIPTOR, // Accepts an integer descriptor.
-            HEIMDALL_VISIBLE, // Accepts a bool value; Wheter or not application is registered with Heimdall
+            HEIMDALL_VISIBLE, // Accepts a bool value; Whether or not application is registered with Heimdall
             APPLICATION_GUID, // Accepts a std::string instance; sets the GUID of the application
             APPLICATION_ICON  // Accepts a std::string instance; controls which application icon is showed.
         };

@@ -240,8 +240,10 @@ int main(int argc, char **argv)
 }
 
 extern "C" {
+#include "stdio.h"
     void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId, const struct hd_app_icon* icon)
     {
+        printf("hd_core_register_app_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnApplicationRegister(message->client, appId, icon->poolHandle, 
                 icon->size, icon->iconWidth, icon->iconHeight,
@@ -251,22 +253,25 @@ extern "C" {
 
     void hd_core_unregister_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
+        printf("hd_core_unregister_app_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnApplicationUnregister(message->client, appId);
         }
     }
 
-    void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
+    void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int appId, const uint32_t surfaceId)
     {
+        printf("hd_core_register_surface_invocation\n");
         if (auto hd = g_heimdall.lock()) {
-            hd->OnSurfaceRegister();
+            hd->OnSurfaceRegister(message->client, appId, surfaceId);
         }
     }
 
-    void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int surfaceId)
+    void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int appId, const uint32_t surfaceId)
     {
+        printf("hd_core_unregister_surface_invocation\n");
         if (auto hd = g_heimdall.lock()) {
-            hd->OnSurfaceUnregister();
+            hd->OnSurfaceUnregister(message->client, appId, surfaceId);
         }
     }
 

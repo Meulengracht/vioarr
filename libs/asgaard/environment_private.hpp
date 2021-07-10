@@ -21,11 +21,23 @@
  */
 #pragma once
 
-#include "config.hpp"
+#include "include/config.hpp"
+#include <cstdint>
 
 namespace Asgaard
 {
     namespace Environment
     {
+        namespace Heimdall
+        {
+            /**
+             * Initializes the Heimdall subsystem. If this has not been invoked then
+             * none of the functionality in the Heimdall namespace will be working.
+             * This is automatically controlled by Asgaard.
+             */
+            void Initialize();
+
+            void RegisterSurface(uint32_t globalId);
+        }
     }
 }

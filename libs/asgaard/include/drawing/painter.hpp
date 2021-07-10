@@ -26,6 +26,7 @@
 #include "../config.hpp"
 #include "color.hpp"
 #include "primitives/shape.hpp"
+#include "primitives/rectangle.hpp"
 
 namespace Asgaard {
     class MemoryBuffer;
@@ -53,7 +54,7 @@ namespace Asgaard {
                  * Sets the region that will be used for a variety of fill functions. The
                  * default region is the entire canvas.
                  */
-                void SetRegion(const Primitives::Shape& shape);
+                void SetRegion(const Primitives::Shape* shape);
 
                 /**
                  * Non-regional render functions that do not respect the given
@@ -90,9 +91,11 @@ namespace Asgaard {
             private:
                 std::shared_ptr<MemoryBuffer> m_canvas;
                 std::shared_ptr<Font>         m_font;
-                Primitives::Shape             m_shape;
+                const Primitives::Shape*      m_shape;
                 Color                         m_fillColor;
                 Color                         m_outlineColor;
+
+                Primitives::RectangleShape m_defaultShape;
         };
     }
 }

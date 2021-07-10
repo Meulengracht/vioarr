@@ -40,8 +40,8 @@ service core (90) {
     func unregister_app(uint appId) : () = 2;
 
     // todo for these to work we must support some kind of global reference
-    func register_surface(uint surfaceGId) : () = 3;
-    func unregister_surface(uint surfaceGId) : () = 4;
+    func register_surface(uint appId, uint32 surfaceGId) : () = 3;
+    func unregister_surface(uint appId, uint32 surfaceGId) : () = 4;
 
     /**
      * Notifications are asynchronous and do never block. Their responses come in form

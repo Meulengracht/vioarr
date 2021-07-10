@@ -21,7 +21,6 @@
  */
 
 #include "include/application.hpp"
-#include "include/environment.hpp"
 #include "include/memory_pool.hpp"
 #include "include/memory_buffer.hpp"
 
@@ -30,6 +29,7 @@
 #include "include/exceptions/application_exception.h"
 
 #include "hd_core_service_client.h"
+#include "environment_private.hpp"
 
 #include <functional>
 #include <string>
@@ -44,18 +44,27 @@ static std::string                   g_defaultGuid = "00000000-0000-0000-0000-00
 static std::shared_ptr<MemoryPool>   g_iconPool;
 static std::shared_ptr<MemoryBuffer> g_iconBuffer;
 
-void RegisterApplication()
-{
-    if (!g_isInitialized) {
-        return;
+namespace {
+    std::string getApplicationGuid()
+    {
+        auto providedGuid = APP.GetSettingString(Application::Settings::APPLICATION_GUID);
+        if (providedGuid.size()) {
+            return providedGuid;
+        }
+        return g_defaultGuid;
     }
 }
 
-void UnregisterApplication()
+void RegisterSurface(uint32_t globalId)
 {
     if (!g_isInitialized) {
         return;
     }
+
+    auto guid = getApplicationGuid();
+    auto applicationId = std::hash<std::string>{}(guid);
+
+    hd_core_register_surface(APP.HeimdallClient(), nullptr, applicationId, globalId);
 }
 
 void Initialize()
@@ -71,12 +80,7 @@ void Initialize()
     }
 
     // load GUID and hash
-    auto providedGuid = APP.GetSettingString(Application::Settings::APPLICATION_GUID);
-    auto guid = g_defaultGuid;
-    if (providedGuid.size()) {
-        guid = providedGuid;
-    }
-
+    auto guid = getApplicationGuid();
     auto applicationId = std::hash<std::string>{}(guid);
 
     // load ICON

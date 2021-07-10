@@ -39,7 +39,7 @@ namespace Asgaard
                     : m_type(type) { }
                 virtual ~Shape() = default;
 
-                ShapeType GetType() { return m_type; }
+                ShapeType GetType() const { return m_type; }
             private:
                 ShapeType m_type;
             };

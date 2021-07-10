@@ -36,6 +36,8 @@
 #include <vector>
 #include <map>
 
+#include <iostream>
+
 #include "appicon.hpp"
 
 using namespace Asgaard;
@@ -64,6 +66,7 @@ public:
     void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId, std::size_t memoryHandle,
         std::size_t size, int iconWidth, int iconHeight, PixelFormat format)
     {
+        std::cout << "OnApplicationRegister" << std::endl;
         // check if application id is registered already
         auto app = m_apps.find(applicationId);
         if (app == std::end(m_apps)) {
@@ -83,6 +86,7 @@ public:
 
     void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
     {
+        std::cout << "OnApplicationUnregister" << std::endl;
         auto app = m_apps.find(applicationId);
         if (app != std::end(m_apps)) {
             (*app).second->RemoveSource(source);
@@ -91,7 +95,27 @@ public:
                 m_apps.erase(app);
                 RecalculateIconStart();
                 UpdateIconPositions();
+
+                app->second->Destroy();
             }
+        }
+    }
+
+    void OnSurfaceRegister(gracht_conn_t source, unsigned int applicationId, uint32_t surfaceGlobalId)
+    {
+        std::cout << "OnSurfaceRegister" << std::endl;
+        auto app = m_apps.find(applicationId);
+        if (app != std::end(m_apps)) {
+            (*app).second->AddSurface(source, surfaceGlobalId);
+        }
+    }
+    
+    void OnSurfaceUnregister(gracht_conn_t source, unsigned int applicationId, uint32_t surfaceGlobalId)
+    {
+        std::cout << "OnSurfaceUnregister" << std::endl;
+        auto app = m_apps.find(applicationId);
+        if (app != std::end(m_apps)) {
+            (*app).second->RemoveSurface(source, surfaceGlobalId);
         }
     }
 
@@ -102,13 +126,12 @@ public:
         m_memory = MemoryPool::Create(this, statusBarSize);
 
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
-            Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
+            Dimensions().Height(), PixelFormat::A8B8G8R8, MemoryBuffer::Flags::NONE);
 
         auto render = [&] {
             Drawing::Painter painter(m_buffer);
 
-            const auto theme = Theming::TM.GetTheme();
-            painter.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
+            painter.SetFillColor(0, 0, 0, 0);
             painter.RenderFill();
         };
         render();

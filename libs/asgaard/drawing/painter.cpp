@@ -53,11 +53,11 @@ namespace Asgaard {
         Painter::Painter(const std::shared_ptr<MemoryBuffer>& canvas)
             : m_canvas(canvas)
             , m_font(nullptr)
-            , m_shape(Primitives::RectangleShape(0, 0, canvas->Width(), canvas->Height()))
             , m_fillColor(0, 0, 0)
             , m_outlineColor(0, 0, 0)
+            , m_defaultShape(Primitives::RectangleShape(0, 0, canvas->Width(), canvas->Height()))
         {
-        
+            m_shape = &m_defaultShape;
         }
         
         void Painter::SetFillColor(const Color& color)
@@ -95,8 +95,12 @@ namespace Asgaard {
             m_font = font;
         }
 
-        void Painter::SetRegion(const Primitives::Shape& shape)
+        void Painter::SetRegion(const Primitives::Shape* shape)
         {
+            if (shape == nullptr) {
+                return;
+            }
+            
             m_shape = shape;
         }
 
@@ -282,23 +286,23 @@ namespace Asgaard {
 
         void Painter::RenderFill()
         {
-            switch (m_shape.GetType()) {
+            switch (m_shape->GetType()) {
                 case Primitives::ShapeType::RECTANGLE: {
-                    const auto& rectangle = static_cast<const Primitives::RectangleShape&>(m_shape);
-                    auto left = rectangle.X();
-                    auto right = rectangle.X() + m_canvas->Width();
-                    for (int y = 0; y < rectangle.Height(); y++) {
+                    const auto rectangle = static_cast<const Primitives::RectangleShape*>(m_shape);
+                    auto left = rectangle->X();
+                    auto right = rectangle->X() + rectangle->Width();
+                    for (int y = 0; y < rectangle->Height(); y++) {
                         RenderLine(
                             left,
-                            rectangle.Y() + y,
+                            rectangle->Y() + y,
                             right,
-                            rectangle.Y() + y
+                            rectangle->Y() + y
                         );
                     }
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
-                    const auto& circle = static_cast<const Primitives::CircleShape&>(m_shape);
-                    RenderCircleFill(circle.CenterX(), circle.CenterY(), circle.Radius());
+                    const auto circle = static_cast<const Primitives::CircleShape*>(m_shape);
+                    RenderCircleFill(circle->CenterX(), circle->CenterY(), circle->Radius());
                 } break;
             }
         }
@@ -310,33 +314,33 @@ namespace Asgaard {
                 return;
             }
 
-            switch (m_shape.GetType()) {
+            switch (m_shape->GetType()) {
                 case Primitives::ShapeType::RECTANGLE: {
                     auto bytesInSource = image.Stride() * image.Height();
                     auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
                     memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
-                    const auto& circle = static_cast<const Primitives::CircleShape&>(m_shape);
-                    auto radiusSqrt = circle.Radius() * circle.Radius();
-                    auto midCanvas  = static_cast<uint8_t*>(m_canvas->Buffer(circle.CenterX(), circle.CenterY()));
+                    const auto circle = static_cast<const Primitives::CircleShape*>(m_shape);
+                    auto radiusSqrt = circle->Radius() * circle->Radius();
+                    auto midCanvas  = static_cast<uint8_t*>(m_canvas->Buffer(circle->CenterX(), circle->CenterY()));
                     auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);
                     auto imageLimit = (image.Height() * image.Width()) + image.Width();
                     auto slSize     = m_canvas->Stride();
                     auto bpp        = GetBytesPerPixel(m_canvas->Format());
                     auto fillcolor  = m_fillColor.GetFormatted(m_canvas->Format());
 
-                    for (int x = -circle.Radius(); x < circle.Radius(); x++)
+                    for (int x = -circle->Radius(); x < circle->Radius(); x++)
                     {
                         auto height = (int)std::sqrt(radiusSqrt - x * x);
-                        auto xOffset = (circle.CenterX() + x) * bpp;
+                        auto xOffset = (circle->CenterX() + x) * bpp;
                         
                         auto y = -height;
-                        auto canvasOffset = ((slSize * (circle.CenterY() - height)) + xOffset); // bytes
+                        auto canvasOffset = ((slSize * (circle->CenterY() - height)) + xOffset); // bytes
                         auto imageOffset = midImage + (-height * image.Width()) + x; // pixels
                         for (; y < height; y++, canvasOffset += slSize, imageOffset += image.Width()) {
-                            if (x + circle.CenterX() < m_canvas->Width() && x + circle.CenterX() >= 0 &&
-                                y + circle.CenterY() < m_canvas->Height() && y + circle.CenterY() >= 0 &&
+                            if (x + circle->CenterX() < m_canvas->Width() && x + circle->CenterX() >= 0 &&
+                                y + circle->CenterY() < m_canvas->Height() && y + circle->CenterY() >= 0 &&
                                 imageOffset >= 0 && imageOffset < imageLimit) {
                                 auto pixel = image.GetPixel(imageOffset);
                                 if (pixel.Alpha() == 255) {

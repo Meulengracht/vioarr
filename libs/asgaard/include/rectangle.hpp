@@ -32,6 +32,8 @@ namespace Asgaard {
         Rectangle()
             : Rectangle(0, 0, 0, 0) { }
         
+        void SetX(int x) { m_x = x; }
+        void SetY(int y) { m_y = y; }
         void SetWidth(int width) { m_width = width; }
         void SetHeight(int height) { m_height = height; }
         

@@ -108,6 +108,16 @@ public:
         return m_sources.size();
     }
 
+    void AddSurface(gracht_conn_t source, uint32_t surfaceGlobalId)
+    {
+        m_surfaces.insert(std::make_pair(source, surfaceGlobalId));
+    }
+
+    void RemoveSurface(gracht_conn_t source, uint32_t surfaceGlobalId)
+    {
+        
+    }
+
     void RequestRedraw()
     {
         bool shouldRedraw = m_redrawReady.exchange(false);
@@ -179,7 +189,8 @@ private:
 
         // what we want is actually to draw the image here
         // and not keep it as a subsurface
-        paint.SetRegion(Drawing::Primitives::CircleShape(32, 32, 24));
+        Drawing::Primitives::CircleShape iconShape(32, 32, 24);
+        paint.SetRegion(&iconShape);
         paint.RenderImage(m_icon);
 
         // draw indicators

@@ -42,6 +42,8 @@
 #include "utils/spawner.hpp"
 #include "utils/register.hpp"
 
+#include <iostream>
+
 using namespace Asgaard;
 
 constexpr auto CURSOR_SIZE = 16;
@@ -74,8 +76,6 @@ public:
         if (!m_appBar) {
             return;
         }
-
-        // this acts only as a direct proxy to the application bar
         m_appBar->OnApplicationRegister(source, applicationId, memoryHandle, size, iconWidth, iconHeight, format);
     }
 
@@ -84,19 +84,25 @@ public:
         if (!m_appBar) {
             return;
         }
-
-        // this acts only as a direct proxy to the application bar
         m_appBar->OnApplicationUnregister(source, applicationId);
     }
 
-    void OnSurfaceRegister()
+    void OnSurfaceRegister(gracht_conn_t source, unsigned int applicationId, uint32_t globalSurfaceId)
     {
+        if (!m_appBar) {
+            return;
+        }
 
+        m_appBar->OnSurfaceRegister(source, applicationId, globalSurfaceId);
     }
 
-    void OnSurfaceUnregister()
+    void OnSurfaceUnregister(gracht_conn_t source, unsigned int applicationId, uint32_t globalSurfaceId)
     {
+        if (!m_appBar) {
+            return;
+        }
 
+        m_appBar->OnSurfaceUnregister(source, applicationId, globalSurfaceId);
     }
     
 private:
@@ -204,8 +210,11 @@ private:
 
     void DescriptorEvent(int iod, unsigned int events) override
     {
+        std::cout << "Heimdall::DescriptorEvent, iod=" << iod << ", events=" << events << std::endl;
+
         // assume iod is server, the only way we get registered
-        gracht_server_handle_event(m_serverInstance, iod, events);
+        auto result = gracht_server_handle_event(m_serverInstance, iod, events);
+        std::cout << "Heimdall:DescriptorEvent=" << result << std::endl;
     }
     
 private:

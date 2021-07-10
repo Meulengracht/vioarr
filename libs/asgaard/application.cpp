@@ -48,7 +48,7 @@
 #include "include/events/pointer_click_event.hpp"
 #include "include/events/pointer_scroll_event.hpp"
 #include "include/events/key_event.hpp"
-#include "include/environment.hpp"
+#include "environment_private.hpp"
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"

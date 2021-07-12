@@ -98,7 +98,7 @@ public:
 
     void AddSource(gracht_conn_t source)
     {
-        auto sourceObject = new SourceObject;
+        auto sourceObject = new SourceObject();
         sourceObject->source = source;
 
         m_sources.push_back(sourceObject);
@@ -207,7 +207,7 @@ private:
     void Redraw()
     {
         Drawing::Painter paint(m_buffer);
-        paint.SetFillColor(0, 0, 0, 0);
+        paint.SetFillColor(0xFF, 0xFF, 0xFF, 0xFF);
         paint.RenderFill();
 
         // what we want is actually to draw the image here
@@ -226,6 +226,9 @@ private:
     {
         auto entry = std::find_if(std::begin(m_sources), std::end(m_sources), 
             [source] (const SourceObject* i) { return i->source == source; });
+        if (entry == std::end(m_sources)) {
+            return nullptr;
+        }
         return *entry;
     }
 

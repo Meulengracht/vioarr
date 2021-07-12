@@ -42,8 +42,6 @@
 #include "utils/spawner.hpp"
 #include "utils/register.hpp"
 
-#include <iostream>
-
 using namespace Asgaard;
 
 constexpr auto CURSOR_SIZE = 16;
@@ -205,11 +203,8 @@ private:
 
     void DescriptorEvent(int iod, unsigned int events) override
     {
-        std::cout << "Heimdall::DescriptorEvent, iod=" << iod << ", events=" << events << std::endl;
-
         // assume iod is server, the only way we get registered
-        auto result = gracht_server_handle_event(m_serverInstance, iod, events);
-        std::cout << "Heimdall:DescriptorEvent=" << result << std::endl;
+        gracht_server_handle_event(m_serverInstance, iod, events);
     }
     
 private:

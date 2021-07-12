@@ -40,8 +40,6 @@
 
 #include "environment_private.hpp"
 
-#include <iostream>
-
 static enum Asgaard::Surface::SurfaceEdges GetWindowEdges(enum wm_surface_edge edges)
 {
     return Asgaard::Surface::SurfaceEdges::NONE;
@@ -163,8 +161,7 @@ namespace Asgaard {
             case Event::Type::SYNC: {
                 // So once we receive the sync we are created properly, what we do now
                 // is register this application with Heimdall if enabled
-                auto isHeimdallEnabled = APP.GetSettingBoolean(Application::Settings::HEIMDALL_VISIBLE); 
-                std::cout << "heimdall registering: " << isHeimdallEnabled << std::endl;
+                auto isHeimdallEnabled = APP.GetSettingBoolean(Application::Settings::HEIMDALL_VISIBLE);
                 if (isHeimdallEnabled) {
                     Environment::Heimdall::RegisterSurface(GlobalId());
                 }

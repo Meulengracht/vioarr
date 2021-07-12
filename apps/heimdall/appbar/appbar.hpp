@@ -36,8 +36,6 @@
 #include <vector>
 #include <map>
 
-#include <iostream>
-
 #include "appicon.hpp"
 
 using namespace Asgaard;
@@ -66,7 +64,6 @@ public:
     void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId, std::size_t memoryHandle,
         std::size_t size, int iconWidth, int iconHeight, PixelFormat format)
     {
-        std::cout << "OnApplicationRegister" << std::endl;
         // check if application id is registered already
         auto app = m_apps.find(applicationId);
         if (app == std::end(m_apps)) {
@@ -82,11 +79,11 @@ public:
         // recalculate positions
         RecalculateIconStart();
         UpdateIconPositions();
+        ApplyChanges();
     }
 
     void OnApplicationUnregister(gracht_conn_t source, unsigned int applicationId)
     {
-        std::cout << "OnApplicationUnregister" << std::endl;
         auto app = m_apps.find(applicationId);
         if (app != std::end(m_apps)) {
             (*app).second->RemoveSource(source);
@@ -103,7 +100,6 @@ public:
 
     void OnSurfaceRegister(gracht_conn_t source, unsigned int applicationId, uint32_t surfaceGlobalId)
     {
-        std::cout << "OnSurfaceRegister" << std::endl;
         auto app = m_apps.find(applicationId);
         if (app != std::end(m_apps)) {
             (*app).second->AddSurface(source, surfaceGlobalId);
@@ -112,7 +108,6 @@ public:
     
     void OnSurfaceUnregister(gracht_conn_t source, unsigned int applicationId, uint32_t surfaceGlobalId)
     {
-        std::cout << "OnSurfaceUnregister" << std::endl;
         auto app = m_apps.find(applicationId);
         if (app != std::end(m_apps)) {
             (*app).second->RemoveSurface(source, surfaceGlobalId);
@@ -131,7 +126,7 @@ public:
         auto render = [&] {
             Drawing::Painter painter(m_buffer);
 
-            painter.SetFillColor(0, 0, 0, 0);
+            painter.SetFillColor(0xFF, 0x35, 0x35, 0x35);
             painter.RenderFill();
         };
         render();

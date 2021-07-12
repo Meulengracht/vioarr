@@ -474,6 +474,10 @@ vioarr_surface_t* vioarr_surface_parent(vioarr_surface_t* surface, int upperMost
         return NULL;
     }
 
+    if (surface->parent) {
+        parent = surface->parent;
+    }
+
     if (upperMost) {
         while (parent->parent) {
             parent = parent->parent;

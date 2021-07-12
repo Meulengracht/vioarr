@@ -70,7 +70,7 @@ namespace Asgaard {
          * @throw ApplicationException
          */
         ASGAARD_API void AddEventDescriptor(int iod, unsigned int events, const std::shared_ptr<Utils::DescriptorListener>&);
-        ASGAARD_API void SetEventListener(int iod, const std::shared_ptr<Utils::DescriptorListener>&);
+        ASGAARD_API void SetDefaultEventListener(const std::shared_ptr<Utils::DescriptorListener>&);
 
         /**
          * Can be used to handle all currently queued application messages. This emulates a single
@@ -158,6 +158,7 @@ namespace Asgaard {
 
         std::map<int, SettingValue>                               m_settings;
         std::map<int, std::shared_ptr<Utils::DescriptorListener>> m_listeners;
+        std::shared_ptr<Utils::DescriptorListener>                m_defaultListener;
         std::list<std::shared_ptr<Screen>>                        m_screens;
         std::list<std::shared_ptr<Object>>                        m_inputs;
         gracht_client_t*                                          m_vClient;

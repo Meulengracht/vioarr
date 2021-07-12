@@ -52,9 +52,9 @@ constexpr auto APPBAR_HEIGHT = 75;
 
 class HeimdallApp final : public WindowBase, public Utils::DescriptorListener, public std::enable_shared_from_this<HeimdallApp> {
 public:
-    HeimdallApp(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions)
+    HeimdallApp(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, gracht_server_t* server)
         : WindowBase(id, screen, dimensions)
-        , m_serverInstance(nullptr)
+        , m_serverInstance(server)
     {
         // initialize subsystems
         Heimdall::Register::Initialize();
@@ -63,11 +63,6 @@ public:
     ~HeimdallApp()
     {
         // Override destroy
-    }
-
-    void SetServerInstance(gracht_server_t* server)
-    {
-        m_serverInstance = server;
     }
 
     void OnApplicationRegister(gracht_conn_t source, unsigned int applicationId, std::size_t memoryHandle,

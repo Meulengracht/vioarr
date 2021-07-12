@@ -140,6 +140,9 @@ namespace Asgaard
                     if (listener != m_listeners.end()) {
                         listener->second->DescriptorEvent(events[i].data.fd, events[i].events);
                     }
+                    else if (m_defaultListener) {
+                        m_defaultListener->DescriptorEvent(events[i].data.fd, events[i].events);
+                    }
                 }
             }
         }

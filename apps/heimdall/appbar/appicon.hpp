@@ -39,6 +39,12 @@
 using namespace Asgaard;
 
 class ApplicationIcon : public SubSurface {
+private:
+    struct SourceObject {
+        gracht_conn_t         source;
+        std::vector<uint32_t> surfaces;
+    };
+
 public:
     ApplicationIcon(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle& dimensions, 
         unsigned int applicationId, std::size_t memoryHandle, std::size_t size, int iconWidth, 
@@ -92,12 +98,16 @@ public:
 
     void AddSource(gracht_conn_t source)
     {
-        m_sources.push_back(source);
+        auto sourceObject = new SourceObject;
+        sourceObject->source = source;
+
+        m_sources.push_back(sourceObject);
     }
 
     void RemoveSource(gracht_conn_t source)
     {
-        auto entry = std::find(std::begin(m_sources), std::end(m_sources), source);
+        auto entry = std::find_if(std::begin(m_sources), std::end(m_sources), 
+            [source] (const SourceObject* i) { return i->source == source; });
         if (entry != std::end(m_sources)) {
             m_sources.erase(entry);
         }
@@ -110,12 +120,25 @@ public:
 
     void AddSurface(gracht_conn_t source, uint32_t surfaceGlobalId)
     {
-        m_surfaces.insert(std::make_pair(source, surfaceGlobalId));
+        auto sourceObject = GetSource(source);
+        if (sourceObject) {
+            sourceObject->surfaces.push_back(surfaceGlobalId);
+        }
     }
 
     void RemoveSurface(gracht_conn_t source, uint32_t surfaceGlobalId)
     {
-        
+        auto sourceObject = GetSource(source);
+        if (sourceObject) {
+            auto entry = std::find(
+                std::begin(sourceObject->surfaces),
+                std::end(sourceObject->surfaces),
+                surfaceGlobalId
+            );
+            if (entry != std::end(sourceObject->surfaces)) {
+                sourceObject->surfaces.erase(entry);
+            }
+        }
     }
 
     void RequestRedraw()
@@ -199,6 +222,13 @@ private:
         // if hovering, draw mirrors
     }
 
+    SourceObject* GetSource(gracht_conn_t source)
+    {
+        auto entry = std::find_if(std::begin(m_sources), std::end(m_sources), 
+            [source] (const SourceObject* i) { return i->source == source; });
+        return *entry;
+    }
+
 protected:
     void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) override
     {
@@ -216,9 +246,14 @@ protected:
     {
         if (button == Pointer::Buttons::LEFT && !pressed) {
             // transfer focus to first surface
-            auto first = std::begin(m_surfaces);
-            if (first != std::end(m_surfaces)) {
-                TransferFocus(first->second);
+            auto source = std::begin(m_sources);
+            while (source != std::end(m_sources)) {
+                auto surface = std::begin((*source)->surfaces);
+                if (surface != std::end((*source)->surfaces)) {
+                    TransferFocus(*surface);
+                    break;
+                }
+                source == std::next(source);
             }
         }
     }
@@ -245,8 +280,7 @@ private:
     std::shared_ptr<Asgaard::MemoryPool>   m_memory;
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     Asgaard::Drawing::Image                m_icon;
-    std::vector<gracht_conn_t>             m_sources;
-    std::map<gracht_conn_t, uint32_t>      m_surfaces;
+    std::vector<SourceObject*>             m_sources;
     bool                                   m_isShown;
     bool                                   m_isHovered;
     bool                                   m_redraw;

@@ -228,11 +228,12 @@ int main(int argc, char **argv)
 
     auto screen = Asgaard::APP.GetScreen();
     auto window = screen->CreateWindow<HeimdallApp>(
-        Asgaard::Rectangle(0, 0, screen->GetCurrentWidth(), screen->GetCurrentHeight()));
+        Asgaard::Rectangle(0, 0, screen->GetCurrentWidth(), screen->GetCurrentHeight()),
+        g_valiServer);
+    Asgaard::APP.SetDefaultEventListener(window);
     
+    // store this for callbacks from global C handlers
     g_heimdall = window;
-    window->SetServerInstance(g_valiServer);
-    Asgaard::APP.SetEventListener(gracht_link_get_handle(g_serverLink), window);
 
     // We only call exit() to get out, so release ownership of window
     window.reset();

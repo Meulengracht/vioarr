@@ -78,9 +78,9 @@ namespace Asgaard {
         ASGAARD_API void GrabPointer(const std::shared_ptr<Pointer>&);
         ASGAARD_API void UngrabPointer(const std::shared_ptr<Pointer>&);
         
+        bool             IsFocused() const { return m_isFocused; }
         const Rectangle& Dimensions() const { return m_dimensions; }
         const std::shared_ptr<Screen>& GetScreen() const { return m_screen; }
-        bool             IsFocused() const { return m_isFocused; }
         
     public:
         ASGAARD_API void ExternalEvent(const Event&) override;
@@ -95,9 +95,32 @@ namespace Asgaard {
         }
         
     protected:
+        /**
+         * OnResized is invoked by the window manager when the user/system requests the surface
+         * to resize to the provided width/height.
+         * 
+         * @param width 
+         * @param height 
+         */
         virtual void OnResized(enum SurfaceEdges, int width, int height) { }
-        virtual void OnFocus(bool) { }
+
+        /**
+         * OnFocus is called when a user has clicked or declicked a surface or window. OnFocus
+         * will also be the event that is invoked when an surface is hidden and the application bar
+         * has been invoked, then an OnFocus event will be triggered to request the surface to be shown
+         * again.
+         * 
+         * @param focus Whether or not the surface has been focused 
+         */
+        virtual void OnFocus(bool focus) { }
+
+        /**
+         * OnFrame is only invoked if RequestFrame has been called. The OnFrame will be called
+         * when the next frame is ready to be drawn. This callback can be used to synchronize with the window
+         * manager to achieve Vsync.
+         */
         virtual void OnFrame() { }
+
         virtual void OnMouseEnter(const std::shared_ptr<Pointer>&, int localX, int localY) { }
         virtual void OnMouseLeave(const std::shared_ptr<Pointer>&) { }
         virtual void OnMouseMove(const std::shared_ptr<Pointer>&, int localX, int localY) { }

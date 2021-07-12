@@ -62,6 +62,7 @@ namespace Asgaard {
     
     Application::Application() 
         : Object(0)
+        , m_defaultListener(nullptr)
         , m_vClient(nullptr)
         , m_hClient(nullptr)
         , m_ioset(ASYNC_HANDLE_INVALID)
@@ -142,9 +143,9 @@ namespace Asgaard {
         }
     }
 
-    void Application::SetEventListener(int iod, const std::shared_ptr<Utils::DescriptorListener>& listener)
+    void Application::SetDefaultEventListener(const std::shared_ptr<Utils::DescriptorListener>& listener)
     {
-        m_listeners[iod] = listener;
+        m_defaultListener = listener;
     }
 
     void Application::SetSettingPointer(Settings setting, void* value)

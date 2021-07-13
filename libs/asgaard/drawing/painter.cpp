@@ -43,6 +43,8 @@ namespace {
     }
 }
 
+#include <iostream>
+
 /**
  * All these algorithms are naive and non-optimized algorithms. When we encounter
  * severe performance problems (and we will!). We must start implementing optimized versions.
@@ -203,21 +205,15 @@ namespace Asgaard {
         void Painter::RenderCircleFill(int centerX, int centerY, int radius)
         {
             auto radiusSqrt = radius * radius;
-            auto mid        = static_cast<uint8_t*>(m_canvas->Buffer(centerX, centerY));
-            auto slSize     = m_canvas->Stride();
             auto bgColor    = m_fillColor.GetFormatted(m_canvas->Format());
-            auto bpp        = GetBytesPerPixel(m_canvas->Format());
 
             for (int x = -radius; x < radius; x++)
             {
                 auto height = (int)std::sqrt(radiusSqrt - x * x);
-                auto xOffset = (centerX + x) * bpp;
-
-                auto canvasOffset = ((slSize * (centerY - height)) + xOffset);
-                for (int y = -height; y < height; y++, canvasOffset += slSize) {
+                for (int y = -height; y < height; y++) {
                     if (x + centerX < m_canvas->Width() && x + centerX >= 0 &&
                         y + centerY < m_canvas->Height() && y + centerY >= 0) {
-                        *(reinterpret_cast<uint32_t*>(mid + canvasOffset)) = bgColor;
+                        *static_cast<uint32_t*>(m_canvas->Buffer(centerX + x, centerY + y)) = bgColor;
                     }
                 }
             }
@@ -335,10 +331,9 @@ namespace Asgaard {
                 case Primitives::ShapeType::RECTANGLE: {
                     const auto rectangle      = static_cast<const Primitives::RectangleShape*>(m_shape);
                     auto destination          = static_cast<uint32_t*>(m_canvas->Buffer(rectangle->X(), rectangle->Y()));
-                    auto bytesSkipDestination = rectangle->X() * bpp;
                     auto bytesSkipSource      = x * bpp;
                     auto strideDestination    = rectangle->Width() * bpp;
-                    auto bytesLeft            = std::min(image.Stride() - bytesSkipSource, strideDestination - bytesSkipDestination);
+                    auto bytesLeft            = std::min(image.Stride() - bytesSkipSource, strideDestination);
                     auto pixelsLeft           = bytesLeft / bpp;
                     auto fillcolor            = m_fillColor.GetFormatted(m_canvas->Format());
 
@@ -348,14 +343,14 @@ namespace Asgaard {
                             if (pixel.Alpha() == 255) {
                                 *(destination + j) = pixel.GetFormatted(m_canvas->Format());
                             }
-                            else {
+                            else if (pixel.Alpha() > 0) {
                                 *(destination + j) = AlphaBlendAXGX(
-                                    pixel.GetFormatted(m_canvas->Format()), fillcolor, pixel.Alpha()
+                                    fillcolor, pixel.GetFormatted(m_canvas->Format()), pixel.Alpha()
                                 );
                             }
                         }
 
-                        destination += m_canvas->Stride();
+                        destination += m_canvas->Width();
                     }
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
@@ -415,7 +410,7 @@ namespace Asgaard {
                     x + bitmap.indentX, y + bitmap.indentY));
                 uint8_t*  source  = bitmap.bitmap;
                 for (int row = 0; row < bitmap.height; row++) {
-                    for (int column = 0; column < bitmap.width; column++) { // @todo might need to be reverse
+                    for (int column = 0; column < bitmap.width; column++) {
                         uint8_t alpha = source[column];
                         if (alpha == 255) {
                             pointer[column] = fgColor;
@@ -475,7 +470,7 @@ namespace Asgaard {
                     uint8_t*  source  = bitmap.bitmap;
                     
                     for (int row = 0; row < bitmap.height; row++) {
-                        for (int column = 0; column < bitmap.width; column++) { // @todo might need to be reverse
+                        for (int column = 0; column < bitmap.width; column++) {
                             uint8_t alpha = source[column];
                             if (alpha == 255) {
                                 pointer[column] = fgColor;

@@ -45,6 +45,9 @@ int main(int argc, char **argv)
     std::shared_ptr<Asgaard::Drawing::Font> font     = Asgaard::Drawing::FM.CreateFont(fontPath, 12);
     Asgaard::Rectangle                      initialSize(-1, -1, 600, 400);
 
+    std::string appGuid = "e9247a27-884e-4e27-a26a-19e5a6c57760";
+    Asgaard::APP.SetSettingString(Asgaard::Application::Settings::APPLICATION_GUID, appGuid);
+
     // set pipes non-blocking
 #ifdef MOLLENOS
     int  stdoutPipe = pipe(0x1000, 0);

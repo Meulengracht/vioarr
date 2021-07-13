@@ -23,6 +23,7 @@
 
 #include "heimdall.hpp"
 #include <gracht/server.h>
+#include <limits>
 
 #ifdef MOLLENOS
 #include <ddk/service.h>
@@ -50,9 +51,12 @@ static gracht_server_t*           g_valiServer = nullptr;
 static struct gracht_link*        g_serverLink = nullptr;
 static std::weak_ptr<HeimdallApp> g_heimdall;
 
-static void __gracht_handle_disconnect(int client)
+static void __gracht_handle_disconnect(gracht_conn_t client)
 {
     // notify heimdall
+    if (auto hd = g_heimdall.lock()) {
+        hd->OnApplicationUnregister(client, std::numeric_limits<unsigned int>::max());
+    }
 }
 
 #ifdef MOLLENOS
@@ -240,11 +244,10 @@ int main(int argc, char **argv)
     return Asgaard::APP.Execute();
 }
 
-extern "C" {
-#include "stdio.h"
+extern "C"
+{
     void hd_core_register_app_invocation(struct gracht_message* message, const unsigned int appId, const struct hd_app_icon* icon)
     {
-        printf("hd_core_register_app_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnApplicationRegister(message->client, appId, icon->poolHandle, 
                 icon->size, icon->iconWidth, icon->iconHeight,
@@ -254,7 +257,6 @@ extern "C" {
 
     void hd_core_unregister_app_invocation(struct gracht_message* message, const unsigned int appId)
     {
-        printf("hd_core_unregister_app_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnApplicationUnregister(message->client, appId);
         }
@@ -262,7 +264,6 @@ extern "C" {
 
     void hd_core_register_surface_invocation(struct gracht_message* message, const unsigned int appId, const uint32_t surfaceId)
     {
-        printf("hd_core_register_surface_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnSurfaceRegister(message->client, appId, surfaceId);
         }
@@ -270,7 +271,6 @@ extern "C" {
 
     void hd_core_unregister_surface_invocation(struct gracht_message* message, const unsigned int appId, const uint32_t surfaceId)
     {
-        printf("hd_core_unregister_surface_invocation\n");
         if (auto hd = g_heimdall.lock()) {
             hd->OnSurfaceUnregister(message->client, appId, surfaceId);
         }

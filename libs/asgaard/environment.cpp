@@ -117,6 +117,18 @@ void Initialize()
     g_isInitialized = true;
 }
 
+void Destroy()
+{
+    if (!g_isInitialized) {
+        return;
+    }
+
+    auto guid = getApplicationGuid();
+    auto applicationId = std::hash<std::string>{}(guid);
+
+    hd_core_unregister_app(APP.HeimdallClient(), nullptr, applicationId);
+}
+
 // end of namespace
 } } }
 

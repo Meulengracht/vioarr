@@ -35,6 +35,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <limits>
 
 #include "appicon.hpp"
 
@@ -96,6 +97,21 @@ public:
                 app->second->Destroy();
             }
         }
+        else if (applicationId == std::numeric_limits<unsigned int>::max()) {
+            // disconnect, remove source from all
+            for (const auto& app : m_apps) {
+                app.second->RemoveSource(source);
+                if (app.second->GetSourceCount() == 0)
+                {
+                    m_apps.erase(app.first);
+                    RecalculateIconStart();
+                    UpdateIconPositions();
+
+                    app.second->Destroy();
+                    break;
+                }
+            }
+        }
     }
 
     void OnSurfaceRegister(gracht_conn_t source, unsigned int applicationId, uint32_t surfaceGlobalId)
@@ -126,7 +142,7 @@ public:
         auto render = [&] {
             Drawing::Painter painter(m_buffer);
 
-            painter.SetFillColor(0xFF, 0x35, 0x35, 0x35);
+            painter.SetFillColor(0, 0x35, 0x35, 0x35);
             painter.RenderFill();
         };
         render();

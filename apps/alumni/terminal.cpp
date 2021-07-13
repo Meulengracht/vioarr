@@ -537,3 +537,15 @@ void Terminal::OnResized(enum SurfaceEdges, int width, int height)
     m_buffer->Destroy();
     m_buffer = buffer;
 }
+
+void Terminal::OnFocus(bool focus)
+{
+    if (focus) {
+        auto currentLength = m_lines[m_inputLineIndexCurrent]->GetCurrentLength();
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(currentLength);
+    }
+    else {
+        m_lines[m_inputLineIndexCurrent]->SetCursorPosition(-1);
+    }
+    RequestRedraw();
+}

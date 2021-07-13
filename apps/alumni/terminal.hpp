@@ -92,6 +92,7 @@ protected:
     void OnRefreshed(const Asgaard::MemoryBuffer*) override;
     void OnKeyEvent(const Asgaard::KeyEvent&) override;
     void OnResized(enum SurfaceEdges, int width, int height) override;
+    void OnFocus(bool focus) override;
     
 private:
     void Redraw(const std::shared_ptr<Asgaard::MemoryBuffer>&);

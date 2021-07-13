@@ -122,24 +122,19 @@ private:
         m_buffer = MemoryBuffer::Create(this, m_memory, 0, Dimensions().Width(),
             Dimensions().Height(), PixelFormat::X8B8G8R8, MemoryBuffer::Flags::NONE);
 
-        const auto theme = Theming::TM.GetTheme();
-
-        // create font
+        // create resources
         m_font = Drawing::FM.CreateFont(DATA_DIRECTORY "/fonts/DejaVuSansMono.ttf", 12);
-
-        // create labels
-        m_label = SubSurface::Create<Widgets::Label>(
-            this, 
-            Rectangle(1, Dimensions().Height() - 20, Dimensions().Width() - 2, 19)
-        );
-        m_label->SetAnchors(Widgets::Label::Anchors::CENTER);
-        m_label->SetText(m_name);
-        m_label->SetFont(m_font);
-        m_label->SetBackgroundColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
-        m_label->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
-        m_label->RequestRedraw();
-
         m_image = image.Resize(48, 48);
+
+        auto textDimensions = m_font->GetTextMetrics(m_name);
+
+        int centerDims = Dimensions().Width() >> 1;
+        int centerText = textDimensions.Width() >> 1;
+        m_nameX = std::max(0, centerDims - centerText);
+
+        centerDims = Dimensions().Height() - (20 / 2);
+        centerText = textDimensions.Height() >> 1;
+        m_nameY = std::max(0, centerDims - centerText);
     }
 
     void RedrawReady()
@@ -177,8 +172,15 @@ private:
             paint.SetRegion(nullptr);
         };
 
+        auto renderText = [&] {
+            paint.SetFont(m_font);
+            paint.SetOutlineColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
+            paint.RenderText(m_nameX, m_nameY, m_name);
+        };
+
         renderFill();
         renderImage();
+        renderText();
     }
 
 protected:
@@ -224,9 +226,10 @@ private:
     std::shared_ptr<Asgaard::MemoryPool>   m_memory;
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     std::shared_ptr<Drawing::Font>         m_font;
-    std::shared_ptr<Widgets::Label>        m_label;
     Drawing::Image                         m_image;
     std::string                            m_name;
+    int                                    m_nameX;
+    int                                    m_nameY;
     bool                                   m_isShown;
     bool                                   m_isHovered;
     bool                                   m_redraw;

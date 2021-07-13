@@ -80,6 +80,12 @@ namespace Asgaard {
 
     void Application::Destroy()
     {
+        // cleanup heimdall
+        auto cleanupHeimdall = GetSettingBoolean(Settings::HEIMDALL_VISIBLE);
+        if (cleanupHeimdall) {
+            Environment::Heimdall::Destroy();
+        }
+
         // unsubscribe from screens
         for (const auto& screen : m_screens) {
             screen->Unsubscribe(this);

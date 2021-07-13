@@ -99,13 +99,13 @@ Asgaard::MemoryBuffer::~MemoryBuffer()
 }
 
 void* Asgaard::MemoryBuffer::Buffer(int x, int y) {
-    uint8_t* pointer       = static_cast<uint8_t*>(m_buffer);
-    int      bytesPerPixel = GetBytesPerPixel(m_format);
+    uint8_t* pointer = static_cast<uint8_t*>(m_buffer);
+    int      bpp     = GetBytesPerPixel(m_format);
     if (x < 0 || x >= m_width || y < 0 || y >= m_height) {
         throw OutOfRangeException("MemoryBuffer::Buffer(x, y) arguments were out of range");
     }
     
-    pointer += ((y * (m_width * bytesPerPixel)) + (x * bytesPerPixel));
+    pointer += ((y * (m_width * bpp)) + (x * bpp));
     return pointer;
 }
 

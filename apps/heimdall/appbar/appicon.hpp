@@ -26,6 +26,7 @@
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
 #include <drawing/painter.hpp>
+#include <drawing/primitives/rectangle.hpp>
 #include <drawing/primitives/circle.hpp>
 #include <widgets/label.hpp>
 #include <widgets/icon.hpp>
@@ -207,17 +208,24 @@ private:
     void Redraw()
     {
         Drawing::Painter paint(m_buffer);
-        paint.SetFillColor(0xFF, 0xFF, 0xFF, 0xFF);
+        paint.SetFillColor(0, 0, 0, 0);
         paint.RenderFill();
 
         // what we want is actually to draw the image here
         // and not keep it as a subsurface
-        Drawing::Primitives::CircleShape iconShape(32, 32, 24);
+        Drawing::Primitives::RectangleShape iconShape(
+            8, 4, // padding
+            m_icon.Width(), m_icon.Height()
+        );
         paint.SetRegion(&iconShape);
         paint.RenderImage(m_icon);
 
         // draw indicators
-        //paint.RenderCircle()
+        paint.SetFillColor(0xFF, 0x6F, 0x6F, 0x6F);
+        paint.RenderCircleFill(
+            Dimensions().Width() >> 1,
+            (m_icon.Height() + 4) + 6, 2
+        );
 
         // if hovering, draw mirrors
     }

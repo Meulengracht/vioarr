@@ -37,6 +37,12 @@ namespace Asgaard
              */
             void Initialize();
 
+            /**
+             * Cleans up any resources allocated and communicates to Heimdall that this application
+             * is shutting down.
+             */
+            void Destroy();
+
             void RegisterSurface(uint32_t globalId);
         }
     }

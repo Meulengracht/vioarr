@@ -41,7 +41,7 @@ namespace Asgaard {
             Image(const void* imageData, PixelFormat format, int rows, int columns, bool takeOwnership);
             ~Image();
 
-            Image Resize(int width, int height);
+            Image Resize(int width, int height) const;
 
             Color GetPixel(int index) const;
             void  SetPixel(int index, const Color& color);

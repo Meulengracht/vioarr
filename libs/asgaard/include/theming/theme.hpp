@@ -55,7 +55,8 @@ namespace Asgaard {
             enum class Colors : int {
                 DECORATION_FILL,
                 DECORATION_TEXT,
-                DEFAULT_FILL
+                DEFAULT_FILL,
+                DEFAULT_HIGHLIGHT
             };
         public:
             Theme(const std::string& themePack);

@@ -178,7 +178,7 @@ namespace Asgaard {
             }
         }
         
-        Image Image::Resize(int width, int height)
+        Image Image::Resize(int width, int height) const
         {
             if (width <= 0 || height <= 0) {
                 return Image();

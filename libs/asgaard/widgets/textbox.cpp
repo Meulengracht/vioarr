@@ -23,6 +23,7 @@
 #include "../include/widgets/textbox.hpp"
 #include "../include/drawing/painter.hpp"
 #include "../include/drawing/font.hpp"
+#include "../include/drawing/primitives/rectangle.hpp"
 #include "../include/memory_pool.hpp"
 #include "../include/memory_buffer.hpp"
 #include "../include/rectangle.hpp"
@@ -175,8 +176,11 @@ void Textbox::Redraw()
 
     auto renderImage = [&] {
         if (m_image.Data() != nullptr) {
-            auto midY = (Dimensions().Height() >> 1) - (m_image.Height() >> 1); 
-            paint.RenderImage(PADDING, midY, m_image);
+            auto midY = (Dimensions().Height() >> 1) - (m_image.Height() >> 1);
+            Drawing::Primitives::RectangleShape imageShape(PADDING, midY, Dimensions().Width(), Dimensions().Height());
+            paint.SetRegion(&imageShape);
+            paint.RenderImage(m_image);
+            paint.SetRegion(nullptr);
         }
     };
 

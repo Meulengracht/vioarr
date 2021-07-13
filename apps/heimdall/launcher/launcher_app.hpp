@@ -25,6 +25,7 @@
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
 #include <drawing/painter.hpp>
+#include <drawing/primitives/rectangle.hpp>
 #include <widgets/label.hpp>
 #include <widgets/icon.hpp>
 #include <theming/theme_manager.hpp>
@@ -49,6 +50,7 @@ public:
     {
         LoadResources(image);
         MarkInputRegion(Dimensions());
+        SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
         RedrawReady();
         Redraw();
         Show();
@@ -137,12 +139,7 @@ private:
         m_label->SetTextColor(theme->GetColor(Theming::Theme::Colors::DECORATION_TEXT));
         m_label->RequestRedraw();
 
-        // create image
-        m_icon = SubSurface::Create<Widgets::Icon>(
-            this,
-            Rectangle(8, 8, 48, 48)
-        );
-        m_icon->SetImage(image);
+        m_image = image.Resize(48, 48);
     }
 
     void RedrawReady()
@@ -163,16 +160,25 @@ private:
         Drawing::Painter paint(m_buffer);
         const auto theme = Theming::TM.GetTheme();
         
-        auto renderBorder = [&] {
+        auto renderFill = [&] {
             if (m_isHovered) {
-                paint.SetFillColor(Drawing::Color(0xFF, 0, 0xFF, 0));
-                paint.RenderRectangle(0, 0, Dimensions().Height() - 1,  Dimensions().Width() - 1);
+                paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_HIGHLIGHT));
             }
+            else {
+                paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
+            }
+            paint.RenderFill();
         };
 
-        paint.SetFillColor(theme->GetColor(Theming::Theme::Colors::DEFAULT_FILL));
-        paint.RenderFill();
-        renderBorder();
+        auto renderImage = [&] {
+            Drawing::Primitives::RectangleShape imageShape(8, 8, m_image.Width(), m_image.Height());
+            paint.SetRegion(&imageShape);
+            paint.RenderImage(m_image);
+            paint.SetRegion(nullptr);
+        };
+
+        renderFill();
+        renderImage();
     }
 
 protected:
@@ -219,7 +225,7 @@ private:
     std::shared_ptr<Asgaard::MemoryBuffer> m_buffer;
     std::shared_ptr<Drawing::Font>         m_font;
     std::shared_ptr<Widgets::Label>        m_label;
-    std::shared_ptr<Widgets::Icon>         m_icon;
+    Drawing::Image                         m_image;
     std::string                            m_name;
     bool                                   m_isShown;
     bool                                   m_isHovered;

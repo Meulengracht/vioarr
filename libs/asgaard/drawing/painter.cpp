@@ -98,6 +98,7 @@ namespace Asgaard {
         void Painter::SetRegion(const Primitives::Shape* shape)
         {
             if (shape == nullptr) {
+                m_shape = &m_defaultShape;
                 return;
             }
             
@@ -111,7 +112,6 @@ namespace Asgaard {
             int       dy = abs(y2 - y1), sy = y1 < y2 ? 1 : -1;
             int       err = (dx > dy ? dx : -dy) / 2, e2;
 
-            // Draw the line by brute force
             unsigned int color = m_fillColor.GetFormatted(m_canvas->Format());
             while (x1 < m_canvas->Width() && y1 < m_canvas->Height()) {
                 pointer[(y1 * m_canvas->Width()) + x1] = color;
@@ -307,18 +307,56 @@ namespace Asgaard {
             }
         }
 
-        void Painter::RenderImage(const Image& image)
+        void Painter::RenderFillGradientV(
+                    unsigned char r1, unsigned char g1, unsigned char b1,
+                    unsigned char r2, unsigned char g2, unsigned char b2)
+        {
+            Color originalColor = m_fillColor;
+            for (int y = 0; y < m_canvas->Height(); y++) {
+                float p = y / (float)(m_canvas->Height() - 1);
+                unsigned char r = (unsigned char)((1.0f - p) * r1 + p * r2 + 0.5);
+                unsigned char g = (unsigned char)((1.0f - p) * g1 + p * g2 + 0.5);
+                unsigned char b = (unsigned char)((1.0f - p) * b1 + p * b2 + 0.5);
+                SetFillColor(r, g, b);
+                RenderLine(0, y, m_canvas->Width(), y);
+            }
+            m_fillColor = originalColor;
+        }
+
+        void Painter::RenderImage(int x, int y, const Image& image)
         {
             // if faulty images are provided we just return
             if (image.Width() == 0 || image.Height() == 0) {
                 return;
             }
 
+            auto bpp = GetBytesPerPixel(m_canvas->Format());
             switch (m_shape->GetType()) {
                 case Primitives::ShapeType::RECTANGLE: {
-                    auto bytesInSource = image.Stride() * image.Height();
-                    auto bytesInDestination = m_canvas->Stride() * m_canvas->Height();
-                    memcpy(m_canvas->Buffer(), image.Data(), std::min(bytesInDestination, bytesInSource));
+                    const auto rectangle      = static_cast<const Primitives::RectangleShape*>(m_shape);
+                    auto destination          = static_cast<uint32_t*>(m_canvas->Buffer(rectangle->X(), rectangle->Y()));
+                    auto bytesSkipDestination = rectangle->X() * bpp;
+                    auto bytesSkipSource      = x * bpp;
+                    auto strideDestination    = rectangle->Width() * bpp;
+                    auto bytesLeft            = std::min(image.Stride() - bytesSkipSource, strideDestination - bytesSkipDestination);
+                    auto pixelsLeft           = bytesLeft / bpp;
+                    auto fillcolor            = m_fillColor.GetFormatted(m_canvas->Format());
+
+                    for (auto i = 0; i < std::min(image.Height() - y, rectangle->Height()); i++) {
+                        for (auto j = 0; j < pixelsLeft; j++) {
+                            auto pixel = image.GetPixel((i + y) * image.Width() + (x + j));
+                            if (pixel.Alpha() == 255) {
+                                *(destination + j) = pixel.GetFormatted(m_canvas->Format());
+                            }
+                            else {
+                                *(destination + j) = AlphaBlendAXGX(
+                                    pixel.GetFormatted(m_canvas->Format()), fillcolor, pixel.Alpha()
+                                );
+                            }
+                        }
+
+                        destination += m_canvas->Stride();
+                    }
                 } break;
                 case Primitives::ShapeType::CIRCLE: {
                     const auto circle = static_cast<const Primitives::CircleShape*>(m_shape);
@@ -327,7 +365,6 @@ namespace Asgaard {
                     auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);
                     auto imageLimit = (image.Height() * image.Width()) + image.Width();
                     auto slSize     = m_canvas->Stride();
-                    auto bpp        = GetBytesPerPixel(m_canvas->Format());
                     auto fillcolor  = m_fillColor.GetFormatted(m_canvas->Format());
 
                     for (int x = -circle->Radius(); x < circle->Radius(); x++)
@@ -357,46 +394,10 @@ namespace Asgaard {
                 } break;
             }
         }
-        
-        void Painter::RenderFillGradientV(
-                    unsigned char r1, unsigned char g1, unsigned char b1,
-                    unsigned char r2, unsigned char g2, unsigned char b2)
+
+        void Painter::RenderImage(const Image& image)
         {
-            Color originalColor = m_fillColor;
-            for (int y = 0; y < m_canvas->Height(); y++) {
-                float p = y / (float)(m_canvas->Height() - 1);
-                unsigned char r = (unsigned char)((1.0f - p) * r1 + p * r2 + 0.5);
-                unsigned char g = (unsigned char)((1.0f - p) * g1 + p * g2 + 0.5);
-                unsigned char b = (unsigned char)((1.0f - p) * b1 + p * b2 + 0.5);
-                SetFillColor(r, g, b);
-                RenderLine(0, y, m_canvas->Width(), y);
-            }
-            m_fillColor = originalColor;
-        }
-
-        void Painter::RenderImage(int x, int y, const Image& image)
-        {
-            // if faulty images are provided we just return
-            if (image.Width() == 0 || image.Height() == 0) {
-                return;
-            }
-
-            auto destination = static_cast<uint8_t*>(m_canvas->Buffer(x, y));
-            auto source      = static_cast<uint8_t*>(image.Data());
-            auto bytesCut    = x * GetBytesPerPixel(m_canvas->Format());
-
-            // copy each line individually
-            for (auto i = 0; i < std::min(image.Height(), m_canvas->Height() - y); i++) {
-                // this should be optimized routine
-                memcpy(
-                    static_cast<void*>(destination),
-                    static_cast<const void*>(source),
-                    std::min(image.Stride(), m_canvas->Stride() - bytesCut)
-                );
-
-                destination += m_canvas->Stride();
-                source      += image.Stride();
-            }
+            RenderImage(0, 0, image);
         }
         
         void Painter::RenderCharacter(int x, int y, char character)

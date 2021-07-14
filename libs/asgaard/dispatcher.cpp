@@ -86,12 +86,14 @@ unsigned int Dispatcher::Tick()
         itr->lastUpdate = now;
         if (itr->timeLeft) {
             // not yet time to execute
+            itr = std::next(itr);
             continue;
         }
 
         itr->who->Notification(nullptr, TimeoutNotification(0, itr->id));
         if (itr->recurring) {
             itr->timeLeft = itr->interval;
+            itr = std::next(itr);
         }
         else {
             itr = m_timers.erase(itr);

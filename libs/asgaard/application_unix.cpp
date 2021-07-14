@@ -131,7 +131,7 @@ namespace Asgaard
             Initialize();
         }
         
-        unsigned int tick = -1;
+        int tick = -1;
         while (true) {
             int num_events = epoll_wait(m_ioset, &events[0], 8, tick); // 0 && EINTR on timeout
             for (int i = 0; i < num_events; i++) {
@@ -149,7 +149,7 @@ namespace Asgaard
                 }
             }
 
-            tick = DIS.Tick();
+            tick = static_cast<int>(DIS.Tick());
             if (tick == 0) {
                 // adjust to -1 as that means infinite in epoll
                 tick = -1;

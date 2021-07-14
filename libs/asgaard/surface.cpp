@@ -182,11 +182,25 @@ namespace Asgaard {
     void Surface::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
         /**
+         * We must listen to destroy events from our subscriptions, because if one of our
+         * children wants to destroy, then we must release the pointer we have for that child
+         */
+        if (notification.GetType() == NotificationType::DESTROY) {
+            auto child = std::find_if(std::begin(m_children), std::end(m_children),
+                [id = notification.GetObjectId()] (const std::shared_ptr<Surface>& i) {
+                    return i->Id() == id;
+            });
+            if (child != std::end(m_children)) {
+                m_children.erase(child);
+            }
+        }
+
+        /**
          * Focus events are only ever sent by our self, and the focus is already handled.
          * So when we receive a FOCUS_EVENT we must propegate the event up, and to our other
          * children.
          */
-        if (notification.GetType() == NotificationType::FOCUS_EVENT) {
+        else if (notification.GetType() == NotificationType::FOCUS_EVENT) {
             /**
              * If the event came from one of our children, then we must update the rest
              * of our children, and then send the event further up the chain

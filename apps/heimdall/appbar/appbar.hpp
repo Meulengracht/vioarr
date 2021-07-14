@@ -90,11 +90,11 @@ public:
             (*app).second->RemoveSource(source);
             if ((*app).second->GetSourceCount() == 0)
             {
+                app->second->Destroy();
                 m_apps.erase(app);
+                
                 RecalculateIconStart();
                 UpdateIconPositions();
-
-                app->second->Destroy();
             }
         }
         else if (applicationId == std::numeric_limits<unsigned int>::max()) {
@@ -103,11 +103,11 @@ public:
                 app.second->RemoveSource(source);
                 if (app.second->GetSourceCount() == 0)
                 {
+                    app.second->Destroy();
                     m_apps.erase(app.first);
+
                     RecalculateIconStart();
                     UpdateIconPositions();
-
-                    app.second->Destroy();
                     break;
                 }
             }

@@ -21,9 +21,11 @@
  */
 #pragma once
 
+#include <dispatcher.hpp>
 #include <subsurface.hpp>
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
+#include <notifications/timeout_notification.hpp>
 #include <drawing/painter.hpp>
 #include <drawing/font_manager.hpp>
 #include <drawing/font.hpp>
@@ -31,6 +33,8 @@
 #include <memory>
 #include <string>
 #include <ctime>
+
+constexpr auto LAUNCHER_DATETIME_TIMER_ID = 0;
 
 using namespace Asgaard;
 
@@ -49,6 +53,7 @@ public:
 
     void Destroy() override
     {
+        DIS.CancelTimer(this, LAUNCHER_DATETIME_TIMER_ID);
         SubSurface::Destroy();
     }
 
@@ -66,6 +71,14 @@ public:
             notification.GetType() == NotificationType::TEXT_COMMIT) {
             // ok notify this to our launcher, simply redirect event
             Notify(notification);
+            return; // handled
+        }
+        else if (notification.GetType() == Asgaard::NotificationType::TIMEOUT) {
+            const auto& timeout = static_cast<const Asgaard::TimeoutNotification&>(notification);
+            if (timeout.GetTimerId() == LAUNCHER_DATETIME_TIMER_ID) {
+                UpdateTimeAndDate();
+                return; // handled
+            }
         }
 
         // do not steal events that the underlying system needs
@@ -141,6 +154,7 @@ private:
 
     void FinishSetup()
     {
+        DIS.StartTimer(this, LAUNCHER_DATETIME_TIMER_ID, 1000, true);
         SetDropShadow(Asgaard::Rectangle(-10, -10, 20, 30));
         SetBuffer(m_buffer);
         ApplyChanges();

@@ -21,10 +21,12 @@
  */
 #pragma once
 
+#include <dispatcher.hpp>
 #include <subsurface.hpp>
 #include <memory_pool.hpp>
 #include <memory_buffer.hpp>
 #include <notifications/textchanged_notification.hpp>
+#include <notifications/timeout_notification.hpp>
 #include <drawing/painter.hpp>
 #include <widgets/label.hpp>
 #include <theming/theme_manager.hpp>
@@ -34,6 +36,8 @@
 #include <string>
 #include <vector>
 #include <map>
+
+constexpr auto STATUSBAR_DATETIME_TIMER_ID = 0;
 
 using namespace Asgaard;
 
@@ -52,10 +56,25 @@ public:
 
     void Destroy() override
     {
+        DIS.CancelTimer(this, STATUSBAR_DATETIME_TIMER_ID);
         Surface::Destroy();
     }
 
-public:
+protected:
+    void Notification(const Publisher* source, const Asgaard::Notification& notification) override
+    {
+        if (notification.GetType() == Asgaard::NotificationType::TIMEOUT) {
+            const auto& timeout = static_cast<const Asgaard::TimeoutNotification&>(notification);
+            if (timeout.GetTimerId() == STATUSBAR_DATETIME_TIMER_ID) {
+                UpdateTimeAndDate();
+                return; // handled
+            }
+        }
+
+        Surface::Notification(source, notification);
+    }
+
+private:
     void LoadResources()
     {
         auto statusBarSize = Dimensions().Width() * Dimensions().Height() * 4;
@@ -93,6 +112,7 @@ public:
 
     void Configure()
     {
+        DIS.StartTimer(this, STATUSBAR_DATETIME_TIMER_ID, 1000, true);
         RequestPriorityLevel(PriorityLevel::TOP);
         MarkInputRegion(Dimensions());
         SetBuffer(m_buffer);

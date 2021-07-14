@@ -38,6 +38,7 @@ namespace Asgaard {
         TEXT_COMMIT,
         FOCUS_EVENT,
         FOCUS,
+        TIMEOUT,
 
         CUSTOM_START
     };

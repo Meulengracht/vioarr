@@ -55,6 +55,7 @@ add_sources (
     widgets/textbox.cpp
 
     application.cpp
+    dispatcher.cpp
     environment.cpp
     key_event.cpp
     keyboard.cpp

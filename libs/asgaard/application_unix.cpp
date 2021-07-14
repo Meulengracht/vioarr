@@ -22,11 +22,13 @@
  */
 
 #include <algorithm>
+#include <chrono>
 #include <cstring>
 #include <errno.h>
 #include <type_traits>
 #include <gracht/client.h>
 #include "include/application.hpp"
+#include "include/dispatcher.hpp"
 #include "include/pointer.hpp"
 #include "include/screen.hpp"
 #include "include/keyboard.hpp"
@@ -129,8 +131,9 @@ namespace Asgaard
             Initialize();
         }
         
+        unsigned int tick = -1;
         while (true) {
-            int num_events = epoll_wait(m_ioset, &events[0], 8, -1); // 0 && EINTR on timeout
+            int num_events = epoll_wait(m_ioset, &events[0], 8, tick); // 0 && EINTR on timeout
             for (int i = 0; i < num_events; i++) {
                 if (events[i].data.fd == gracht_client_iod(m_vClient)) {
                     gracht_client_wait_message(m_vClient, NULL, 0);
@@ -144,6 +147,12 @@ namespace Asgaard
                         m_defaultListener->DescriptorEvent(events[i].data.fd, events[i].events);
                     }
                 }
+            }
+
+            tick = DIS.Tick();
+            if (tick == 0) {
+                // adjust to -1 as that means infinite in epoll
+                tick = -1;
             }
         }
         

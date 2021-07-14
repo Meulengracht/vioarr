@@ -27,6 +27,7 @@
 #include <type_traits>
 #include <gracht/client.h>
 #include "include/application.hpp"
+#include "include/dispatcher.hpp"
 #include "include/pointer.hpp"
 #include "include/screen.hpp"
 #include "include/keyboard.hpp"
@@ -98,8 +99,9 @@ namespace Asgaard {
             Initialize();
         }
         
+        unsigned int tick = 0;
         while (true) {
-            int num_events = ioset_wait(m_ioset, &events[0], 8, 0);
+            int num_events = ioset_wait(m_ioset, &events[0], 8, tick);
             for (int i = 0; i < num_events; i++) {
                 if (events[i].data.iod == gracht_client_iod(m_vClient)) {
                     gracht_client_wait_message(m_vClient, NULL, m_messageBuffer, 0);
@@ -114,6 +116,7 @@ namespace Asgaard {
                     }
                 }
             }
+            tick = DIS.Tick();
         }
         
         return 0;

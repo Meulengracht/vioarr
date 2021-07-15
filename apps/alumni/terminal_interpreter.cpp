@@ -63,13 +63,14 @@ void TerminalInterpreter::RegisterCommand(const std::string& Command, const std:
     m_Commands.push_back(std::make_unique<TerminalCommand>(Command, Description, Fn));
 }
 
-std::vector<std::string> TerminalInterpreter::SplitCommandString(const std::string& command)
+std::vector<std::string> TerminalInterpreter::SplitCommandString(const std::string& command, std::vector<char> seperators)
 {
     std::vector<std::string> tokens;
     std::string              token = "";
 
     for (auto i = 0u; i < command.size(); i++) {
-        if (command[i] == ' ' || command[i] == '/' || command[i] == '\\') {
+        auto isSep = std::find(std::begin(seperators), std::end(seperators), command[i]) != std::end(seperators);
+        if (isSep) {
             if (token != "") {
                 tokens.push_back(token);
             }

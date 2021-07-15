@@ -149,7 +149,11 @@ void ResolverBase::DirectoryPrinter(const std::vector<DirectoryEntry>& directory
 
 bool ResolverBase::HandleKeyCode(const Asgaard::KeyEvent& key)
 {
-    if (key.KeyCode() == VKC_TAB && key.Pressed()) {
+    if (!key.Pressed()) {
+        return false;
+    }
+
+    if (key.KeyCode() == VKC_TAB) {
         if (m_lastKeyCode != VKC_TAB) {
             m_originalCommand = m_terminal->GetCurrentInput();
             m_autoCompleteIndex = 0;
@@ -170,30 +174,40 @@ void ResolverBase::TryAutoComplete()
         return;
     }
 
-    // if we double tab then list all files, and restore the input line
-    auto directoryEntries = GetDirectoryContents(m_currentDirectory);
-    if (m_autoCompleteIndex > 0) {
-        m_terminal->ClearInput(false);
-        DirectoryPrinter(directoryEntries);
-        PrintCommandHeader();
-        m_terminal->SetInput(m_originalCommand);
-        m_terminal->RequestRedraw();
-        return;
+    auto lastArgument        = SplitCommandString(m_originalCommand).back();
+    auto tokens              = SplitCommandString(lastArgument, { '/', '\\' });
+    auto directoryToComplete = m_currentDirectory;
+    for (auto i = 0u; tokens.size() != 0 && i < (tokens.size() - 1); i++) {
+        directoryToComplete += "/" + tokens[i];
     }
 
-    // otherwise we try to complete the line
-    auto i = 0;
-    auto lastToken = SplitCommandString(m_originalCommand).back();
-    if (EndsWith(m_originalCommand, " ")) {
+    /** 
+     * Include the last token in the auto complete if the command ends with a slash
+     * or a backslash
+     */
+    if (EndsWith(m_originalCommand, "\\") || EndsWith(m_originalCommand, "/")) {
+        directoryToComplete += "/" + tokens[tokens.size() - 1];
+    }
+    auto directoryEntries = GetDirectoryContents(directoryToComplete);
+
+    /**
+     * Make sure we catch the case where the user is trying to tab complete an
+     * empty argument (e.g. "cd /").
+     */
+    auto lastToken = tokens.back();
+    if (EndsWith(m_originalCommand, " ") || 
+        EndsWith(m_originalCommand, "\\") ||
+        EndsWith(m_originalCommand, "/")) {
         // start of new search
         lastToken = "";
     }
 
+    auto i = 0;
     auto matchingEntry = std::find_if(
         std::begin(directoryEntries), 
         std::end(directoryEntries),
         [targetIndex = m_autoCompleteIndex, lastToken, &i](const DirectoryEntry& entry) {
-            if (lastToken == "" || entry.GetName().rfind(lastToken, 0) == 0) {
+            if (lastToken == "" || entry.GetName().find(lastToken) == 0) {
                 if (i == targetIndex) {
                     return true;
                 }
@@ -202,11 +216,26 @@ void ResolverBase::TryAutoComplete()
             return false;
         }
     );
+
+    if (matchingEntry == std::end(directoryEntries) && m_autoCompleteIndex > 0) {
+        m_terminal->ClearInput(false);
+        DirectoryPrinter(directoryEntries);
+        PrintCommandHeader();
+
+        m_terminal->SetInput(m_originalCommand);
+        m_terminal->RequestRedraw();
+    }
+
     if (matchingEntry != std::end(directoryEntries)) {
         // extend current command with the matching entry
-        auto lastMatch  = m_originalCommand.find_last_of(lastToken);
-        auto cutCommand = m_originalCommand.substr(0, lastMatch);
-        cutCommand += (*matchingEntry).GetName();
+        std::string cutCommand = "";
+        if (lastToken == "") {
+            cutCommand = m_originalCommand + (*matchingEntry).GetName();
+        }
+        else {
+            auto lastMatch  = m_originalCommand.rfind(lastToken);
+            cutCommand = m_originalCommand.substr(0, lastMatch) + (*matchingEntry).GetName();
+        }
 
         // to support multi-completion, once we encounter a directory
         // we reset to that as a new base
@@ -214,8 +243,7 @@ void ResolverBase::TryAutoComplete()
             cutCommand += "/";
 
             // reset auto completion
-            m_originalCommand   = cutCommand;
-            m_autoCompleteIndex = 0;
+            m_lastKeyCode = VKC_INVALID;
         }
 
         m_terminal->SetInput(cutCommand);

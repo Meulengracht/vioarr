@@ -25,6 +25,13 @@
 #include "../terminal.hpp"
 #include "resolver_base.hpp"
 
+namespace {
+    static bool EndsWith(const std::string& string, const std::string& suffix)
+    {
+        return string.size() >= suffix.size() && 0 == string.compare(string.size() - suffix.size(), suffix.size(), suffix);
+    }
+}
+
 ResolverBase::ResolverBase()
     : m_terminal(nullptr)
     , m_currentDirectory("nil")
@@ -177,11 +184,16 @@ void ResolverBase::TryAutoComplete()
     // otherwise we try to complete the line
     auto i = 0;
     auto lastToken = SplitCommandString(m_originalCommand).back();
+    if (EndsWith(m_originalCommand, " ")) {
+        // start of new search
+        lastToken = "";
+    }
+
     auto matchingEntry = std::find_if(
         std::begin(directoryEntries), 
         std::end(directoryEntries),
         [targetIndex = m_autoCompleteIndex, lastToken, &i](const DirectoryEntry& entry) {
-            if (entry.GetName().rfind(lastToken, 0) == 0) {
+            if (lastToken == "" || entry.GetName().rfind(lastToken, 0) == 0) {
                 if (i == targetIndex) {
                     return true;
                 }
@@ -195,6 +207,16 @@ void ResolverBase::TryAutoComplete()
         auto lastMatch  = m_originalCommand.find_last_of(lastToken);
         auto cutCommand = m_originalCommand.substr(0, lastMatch);
         cutCommand += (*matchingEntry).GetName();
+
+        // to support multi-completion, once we encounter a directory
+        // we reset to that as a new base
+        if ((*matchingEntry).GetType() == DirectoryEntry::Type::DIRECTORY) {
+            cutCommand += "/";
+
+            // reset auto completion
+            m_originalCommand   = cutCommand;
+            m_autoCompleteIndex = 0;
+        }
 
         m_terminal->SetInput(cutCommand);
         m_terminal->RequestRedraw();

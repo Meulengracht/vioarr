@@ -38,9 +38,9 @@
 
 
 namespace {
-    static bool EndsWith(const std::string& String, const std::string& Suffix)
+    static bool EndsWith(const std::string& string, const std::string& suffix)
     {
-        return String.size() >= Suffix.size() && 0 == String.compare(String.size() - Suffix.size(), Suffix.size(), Suffix);
+        return string.size() >= suffix.size() && 0 == string.compare(string.size() - suffix.size(), suffix.size(), suffix);
     }
 }
 

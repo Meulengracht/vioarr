@@ -320,7 +320,7 @@ void Terminal::SaveInputLine()
     }
 
     m_temporaryLine = std::make_unique<TerminalLine>(m_font, 0, m_cellWidth);
-    m_temporaryLine->Reset(m_lines[m_inputLineIndexCurrent]->GetCells()); // copy line
+    m_lines[m_inputLineIndexCurrent]->CloneTo(*(m_temporaryLine.get()));
 }
 
 void Terminal::RestoreInputLine()
@@ -330,7 +330,7 @@ void Terminal::RestoreInputLine()
         return;
     }
 
-    m_lines[m_inputLineIndexCurrent]->Reset(m_temporaryLine->GetCells());
+    m_temporaryLine->CloneTo(*(m_lines[m_inputLineIndexCurrent].get()));
     m_temporaryLine.reset();
 }
 

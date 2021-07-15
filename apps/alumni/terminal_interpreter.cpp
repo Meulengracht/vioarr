@@ -69,7 +69,7 @@ std::vector<std::string> TerminalInterpreter::SplitCommandString(const std::stri
     std::string              token = "";
 
     for (auto i = 0u; i < command.size(); i++) {
-        if (command[i] == ' ') {
+        if (command[i] == ' ' || command[i] == '/' || command[i] == '\\') {
             if (token != "") {
                 tokens.push_back(token);
             }

@@ -46,16 +46,23 @@ static void* __surface_key(vioarr_surface_t* surface)
 
 static void __focus_top_surface(void)
 {
+    vioarr_surface_t* surface = NULL;
+
     // We only care about mid-level surfaces which contains all
-    // the regular windows.
+    // the regular windows. So now we find the next surface to focus
+    // (if any) and then go through the regular focus-change procedure
+    vioarr_rwlock_r_lock(&g_manager.lock);
     foreach_reverse(i, &g_manager.surfaces[1]) {
-            if (vioarr_surface_visible(i->value)) {
-                g_manager.focused = i->value;
-                return;
-            }
+        if (vioarr_surface_visible(i->value)) {
+            surface = i->value;
+            break;
         }
-    // none to focus :(
-    g_manager.focused = NULL;
+    }
+    vioarr_rwlock_r_unlock(&g_manager.lock);
+
+    // let this function figure out what to do next, even if
+    // surface is null
+    vioarr_manager_focus_surface(surface);
 }
 
 void vioarr_manager_initialize(void)
@@ -93,6 +100,7 @@ void vioarr_manager_unregister_surface(vioarr_surface_t* surface)
 {
     element_t* element;
     int        level;
+    int        focusTop = 0;
 
     if (!surface) {
         vioarr_utils_error(VISTR("[vioarr_renderer_register_surface] null parameters"));
@@ -108,9 +116,14 @@ void vioarr_manager_unregister_surface(vioarr_surface_t* surface)
     }
 
     if (g_manager.focused == surface) {
-        __focus_top_surface();
+        g_manager.focused = NULL;
+        focusTop = 1;
     }
     vioarr_rwlock_w_unlock(&g_manager.lock);
+
+    if (focusTop) {
+        __focus_top_surface();
+    }
 }
 
 static void __change_surface_level(vioarr_surface_t* surface, int level, int newLevel)
@@ -213,8 +226,7 @@ void vioarr_manager_focus_surface(vioarr_surface_t* surface)
     if (entering != g_manager.focused) {
         leaving = g_manager.focused;
         g_manager.focused = entering;
-
-        if (g_manager.focused) {
+        if (entering) {
             vioarr_surface_t* parent = vioarr_surface_parent(surface, 1);
             if (parent != vioarr_surface_parent(leaving, 1)) {
                 int        level   = vioarr_surface_level(parent);
@@ -278,9 +290,7 @@ void vioarr_manager_on_surface_visiblity_change(vioarr_surface_t* surface, int v
         vioarr_manager_focus_surface(surface);
     }
     else if (vioarr_surface_parent(g_manager.focused, 1) == surface) {
-        vioarr_rwlock_w_lock(&g_manager.lock);
         __focus_top_surface();
-        vioarr_rwlock_w_unlock(&g_manager.lock);
     }
     vioarr_rwlock_r_lock(&g_manager.lock);
 }

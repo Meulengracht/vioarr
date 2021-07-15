@@ -77,6 +77,19 @@ void TerminalLine::Resize(int cellCount, std::vector<TerminalCell>& overflownCel
     m_cells.resize(cellCount);
 }
 
+void TerminalLine::CloneTo(TerminalLine& to)
+{
+    to.m_font = m_font;
+    to.m_dimensions = m_dimensions;
+    to.m_cells = m_cells;
+    to.m_text = m_text;
+    to.m_row = m_row;
+    to.m_cursor = m_cursor;
+    to.m_inputOffset = m_inputOffset;
+    to.m_showCursor = m_showCursor;
+    to.m_dirty = true;
+}
+
 void TerminalLine::PrependCells(const std::vector<TerminalCell>& cells, std::vector<TerminalCell>& overflownCells)
 {
     auto count = cells.size();

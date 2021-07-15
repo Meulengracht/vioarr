@@ -37,6 +37,7 @@
 
 #include "../effects/guassian_blur.hpp"
 #include "../utils/spawner.hpp"
+#include "../utils/register.hpp"
 #include "launcher_infosearch.hpp"
 #include "launcher_app.hpp"
 
@@ -203,23 +204,11 @@ public:
 
     void LoadApplications()
     {
-        const auto theme = Theming::TM.GetTheme();
-
-        auto termImage = theme->GetImage(Theming::Theme::Elements::IMAGE_TERMINAL);
-        auto editImage = theme->GetImage(Theming::Theme::Elements::IMAGE_EDITOR);
-        auto gameImage = theme->GetImage(Theming::Theme::Elements::IMAGE_GAME);
-
-        // hardcode initial ones
-#ifdef MOLLENOS
-        RegisterApplication("Terminal", termImage, "$bin/alumni.app");
-        RegisterApplication("Lite", editImage, "$bin/lite.app");
-        RegisterApplication("Doom", gameImage, "$bin/doom.app");
-#else
-        RegisterApplication("Terminal", termImage, "alumni");
-        RegisterApplication("Lite", editImage, "alumni");
-        RegisterApplication("Doom", gameImage, "alumni");
-#endif
-
+        const auto& apps = Heimdall::Register::GetApplications();
+        for (const auto& app : apps) {
+            RegisterApplication(app->GetName(), app->GetIcon(), app->GetPath());
+        }
+        
         // sort list alphabetically
         std::sort(
             m_registeredApps.begin(),

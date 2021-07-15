@@ -1,3 +1,16 @@
+set (SRCS "")
+
+macro (add_sources)
+    file (RELATIVE_PATH _relPath "${PROJECT_SOURCE_DIR}/libs/asgaard" "${CMAKE_CURRENT_SOURCE_DIR}")
+    foreach (_src ${ARGN})
+        if (_relPath)
+            list (APPEND SRCS "${_relPath}/${_src}")
+        else()
+            list (APPEND SRCS "${_src}")
+        endif()
+    endforeach()
+endmacro()
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set (GENERATED_SOURCES
@@ -12,15 +25,19 @@ include_directories (
     ${libgracht_SOURCE_DIR}/include
 )
 
-# Configure primary executable target
-add_executable(heimdall
-    ${GENERATED_SOURCES}
-    
+add_sources(
     effects/guassian_blur.cpp
-    utils/register.cpp
     utils/spawner.cpp
     main.cpp
 )
+if (MOLLENOS)
+  add_sources(utils/register_vali.cpp)
+elseif (UNIX)
+  add_sources(utils/register_unix.cpp)
+endif()
+
+# Configure primary executable target
+add_executable(heimdall ${GENERATED_SOURCES} ${SRCS})
 add_dependencies(heimdall hd_server_service)
 target_link_libraries(heimdall asgaard gracht)
 

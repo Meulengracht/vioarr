@@ -21,38 +21,41 @@
  */
 
 #include "register.hpp"
-#include <map>
+#include <theming/theme_manager.hpp>
+#include <theming/theme.hpp>
 
 namespace Heimdall
 {
     namespace Register
     {
         namespace {
-            static std::map<unsigned int, std::shared_ptr<Application>> g_applicationRegister;
+            static std::vector<std::unique_ptr<Application>> g_applicationRegister;
         }
 
-        Application::Application(const std::string&, const std::string&, const Asgaard::Drawing::Image&)
+        Application::Application(const std::string& name, const std::string& path, const Asgaard::Drawing::Image& icon)
+            : m_name(name)
+            , m_path(path)
+            , m_icon(icon)
         {
 
         }
 
         void Initialize()
         {
-            //g_applicationRegister.insert(std::make_pair(0, new Application("", "", )))
+            const auto theme = Asgaard::Theming::TM.GetTheme();
+            auto termImage = theme->GetImage(Asgaard::Theming::Theme::Elements::IMAGE_TERMINAL);
+            
+            g_applicationRegister.push_back(std::make_unique<Application>("Terminal", "alumni", termImage));
         }
 
         void Update()
         {
-
+            // nothing to do here
         }
 
-        std::shared_ptr<Application> GetApplication(unsigned int id)
+        const std::vector<std::unique_ptr<Application>>& GetApplications()
         {
-            auto app = g_applicationRegister.find(id);
-            if (app == std::end(g_applicationRegister)) {
-                return std::shared_ptr<Application>(nullptr);
-            }
-            return app->second;
+            return g_applicationRegister;
         }
     }
 }

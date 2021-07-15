@@ -22,7 +22,7 @@
 #pragma once
 
 #include <drawing/image.hpp>
-#include <map>
+#include <vector>
 #include <string>
 #include <memory>
 
@@ -46,8 +46,9 @@ namespace Heimdall
             Asgaard::Drawing::Image m_icon;
         };
 
-        void                         Initialize();
-        void                         Update();
-        std::shared_ptr<Application> GetApplication(unsigned int id);
+        void Initialize();
+        void Update();
+
+        const std::vector<std::unique_ptr<Application>>& GetApplications();
     }
 }

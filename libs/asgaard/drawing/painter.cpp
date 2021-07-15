@@ -356,31 +356,27 @@ namespace Asgaard {
                 case Primitives::ShapeType::CIRCLE: {
                     const auto circle = static_cast<const Primitives::CircleShape*>(m_shape);
                     auto radiusSqrt = circle->Radius() * circle->Radius();
-                    auto midCanvas  = static_cast<uint8_t*>(m_canvas->Buffer(circle->CenterX(), circle->CenterY()));
-                    auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);
-                    auto imageLimit = (image.Height() * image.Width()) + image.Width();
-                    auto slSize     = m_canvas->Stride();
                     auto fillcolor  = m_fillColor.GetFormatted(m_canvas->Format());
+                    auto midImage   = ((image.Height() >> 1) * image.Width()) + (image.Width() >> 1);
+                    auto imageLimit = image.Height() * image.Width();
 
                     for (int x = -circle->Radius(); x < circle->Radius(); x++)
                     {
                         auto height = (int)std::sqrt(radiusSqrt - x * x);
-                        auto xOffset = (circle->CenterX() + x) * bpp;
-                        
-                        auto y = -height;
-                        auto canvasOffset = ((slSize * (circle->CenterY() - height)) + xOffset); // bytes
-                        auto imageOffset = midImage + (-height * image.Width()) + x; // pixels
-                        for (; y < height; y++, canvasOffset += slSize, imageOffset += image.Width()) {
+                        for (int y = -height; y < height; y++) {
+                            auto imageOffset = midImage + (y * image.Width()) + x;
                             if (x + circle->CenterX() < m_canvas->Width() && x + circle->CenterX() >= 0 &&
                                 y + circle->CenterY() < m_canvas->Height() && y + circle->CenterY() >= 0 &&
                                 imageOffset >= 0 && imageOffset < imageLimit) {
+                                auto dest = static_cast<uint32_t*>(m_canvas->Buffer(circle->CenterX() + x, circle->CenterY() + y));
                                 auto pixel = image.GetPixel(imageOffset);
                                 if (pixel.Alpha() == 255) {
-                                    *(reinterpret_cast<uint32_t*>(midCanvas + canvasOffset)) = pixel.GetFormatted(m_canvas->Format());
+                                    *dest = pixel.GetFormatted(m_canvas->Format());
                                 }
                                 else if (pixel.Alpha() > 0) {
-                                    *(reinterpret_cast<uint32_t*>(midCanvas + canvasOffset)) = AlphaBlendAXGX(
-                                        pixel.GetFormatted(m_canvas->Format()), fillcolor, pixel.Alpha()
+                                    *dest = AlphaBlendAXGX(fillcolor,
+                                        pixel.GetFormatted(m_canvas->Format()), 
+                                        pixel.Alpha()
                                     );
                                 }
                             }

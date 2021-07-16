@@ -36,17 +36,24 @@
 #include "../vioarr_utils.h"
 #include <time.h>
 
-struct start_sync_context {
+struct startup_sync_context {
     mtx_t lock;
     cnd_t signal;
+};
+
+struct render_sync_context {
+    mtx_t   lock;
+    cnd_t   signal;
+    clock_t last_update;
 };
 
 static int vioarr_engine_setup_screens(void);
 static int vioarr_engine_update(void*);
 
-static vioarr_screen_t*          primary_screen;
-static thrd_t                    screen_thread;
-static struct start_sync_context startup_context;
+static vioarr_screen_t*            primary_screen;
+static thrd_t                      screen_thread;
+static struct startup_sync_context startup_context;
+static struct render_sync_context  render_sync;
 
 int vioarr_engine_initialize(void)
 {
@@ -55,8 +62,16 @@ int vioarr_engine_initialize(void)
     // initialize systems
     vioarr_manager_initialize();
     
+    // initialize the startup context that synchronizes
+    // the startup sequence. 
     mtx_init(&startup_context.lock, mtx_plain);
     cnd_init(&startup_context.signal);
+
+    // initialize the rendering sync context that controls
+    // how often we render
+    mtx_init(&render_sync.lock, mtx_plain);
+    cnd_init(&render_sync.signal);
+    render_sync.last_update = 0;
 
     // create the renderer thread and allow it to initialize before ending engine init
     vioarr_utils_trace(VISTR("[vioarr] [initialize] creating renderer thread"));
@@ -70,6 +85,13 @@ int vioarr_engine_initialize(void)
     cnd_wait(&startup_context.signal, &startup_context.lock);
     mtx_unlock(&startup_context.lock);
     return 0;
+}
+
+void vioarr_engine_request_redraw(void)
+{
+    mtx_lock(&render_sync.lock);
+    cnd_signal(&render_sync.signal);
+    mtx_unlock(&render_sync.lock);
 }
 
 int vioarr_engine_x_minimum(void)
@@ -124,7 +146,9 @@ static void signal_init_thread(void)
 
 static int vioarr_engine_update(void* context)
 {
-    int status;
+    clock_t update, diffMs;
+    int     status;
+
     (void)context;
 
     // Initialise GLFW
@@ -152,7 +176,20 @@ static int vioarr_engine_update(void* context)
     
     vioarr_utils_trace(VISTR("vioarr_engine_update started"));
     signal_init_thread();
+    
     while (vioarr_screen_valid(primary_screen)) {
+        mtx_lock(&render_sync.lock);
+        cnd_wait(&render_sync.signal, &render_sync.lock);
+        mtx_unlock(&render_sync.lock);
+
+        update = clock();
+        diffMs = (update - render_sync.last_update) / (CLOCKS_PER_SEC / 1000);
+        if (diffMs < ENGINE_SCREEN_REFRESH_MS) {
+            time_t msToSleep = ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS);
+            thrd_sleep(&(struct timespec){ .tv_sec = 0, .tv_nsec = msToSleep * 1000000UL }, NULL);
+        }
+        render_sync.last_update = update;
+        
         vioarr_screen_frame(primary_screen);
         glfwPollEvents();
     }

@@ -22,9 +22,6 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
-#define ENGINE_SCREEN_REFRESH_HZ 60
-#define ENGINE_SCREEN_REFRESH_MS (1000 / ENGINE_SCREEN_REFRESH_HZ)
-
 #include <ddk/video.h>
 #include <os/mollenos.h>
 #include "../vioarr_manager.h"
@@ -35,11 +32,24 @@
 #include <time.h>
 #include <threads.h>
 
+struct startup_sync_context {
+    mtx_t lock;
+    cnd_t signal;
+};
+
+struct render_sync_context {
+    mtx_t   lock;
+    cnd_t   signal;
+    clock_t last_update;
+};
+
 static int vioarr_engine_setup_screens(void);
 static int vioarr_engine_update(void*);
 
-static vioarr_screen_t* primary_screen;
-static thrd_t           screen_thread;
+static vioarr_screen_t*            primary_screen;
+static thrd_t                      screen_thread;
+static struct startup_sync_context startup_context;
+static struct render_sync_context  render_sync;
 
 int vioarr_engine_initialize(void)
 {
@@ -48,17 +58,29 @@ int vioarr_engine_initialize(void)
     // initialize systems
     vioarr_manager_initialize();
     
-    vioarr_utils_trace(VISTR("[vioarr] [initialize] initializing screens"));
-    status = vioarr_engine_setup_screens();
-    if (status) {
-        vioarr_utils_error(VISTR("[vioarr] [initialize] failed to initialize screens, code %i"), status);
+    // initialize the startup context that synchronizes
+    // the startup sequence. 
+    mtx_init(&startup_context.lock, mtx_plain);
+    cnd_init(&startup_context.signal);
+
+    // initialize the rendering sync context that controls
+    // how often we render
+    mtx_init(&render_sync.lock, mtx_plain);
+    cnd_init(&render_sync.signal);
+    render_sync.last_update = 0;
+
+    // create the renderer thread and allow it to initialize before ending engine init
+    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating renderer thread"));
+    status = thrd_create(&screen_thread, vioarr_engine_update, NULL);
+    if (status != thrd_success) {
         return status;
     }
-    
-    // Spawn the renderer thread, this will update the screen at a 60 hz frequency
-    // and handle all redrawing
-    vioarr_utils_trace(VISTR("[vioarr] [initialize] creating screen renderer thread"));
-    return thrd_create(&screen_thread, vioarr_engine_update, primary_screen);
+
+    // wait for startup sequence to finish
+    mtx_lock(&startup_context.lock);
+    cnd_wait(&startup_context.signal, &startup_context.lock);
+    mtx_unlock(&startup_context.lock);
+    return 0;
 }
 
 
@@ -107,23 +129,45 @@ static int vioarr_engine_setup_screens(void)
     return 0;
 }
 
+static void signal_init_thread(void)
+{
+    mtx_lock(&startup_context.lock);
+    cnd_signal(&startup_context.signal);
+    mtx_unlock(&startup_context.lock);
+}
+
 static int vioarr_engine_update(void* context)
 {
-    vioarr_screen_t* screen = context;
-    clock_t start, end, diffMs;
+    clock_t update, diffMs;
+    int     status;
+
+    (void)context;
+
+    vioarr_utils_trace(VISTR("vioarr_engine_update initializing screens"));
+    status = vioarr_engine_setup_screens();
+    if (status) {
+        vioarr_utils_error(VISTR("vioarr_engine_update failed to initialize screens, code %i"), status);
+        signal_init_thread();
+        return status;
+    }
+    
+    vioarr_utils_trace(VISTR("vioarr_engine_update started"));
+    signal_init_thread();
     
     vioarr_utils_trace(VISTR("[vioarr] [renderer_thread] started"));
     while (1) {
+        mtx_lock(&render_sync.lock);
+        cnd_wait(&render_sync.signal, &render_sync.lock);
+        mtx_unlock(&render_sync.lock);
+
+        update = clock();
+        diffMs = (update - render_sync.last_update) / (CLOCKS_PER_SEC / 1000);
+        if (diffMs < ENGINE_SCREEN_REFRESH_MS) {
+            thrd_sleepex(ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
+        }
+        render_sync.last_update = update;
         start = clock();
         
         vioarr_screen_frame(screen);
-        
-        end    = clock();
-        diffMs = end - start;
-        start  = end;
-        
-        //vioarr_utils_trace(VISTR("vioarr_engine_update update took %" PRIuIN "ms, next in %" PRIuIN "ms"), 
-        //    diffMs, ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
-        thrd_sleepex(ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
     }
 }

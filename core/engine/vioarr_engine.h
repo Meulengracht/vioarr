@@ -25,7 +25,11 @@
 #ifndef __VIOARR_ENGINE_H__
 #define __VIOARR_ENGINE_H__
 
-int vioarr_engine_initialize(void);
+#define ENGINE_SCREEN_REFRESH_HZ 60
+#define ENGINE_SCREEN_REFRESH_MS (1000 / ENGINE_SCREEN_REFRESH_HZ)
+
+int  vioarr_engine_initialize(void);
+void vioarr_engine_request_redraw(void);
 
 int vioarr_engine_x_minimum(void);
 int vioarr_engine_x_maximum(void);

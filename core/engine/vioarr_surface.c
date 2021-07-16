@@ -22,6 +22,7 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
+#include "vioarr_engine.h"
 #include "vioarr_surface.h"
 #include "vioarr_screen.h"
 #include "vioarr_region.h"
@@ -181,6 +182,7 @@ void vioarr_surface_destroy(vioarr_surface_t* surface)
     if (surface->parent) {
         __remove_child(surface->parent, surface);
         __make_orphan(surface);
+        vioarr_engine_request_redraw();
         vioarr_renderer_wait_frame(vioarr_screen_renderer(surface->screen));
     }
 
@@ -304,6 +306,7 @@ void vioarr_surface_set_position(vioarr_surface_t* surface, int x, int y)
     vioarr_rwlock_w_lock(&surface->lock);
     vioarr_region_set_position(__get_correct_region(surface), x, y);
     vioarr_rwlock_w_unlock(&surface->lock);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_set_drop_shadow(vioarr_surface_t* surface, int x, int y, int width, int height)
@@ -339,6 +342,7 @@ void vioarr_surface_set_level(vioarr_surface_t* surface, int level)
     vioarr_rwlock_w_lock(&surface->lock);
     surface->level = level;
     vioarr_rwlock_w_unlock(&surface->lock);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_request_frame(vioarr_surface_t* surface)
@@ -348,6 +352,7 @@ void vioarr_surface_request_frame(vioarr_surface_t* surface)
     }
 
     atomic_store(&surface->frame_requested, 1);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_maximize(vioarr_surface_t* surface)
@@ -375,6 +380,7 @@ void vioarr_surface_maximize(vioarr_surface_t* surface)
         vioarr_region_width(maximized), 
         vioarr_region_height(maximized),
         WM_SURFACE_EDGE_NO_EDGES);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_restore_size(vioarr_surface_t* surface)
@@ -391,6 +397,7 @@ void vioarr_surface_restore_size(vioarr_surface_t* surface)
         vioarr_region_width(surface->dimensions), 
         vioarr_region_height(surface->dimensions),
         WM_SURFACE_EDGE_NO_EDGES);
+    vioarr_engine_request_redraw();
 }
 
 int vioarr_surface_supports_input(vioarr_surface_t* surface, int x, int y)
@@ -506,6 +513,7 @@ void vioarr_surface_commit(vioarr_surface_t* surface)
     vioarr_rwlock_w_lock(&surface->lock);
     __swap_properties(surface);
     vioarr_rwlock_w_unlock(&surface->lock);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_move(vioarr_surface_t* surface, int x, int y)
@@ -523,6 +531,7 @@ void vioarr_surface_move(vioarr_surface_t* surface, int x, int y)
         vioarr_region_x(region) + x,
         vioarr_region_y(region) + y);
     vioarr_rwlock_w_unlock(&surface->lock);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_move_absolute(vioarr_surface_t* surface, int x, int y)
@@ -534,6 +543,7 @@ void vioarr_surface_move_absolute(vioarr_surface_t* surface, int x, int y)
     vioarr_rwlock_w_lock(&surface->lock);
     vioarr_region_set_position(__get_correct_region(surface), x, y);
     vioarr_rwlock_w_unlock(&surface->lock);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_resize(vioarr_surface_t* surface, int width, int height, enum wm_surface_edge edges)
@@ -547,6 +557,7 @@ void vioarr_surface_resize(vioarr_surface_t* surface, int width, int height, enu
     vioarr_rwlock_w_unlock(&surface->lock);
 
     wm_surface_event_resize_single(vioarr_get_server_handle(), surface->client, surface->id, width, height, edges);
+    vioarr_engine_request_redraw();
 }
 
 void vioarr_surface_focus(vioarr_surface_t* surface, int focus)

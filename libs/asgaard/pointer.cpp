@@ -21,12 +21,12 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/pointer.hpp"
-#include "include/surface.hpp"
-#include "include/theming/theme_manager.hpp"
-#include "include/theming/theme.hpp"
-#include "include/widgets/cursor.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/pointer.hpp>
+#include <asgaard/surface.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
+#include <asgaard/widgets/cursor.hpp>
 
 #include "wm_pointer_service_client.h"
 

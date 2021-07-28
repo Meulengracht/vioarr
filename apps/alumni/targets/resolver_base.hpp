@@ -22,8 +22,8 @@
  */
 #pragma once
 
-#include <surface.hpp>
-#include <keycodes.h>
+#include <asgaard/surface.hpp>
+#include <vioarr/keycodes.h>
 #include <memory>
 #include <string>
 #include "../terminal_interpreter.hpp"

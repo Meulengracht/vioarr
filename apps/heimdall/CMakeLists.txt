@@ -14,12 +14,12 @@ endmacro()
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 set (GENERATED_SOURCES
-    ${CMAKE_BINARY_DIR}/protocols/hd_core_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/hd_core_service_server.c
 )
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 
 include_directories (
-    ${CMAKE_BINARY_DIR}/protocols
+    ${VIOARR_PROTOCOL_DIRECTORY}
     ${PROJECT_SOURCE_DIR}/libs/common/include
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
     ${libgracht_SOURCE_DIR}/include

@@ -19,8 +19,8 @@
  *  - Contains the implementation of the application framework used for building
  *    graphical applications.
  */
- 
-#include "include/events/key_event.hpp"
+
+#include <asgaard/events/key_event.hpp>
 
 namespace {
     // Keymap when modifier SHIFT is present

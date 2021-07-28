@@ -21,7 +21,7 @@
  *    graphical applications.
  */
 
-#include "../include/theming/theme.hpp"
+#include <asgaard/theming/theme.hpp>
 #include <ZipFile.h>
 #include <streams/memstream.h>
 #include <methods/Bzip2Method.h>

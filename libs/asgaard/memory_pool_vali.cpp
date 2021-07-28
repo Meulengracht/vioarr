@@ -21,14 +21,14 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/exceptions/application_exception.h"
-#include "include/exceptions/invalid_argument_exception.h"
-#include "include/memory_pool.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/exceptions/application_exception.h>
+#include <asgaard/exceptions/invalid_argument_exception.h>
+#include <asgaard/memory_pool.hpp>
 
-#include "wm_core_protocol_client.h"
-#include "wm_memory_pool_protocol_client.h"
-#include "wm_memory_protocol_client.h"
+#include "wm_core_service_client.h"
+#include "wm_memory_pool_service_client.h"
+#include "wm_memory_service_client.h"
 
 #include <os/mollenos.h>
 

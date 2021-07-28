@@ -20,10 +20,10 @@
  *    graphical applications.
  */
 
-#include "../include/drawing/color.hpp"
-#include "../include/drawing/image.hpp"
-#include "../include/exceptions/out_of_range_exception.h"
-#include "../include/exceptions/application_exception.h"
+#include <asgaard/drawing/color.hpp>
+#include <asgaard/drawing/image.hpp>
+#include <asgaard/exceptions/out_of_range_exception.h>
+#include <asgaard/exceptions/application_exception.h>
 #include <vector>
 #include <iterator>
 

@@ -26,6 +26,7 @@
 #include <map>
 #include <memory>
 #include <cstring>
+#include <string>
 
 typedef struct gracht_client gracht_client_t;
 

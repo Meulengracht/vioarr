@@ -14,24 +14,25 @@ endmacro()
 
 # setup include directories
 include_directories(
-    ${CMAKE_BINARY_DIR}/protocols
+    ${VIOARR_PROTOCOL_DIRECTORY}
     ${libgracht_SOURCE_DIR}/include
     ${zip_SOURCE_DIR}/src
     ${zip_SOURCE_DIR}/src/extlibs
     ${PROJECT_SOURCE_DIR}/libs/common/include
     ../freetype/include
+    ./include/
 )
 
 set (GENERATED_SOURCES
-    ${CMAKE_BINARY_DIR}/protocols/hd_core_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_core_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_screen_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_memory_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_memory_pool_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_buffer_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_surface_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_pointer_service_client.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_keyboard_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/hd_core_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_core_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_screen_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_memory_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_memory_pool_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_buffer_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_surface_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_pointer_service_client.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_keyboard_service_client.c
 )
 
 if (MOLLENOS)
@@ -96,3 +97,8 @@ add_custom_command(TARGET asgaard POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:asgaard>
 )
+
+# setup install targets
+install(TARGETS asgaard freetype gracht zip bzip2 lzma png z zlib EXPORT AsgaardExport)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${CMAKE_INSTALL_PREFIX}/include/asgaard)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/asgaard)

@@ -20,16 +20,16 @@
  *    graphical applications.
  */
  
-#include "../include/widgets/textbox.hpp"
-#include "../include/drawing/painter.hpp"
-#include "../include/drawing/font.hpp"
-#include "../include/drawing/primitives/rectangle.hpp"
-#include "../include/memory_pool.hpp"
-#include "../include/memory_buffer.hpp"
-#include "../include/rectangle.hpp"
-#include "../include/events/key_event.hpp"
-#include "../include/notifications/textchanged_notification.hpp"
-#include "../include/notifications/textcommit_notification.hpp"
+#include <asgaard/widgets/textbox.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/drawing/primitives/rectangle.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/rectangle.hpp>
+#include <asgaard/events/key_event.hpp>
+#include <asgaard/notifications/textchanged_notification.hpp>
+#include <asgaard/notifications/textcommit_notification.hpp>
 #include <iostream>
 
 using namespace Asgaard::Widgets;

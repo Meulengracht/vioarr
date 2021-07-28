@@ -22,7 +22,7 @@
  */
 
 #include "terminal.hpp"
-#include <drawing/font_manager.hpp>
+#include <asgaard/drawing/font_manager.hpp>
 
 #ifdef MOLLENOS
 #include "targets/resolver_vali.hpp"

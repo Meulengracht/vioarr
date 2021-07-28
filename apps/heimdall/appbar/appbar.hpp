@@ -22,14 +22,14 @@
 #pragma once
 
 #include <gracht/server.h>
-#include <subsurface.hpp>
-#include <memory_pool.hpp>
-#include <memory_buffer.hpp>
-#include <notifications/textchanged_notification.hpp>
-#include <drawing/painter.hpp>
-#include <widgets/label.hpp>
-#include <theming/theme_manager.hpp>
-#include <theming/theme.hpp>
+#include <asgaard/subsurface.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/notifications/textchanged_notification.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/widgets/label.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 #include <algorithm>
 #include <memory>
 #include <string>

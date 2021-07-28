@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include "include/config.hpp"
+#include <asgaard/config.hpp>
 #include <cstdint>
 
 namespace Asgaard

@@ -20,13 +20,11 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/memory_pool.hpp"
-#include "include/memory_buffer.hpp"
-
-#include "include/drawing/image.hpp"
-
-#include "include/exceptions/application_exception.h"
+#include <asgaard/application.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/drawing/image.hpp>
+#include <asgaard/exceptions/application_exception.h>
 
 #include "hd_core_service_client.h"
 #include "environment_private.hpp"

@@ -21,17 +21,17 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/window_base.hpp"
-#include "include/window_decoration.hpp"
-#include "include/window_edge.hpp"
-#include "include/object_manager.hpp"
-#include "include/memory_pool.hpp"
-#include "include/memory_buffer.hpp"
-#include "include/pointer.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/window_base.hpp>
+#include <asgaard/window_decoration.hpp>
+#include <asgaard/window_edge.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/pointer.hpp>
 
-#include "include/events/surface_format_event.hpp"
-#include "include/notifications/draginitiated_notification.hpp"
+#include <asgaard/events/surface_format_event.hpp>
+#include <asgaard/notifications/draginitiated_notification.hpp>
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"

@@ -2,17 +2,20 @@ cmake_minimum_required (VERSION 3.14)
 
 project (Vioarr C CXX)
 
-set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/modules/")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 include (CheckIncludeFiles)
 check_include_files (threads.h HAVE_C11_THREADS)
 check_include_files (pthread.h HAVE_PTHREAD)
 
+find_package (Python3 REQUIRED)
 find_package (GLM REQUIRED)
 message (STATUS "Found GRLM in ${GLM_INCLUDE_DIR}")
-find_package (GLFW3 REQUIRED)
-message (STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
-find_package (Python3 REQUIRED)
+
+if (NOT MOLLENOS)
+  find_package (GLFW3 REQUIRED)
+  message (STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
+endif ()
 
 # checkout dependencies that we need
 include(FetchContent)
@@ -62,17 +65,15 @@ elseif (APPLE)
     set (APPLE_LIBS ${APPLE_LIBS} ${GLFW3_LIBRARY})
     set (LIBS ${LIBS} ${APPLE_LIBS})
 elseif (MOLLENOS)
-    include_directories($ENV{VALI_APPLICATION_PATH}/include)
-    include_directories($ENV{VALI_DDK_PATH}/include)
-
-    link_directories($ENV{VALI_APPLICATION_PATH}/lib)
-    link_directories($ENV{VALI_DDK_PATH}/lib)
-
+  set (LIBS gallium-osmesa static_libddk)
 endif ()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+# this will be the directory the protocols are generated to
+set (VIOARR_PROTOCOL_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protocols)
 
 add_subdirectory (protocols)
 
@@ -85,3 +86,7 @@ add_subdirectory (apps/alumni)
 add_subdirectory (apps/heimdall)
 
 add_subdirectory (core)
+
+# configure global install targets
+install (EXPORT AsgaardExport DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/asgaard)
+install (DIRECTORY ${CMAKE_SOURCE_DIR}/protocols DESTINATION ${CMAKE_INSTALL_PREFIX}/share/vioarr/protocols)

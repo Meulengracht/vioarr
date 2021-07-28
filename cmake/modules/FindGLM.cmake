@@ -28,6 +28,7 @@
 # default search dirs
 
 SET(_glm_HEADER_SEARCH_DIRS
+"${CMAKE_SOURCE_DIR}/glm"
 "/usr/include"
 "/usr/local/include"
 "${CMAKE_SOURCE_DIR}/includes"

@@ -21,15 +21,15 @@
  */
 #pragma once
 
-#include <dispatcher.hpp>
-#include <subsurface.hpp>
-#include <memory_pool.hpp>
-#include <memory_buffer.hpp>
-#include <notifications/timeout_notification.hpp>
-#include <drawing/painter.hpp>
-#include <drawing/font_manager.hpp>
-#include <drawing/font.hpp>
-#include <widgets/textbox.hpp>
+#include <asgaard/dispatcher.hpp>
+#include <asgaard/subsurface.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/notifications/timeout_notification.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/font_manager.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/widgets/textbox.hpp>
 #include <memory>
 #include <string>
 #include <ctime>

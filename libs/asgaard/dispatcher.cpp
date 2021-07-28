@@ -20,8 +20,8 @@
  *    graphical applications.
  */
 
-#include "include/dispatcher.hpp"
-#include "include/notifications/timeout_notification.hpp"
+#include <asgaard/dispatcher.hpp>
+#include <asgaard/notifications/timeout_notification.hpp>
 #include <algorithm>
 
 namespace Asgaard {

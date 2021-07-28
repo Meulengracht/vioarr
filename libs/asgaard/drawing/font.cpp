@@ -25,8 +25,8 @@
 #include <cstdio>
 #include <cctype>
 #include <cmath>
-#include "../include/utils/freetype.hpp"
-#include "../include/drawing/font.hpp"
+#include <asgaard/utils/freetype.hpp>
+#include <asgaard/drawing/font.hpp>
 #include <fstream>
 
 /* FIXME: Right now we assume the gray-scale renderer Freetype is using

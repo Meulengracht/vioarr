@@ -21,13 +21,13 @@
  *    graphical applications.
  */
  
-#include "../include/drawing/painter.hpp"
-#include "../include/drawing/font.hpp"
-#include "../include/drawing/image.hpp"
-#include "../include/memory_buffer.hpp"
-#include "../include/rectangle.hpp"
-#include "../include/drawing/primitives/rectangle.hpp"
-#include "../include/drawing/primitives/circle.hpp"
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/drawing/image.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/rectangle.hpp>
+#include <asgaard/drawing/primitives/rectangle.hpp>
+#include <asgaard/drawing/primitives/circle.hpp>
 #include <cstring>
 #include <string>
 #include <cmath>

@@ -21,12 +21,12 @@
  *    graphical applications.
  */
  
-#include "../include/widgets/label.hpp"
-#include "../include/drawing/painter.hpp"
-#include "../include/drawing/font.hpp"
-#include "../include/memory_pool.hpp"
-#include "../include/memory_buffer.hpp"
-#include "../include/rectangle.hpp"
+#include <asgaard/widgets/label.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/rectangle.hpp>
 
 namespace Asgaard {
     namespace Widgets {

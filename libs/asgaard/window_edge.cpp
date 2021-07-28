@@ -20,14 +20,14 @@
  *    graphical applications.
  */
 
-#include "include/drawing/painter.hpp"
-#include "include/drawing/color.hpp"
-#include "include/window_edge.hpp"
-#include "include/memory_pool.hpp"
-#include "include/memory_buffer.hpp"
-#include "include/pointer.hpp"
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/color.hpp>
+#include <asgaard/window_edge.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/pointer.hpp>
 
-#include "include/notifications/draginitiated_notification.hpp"
+#include <asgaard/notifications/draginitiated_notification.hpp>
 
 namespace Asgaard {
     WindowEdge::WindowEdge(

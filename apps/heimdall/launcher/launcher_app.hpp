@@ -21,19 +21,19 @@
  */
 #pragma once
 
-#include <subsurface.hpp>
-#include <memory_pool.hpp>
-#include <memory_buffer.hpp>
-#include <drawing/painter.hpp>
-#include <drawing/primitives/rectangle.hpp>
-#include <widgets/label.hpp>
-#include <widgets/icon.hpp>
-#include <theming/theme_manager.hpp>
-#include <theming/theme.hpp>
+#include <asgaard/subsurface.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/primitives/rectangle.hpp>
+#include <asgaard/widgets/label.hpp>
+#include <asgaard/widgets/icon.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 #include <memory>
 #include <string>
 
-#include <notifications/notification.hpp>
+#include <asgaard/notifications/notification.hpp>
 
 using namespace Asgaard;
 

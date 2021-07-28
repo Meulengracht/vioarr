@@ -27,15 +27,15 @@
 #include <errno.h>
 #include <type_traits>
 #include <gracht/client.h>
-#include "include/application.hpp"
-#include "include/dispatcher.hpp"
-#include "include/pointer.hpp"
-#include "include/screen.hpp"
-#include "include/keyboard.hpp"
-#include "include/object_manager.hpp"
-#include "include/window_base.hpp"
-#include "include/exceptions/application_exception.h"
-#include "include/utils/descriptor_listener.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/dispatcher.hpp>
+#include <asgaard/pointer.hpp>
+#include <asgaard/screen.hpp>
+#include <asgaard/keyboard.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/window_base.hpp>
+#include <asgaard/exceptions/application_exception.h>
+#include <asgaard/utils/descriptor_listener.hpp>
 
 #include <gracht/link/socket.h>
 #include <sys/epoll.h>

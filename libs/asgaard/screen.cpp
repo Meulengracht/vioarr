@@ -22,11 +22,11 @@
  */
 
 #include <algorithm>
-#include "include/application.hpp"
-#include "include/screen.hpp"
-#include "include/window_base.hpp"
-#include "include/events/screen_properties_event.hpp"
-#include "include/events/screen_mode_event.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/screen.hpp>
+#include <asgaard/window_base.hpp>
+#include <asgaard/events/screen_properties_event.hpp>
+#include <asgaard/events/screen_mode_event.hpp>
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"

@@ -24,7 +24,7 @@
 
 #include "../config.hpp"
 #include "event.hpp"
-#include <keycodes.h>
+#include <vioarr/keycodes.h>
 #include <cstdint>
 
 namespace Asgaard {

@@ -21,7 +21,7 @@
  */
 #pragma once
 
-#include <drawing/image.hpp>
+#include <asgaard/drawing/image.hpp>
 #include <vector>
 #include <string>
 #include <memory>

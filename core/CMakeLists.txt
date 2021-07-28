@@ -13,7 +13,7 @@ macro (add_sources)
 endmacro()
 
 include_directories (
-    ${CMAKE_BINARY_DIR}/protocols
+    ${VIOARR_PROTOCOL_DIRECTORY}
     ${libgracht_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/libs/glad/include/glad
     ${PROJECT_SOURCE_DIR}/libs/freetype/include
@@ -21,14 +21,14 @@ include_directories (
 )
 
 set (GENERATED_SOURCES
-    ${CMAKE_BINARY_DIR}/protocols/wm_core_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_screen_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_memory_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_memory_pool_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_buffer_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_surface_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_pointer_service_server.c
-    ${CMAKE_BINARY_DIR}/protocols/wm_keyboard_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_core_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_screen_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_memory_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_memory_pool_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_buffer_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_surface_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_pointer_service_server.c
+    ${VIOARR_PROTOCOL_DIRECTORY}/wm_keyboard_service_server.c
 )
 
 if (MOLLENOS)
@@ -94,7 +94,3 @@ add_sources (
 add_executable(vioarr ${SRCS})
 add_dependencies(vioarr glad freetype)
 target_link_libraries(vioarr common gracht glad ${LIBS})
-
-if (MOLLENOS)
-  target_link_libraries(vioarr static_libddk)
-endif()

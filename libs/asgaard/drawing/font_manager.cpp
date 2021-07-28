@@ -21,9 +21,9 @@
  *    graphical applications.
  */
 
-#include "../include/drawing/font_manager.hpp"
-#include "../include/drawing/font.hpp"
-#include "../include/utils/freetype.hpp"
+#include <asgaard/drawing/font_manager.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/utils/freetype.hpp>
 
 namespace Asgaard {
     namespace Drawing {

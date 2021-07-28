@@ -21,12 +21,12 @@
  *    graphical applications.
  */
 
-#include "include/object.hpp"
-#include "include/error.hpp"
-#include "include/events/event.hpp"
-#include "include/events/object_event.hpp"
-#include "include/events/error_event.hpp"
-#include "include/notifications/error_notification.hpp"
+#include <asgaard/object.hpp>
+#include <asgaard/error.hpp>
+#include <asgaard/events/event.hpp>
+#include <asgaard/events/object_event.hpp>
+#include <asgaard/events/error_event.hpp>
+#include <asgaard/notifications/error_notification.hpp>
 #include "wm_core_service_client.h"
 
 using namespace Asgaard;

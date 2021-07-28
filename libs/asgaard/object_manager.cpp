@@ -21,8 +21,8 @@
  *    graphical applications.
  */
 
-#include "include/object_manager.hpp"
-#include "include/object.hpp"
+#include <asgaard/object_manager.hpp>
+#include <asgaard/object.hpp>
 #include <gracht/client.h>
 #include <type_traits>
 

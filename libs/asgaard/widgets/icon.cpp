@@ -21,11 +21,11 @@
  *    graphical applications.
  */
 
-#include "../include/widgets/icon.hpp"
-#include "../include/memory_pool.hpp"
-#include "../include/memory_buffer.hpp"
-#include "../include/drawing/image.hpp"
-#include "../include/drawing/painter.hpp"
+#include <asgaard/widgets/icon.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/drawing/image.hpp>
+#include <asgaard/drawing/painter.hpp>
 
 namespace Asgaard {
     namespace Widgets {

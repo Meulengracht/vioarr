@@ -26,15 +26,15 @@
 #include <errno.h>
 #include <type_traits>
 #include <gracht/client.h>
-#include "include/application.hpp"
-#include "include/dispatcher.hpp"
-#include "include/pointer.hpp"
-#include "include/screen.hpp"
-#include "include/keyboard.hpp"
-#include "include/object_manager.hpp"
-#include "include/window_base.hpp"
-#include "include/exceptions/application_exception.h"
-#include "include/utils/descriptor_listener.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/dispatcher.hpp>
+#include <asgaard/pointer.hpp>
+#include <asgaard/screen.hpp>
+#include <asgaard/keyboard.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/window_base.hpp>
+#include <asgaard/exceptions/application_exception.h>
+#include <asgaard/utils/descriptor_listener.hpp>
 
 #include <inet/socket.h>
 #include <inet/local.h>
@@ -53,7 +53,7 @@ namespace Asgaard {
         struct gracht_client_configuration clientConfiguration;
         struct gracht_link*                link;
         int                                status;
-        struct sockaddr_un                 addr = { 0 };
+        struct sockaddr_lc                 addr = { 0 };
         
         addr.sun_family = AF_LOCAL;
         strncpy (addr.sun_path, g_serverPath, sizeof(addr.sun_path));

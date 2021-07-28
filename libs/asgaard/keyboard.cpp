@@ -21,9 +21,9 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/keyboard.hpp"
-#include "include/surface.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/keyboard.hpp>
+#include <asgaard/surface.hpp>
 
 #include "wm_keyboard_service_client.h"
 

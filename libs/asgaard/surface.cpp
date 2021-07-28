@@ -22,22 +22,22 @@
  */
 
 #include <algorithm>
-#include "include/application.hpp"
-#include "include/object_manager.hpp"
-#include "include/memory_buffer.hpp"
-#include "include/surface.hpp"
-#include "include/screen.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/surface.hpp>
+#include <asgaard/screen.hpp>
 
-#include "include/events/surface_resize_event.hpp"
-#include "include/events/surface_focus_event.hpp"
-#include "include/events/pointer_enter_event.hpp"
-#include "include/events/pointer_leave_event.hpp"
-#include "include/events/pointer_move_event.hpp"
-#include "include/events/pointer_scroll_event.hpp"
-#include "include/events/pointer_click_event.hpp"
-#include "include/events/key_event.hpp"
+#include <asgaard/events/surface_resize_event.hpp>
+#include <asgaard/events/surface_focus_event.hpp>
+#include <asgaard/events/pointer_enter_event.hpp>
+#include <asgaard/events/pointer_leave_event.hpp>
+#include <asgaard/events/pointer_move_event.hpp>
+#include <asgaard/events/pointer_scroll_event.hpp>
+#include <asgaard/events/pointer_click_event.hpp>
+#include <asgaard/events/key_event.hpp>
 
-#include "include/notifications/focus_notification.hpp"
+#include <asgaard/notifications/focus_notification.hpp>
 
 #include "wm_core_service_client.h"
 #include "wm_screen_service_client.h"

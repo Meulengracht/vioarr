@@ -36,10 +36,10 @@
 #include <unistd.h>
 #endif
 
-#include <object_manager.hpp>
-#include <events/key_event.hpp>
-#include <theming/theme_manager.hpp>
-#include <theming/theme.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/events/key_event.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 #include "terminal.hpp"
 #include "terminal_line.hpp"
 #include "terminal_interpreter.hpp"

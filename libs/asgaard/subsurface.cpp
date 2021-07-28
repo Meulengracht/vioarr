@@ -20,9 +20,9 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/object_manager.hpp"
-#include "include/subsurface.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/object_manager.hpp>
+#include <asgaard/subsurface.hpp>
 
 #include "wm_surface_service_client.h"
 

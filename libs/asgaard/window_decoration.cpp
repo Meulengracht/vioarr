@@ -21,24 +21,24 @@
  *    graphical applications.
  */
 
-#include "include/object_manager.hpp"
-#include "include/memory_pool.hpp"
-#include "include/memory_buffer.hpp"
-#include "include/rectangle.hpp"
-#include "include/pointer.hpp"
-#include "include/window_decoration.hpp"
-#include "include/window_title.hpp"
-#include "include/theming/theme_manager.hpp"
-#include "include/theming/theme.hpp"
-#include "include/drawing/painter.hpp"
-#include "include/drawing/font_manager.hpp"
-#include "include/drawing/font.hpp"
-#include "include/drawing/image.hpp"
+#include <asgaard/object_manager.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
+#include <asgaard/rectangle.hpp>
+#include <asgaard/pointer.hpp>
+#include <asgaard/window_decoration.hpp>
+#include <asgaard/window_title.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
+#include <asgaard/drawing/painter.hpp>
+#include <asgaard/drawing/font_manager.hpp>
+#include <asgaard/drawing/font.hpp>
+#include <asgaard/drawing/image.hpp>
 
-#include "include/widgets/icon.hpp"
-#include "include/widgets/label.hpp"
+#include <asgaard/widgets/icon.hpp>
+#include <asgaard/widgets/label.hpp>
 
-#include "include/notifications/draginitiated_notification.hpp"
+#include <asgaard/notifications/draginitiated_notification.hpp>
 
 #define ICON_SIZE 16
 #define DECORATION_TEXT_SIZE  12

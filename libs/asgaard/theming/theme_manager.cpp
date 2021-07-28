@@ -21,8 +21,8 @@
  *    graphical applications.
  */
 
-#include "../include/theming/theme_manager.hpp"
-#include "../include/theming/theme.hpp"
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 
 using namespace Asgaard;
 

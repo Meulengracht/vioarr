@@ -64,7 +64,9 @@ add_sources(
 )
 
 include_directories(
+    ${zlib_SOURCE_DIR}/include
     ${png_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR} # for zconf.h
     include
 )
 

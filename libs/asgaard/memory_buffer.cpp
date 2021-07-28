@@ -21,13 +21,13 @@
  *    graphical applications.
  */
 
-#include "include/application.hpp"
-#include "include/exceptions/application_exception.h"
-#include "include/exceptions/invalid_argument_exception.h"
-#include "include/exceptions/out_of_range_exception.h"
-#include "include/events/event.hpp"
-#include "include/memory_pool.hpp"
-#include "include/memory_buffer.hpp"
+#include <asgaard/application.hpp>
+#include <asgaard/exceptions/application_exception.h>
+#include <asgaard/exceptions/invalid_argument_exception.h>
+#include <asgaard/exceptions/out_of_range_exception.h>
+#include <asgaard/events/event.hpp>
+#include <asgaard/memory_pool.hpp>
+#include <asgaard/memory_buffer.hpp>
 
 #include "wm_core_service_client.h"
 #include "wm_memory_pool_service_client.h"

@@ -25,6 +25,10 @@ include_directories (
     ${libgracht_SOURCE_DIR}/include
 )
 
+if (MOLLENOS)
+    include_directories($ENV{VALI_DDK_PATH}/include)
+endif()
+
 add_sources(
     effects/guassian_blur.cpp
     utils/spawner.cpp

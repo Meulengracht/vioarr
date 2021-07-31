@@ -264,7 +264,7 @@ protected:
                     TransferFocus(*surface);
                     break;
                 }
-                source == std::next(source);
+                source = std::next(source);
             }
         }
     }

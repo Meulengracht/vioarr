@@ -61,9 +61,6 @@ int main(int argc, char **argv)
     // initialize application
     Asgaard::APP.Initialize();
 
-    // set the resolver's event descriptor
-    resolver->Setup(resolver);
-    
     auto window = Asgaard::APP.GetScreen()->CreateWindow<Terminal>(initialSize, 
         std::move(font), std::move(resolver), stdoutPipe, stderrPipe);
     Asgaard::APP.AddEventDescriptor(stdoutPipe, IOSETIN | IOSETLVT, window);

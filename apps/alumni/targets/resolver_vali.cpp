@@ -22,7 +22,7 @@
  */
 
 #include <asgaard/application.hpp>
-#include <asgaard/key_event.hpp>
+#include <asgaard/events/key_event.hpp>
 #include <os/mollenos.h>
 #include <os/process.h>
 #include <os/keycodes.h>
@@ -63,12 +63,6 @@ ResolverVali::~ResolverVali()
 
 void ResolverVali::Setup(const std::shared_ptr<ResolverVali>& selfReference)
 {
-    m_processEvent = eventd(0, EVT_RESET_EVENT);
-    if (m_processEvent < 0) {
-        // throw
-    }
-
-    Asgaard::APP.AddEventDescriptor(m_processEvent, IOSETSYN, selfReference);
 }
 
 void ResolverVali::UpdateWorkingDirectory()
@@ -143,6 +137,15 @@ bool ResolverVali::ExecuteProgram(const std::string& Program, const std::vector<
             }
             line += Arguments[i];
         }
+    }
+
+    if (m_processEvent == -1) {
+        m_processEvent = eventd(0, EVT_RESET_EVENT);
+        if (m_processEvent < 0) {
+            // throw
+        }
+
+        Asgaard::APP.AddEventDescriptor(m_processEvent, IOSETSYN, shared_from_this());
     }
     
     ProcessConfigurationInitialize(&configuration);

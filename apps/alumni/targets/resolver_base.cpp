@@ -20,7 +20,7 @@
  *   using freetype as the font renderer.
  */
 
-#include <events/key_event.hpp>
+#include <asgaard/events/key_event.hpp>
 #include "../terminal_interpreter.hpp"
 #include "../terminal.hpp"
 #include "resolver_base.hpp"
@@ -100,7 +100,7 @@ void ResolverBase::DirectoryPrinter(const std::vector<DirectoryEntry>& directory
     }
 
     // account for spaces
-    entireLength += std::min(1UL, directoryEntries.size()) - 1;
+    entireLength += std::min(static_cast<std::size_t>(1), directoryEntries.size()) - 1;
 
     auto printEndOfLine = [&] (bool condition) {
         if (condition) {

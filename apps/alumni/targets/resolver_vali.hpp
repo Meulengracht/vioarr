@@ -28,16 +28,10 @@
 #include <memory>
 #include <thread>
 
-class ResolverVali : public ResolverBase, public Asgaard::Utils::DescriptorListener {
+class ResolverVali : public ResolverBase, public Asgaard::Utils::DescriptorListener, public std::enable_shared_from_this<ResolverVali> {
 public:
     ResolverVali(int stdoutDescriptor, int stderrDescriptor);
     ~ResolverVali();
-
-    /**
-     * Due to how APP.AddEventDescriptor works we must call it after APP.Initialize, but this
-     * resolver is built before this.
-     */
-    void Setup(const std::shared_ptr<ResolverVali>&);
 
 public:
     bool HandleKeyCode(const Asgaard::KeyEvent&) override;

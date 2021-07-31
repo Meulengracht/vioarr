@@ -23,8 +23,8 @@
 
 #include "terminal_line.hpp"
 #include "terminal.hpp"
-#include <theming/theme_manager.hpp>
-#include <theming/theme.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 
 TerminalLine::TerminalLine(const std::shared_ptr<Asgaard::Drawing::Font>& font, int row, int initialCellCount)
     : m_font(font)

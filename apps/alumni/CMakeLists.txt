@@ -17,6 +17,10 @@ include_directories (
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
 )
 
+if (MOLLENOS)
+    include_directories($ENV{VALI_DDK_PATH}/include)
+endif()
+
 add_sources (
     main.cpp
     terminal.cpp

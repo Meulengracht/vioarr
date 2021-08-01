@@ -25,13 +25,13 @@
 //#define __TRACE
 
 #include <ddk/video.h>
-#include <glad/glad.h>
+#include <glad.h>
 #include <GL/osmesa.h>
 #include "../vioarr_renderer.h"
 #include "../vioarr_screen.h"
 #include "../vioarr_utils.h"
 #include "../vioarr_objects.h"
-#include "../../protocols/wm_screen_protocol_server.h"
+#include "wm_screen_service_server.h"
 #include <stdlib.h>
 
 #if defined(_MSC_VER) && !defined(__clang__)
@@ -222,7 +222,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
     screen->bytes_remaining = bytes_to_copy % bytes_step;
     
     vioarr_utils_trace(VISTR("[vioarr] [screen] [create] initializing renderer"));
-    screen->renderer = vioarr_renderer_create(screen);
+    screen->renderer = vioarr_renderer_create(screen, video->Width, video->Height);
     if (!screen->renderer) {
         OSMesaDestroyContext(screen->context);
         free(screen->dimensions);
@@ -231,7 +231,7 @@ vioarr_screen_t* vioarr_screen_create(video_output_t* video)
         return NULL;
     }
     
-    screen->id = vioarr_objects_create_server_object(screen, object_type_screen);
+    screen->id = vioarr_objects_create_server_object(screen, WM_OBJECT_TYPE_SCREEN);
     return screen;
 }
 
@@ -243,7 +243,7 @@ void vioarr_screen_set_scale(vioarr_screen_t* screen, int scale)
     vioarr_renderer_set_scale(screen->renderer, scale);
 }
 
-void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_screen_transform transform)
+void vioarr_screen_set_transform(vioarr_screen_t* screen, enum wm_transform transform)
 {
     if (!screen) {
         return;
@@ -267,16 +267,16 @@ int vioarr_screen_scale(vioarr_screen_t* screen)
     return vioarr_renderer_scale(screen->renderer);
 }
 
-enum wm_screen_transform vioarr_screen_transform(vioarr_screen_t* screen)
+enum wm_transform vioarr_screen_transform(vioarr_screen_t* screen)
 {
     int rotation;
     
     if (!screen) {
-        return no_transform;
+        return WM_TRANSFORM_NO_TRANSFORM;
     }
     
     rotation = vioarr_renderer_rotation(screen->renderer);
-    return no_transform; // TODO
+    return WM_TRANSFORM_NO_TRANSFORM; // TODO
 }
 
 vioarr_renderer_t* vioarr_screen_renderer(vioarr_screen_t* screen)
@@ -294,8 +294,8 @@ int vioarr_screen_publish_modes(vioarr_screen_t* screen, int client)
     }
     
     // One hardcoded format
-    return wm_screen_event_mode_single(client, screen->id,
-        mode_current | mode_preferred,
+    return wm_screen_event_mode_single(vioarr_get_server_handle(), client, screen->id,
+        WM_MODE_ATTRIBUTES_CURRENT | WM_MODE_ATTRIBUTES_PREFERRED,
         vioarr_region_width(screen->dimensions),
         vioarr_region_height(screen->dimensions), 60);
 }

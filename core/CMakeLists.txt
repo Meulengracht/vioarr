@@ -15,10 +15,14 @@ endmacro()
 include_directories (
     ${VIOARR_PROTOCOL_DIRECTORY}
     ${libgracht_SOURCE_DIR}/include
-    ${CMAKE_BINARY_DIR}/libs/glad/include/glad
+    ${CMAKE_CURRENT_BINARY_DIR}/../libs/glad/include/glad
     ${PROJECT_SOURCE_DIR}/libs/freetype/include
     ${PROJECT_SOURCE_DIR}/libs/common/include
 )
+
+if (MOLLENOS)
+    include_directories($ENV{VALI_DDK_PATH}/include)
+endif()
 
 set (GENERATED_SOURCES
     ${VIOARR_PROTOCOL_DIRECTORY}/wm_core_service_server.c
@@ -32,7 +36,7 @@ set (GENERATED_SOURCES
 )
 
 if (MOLLENOS)
-    set (GENERATED_SOURCES ${GENERATED_SOURCES} hid_events_service_client.c)
+    set (GENERATED_SOURCES ${GENERATED_SOURCES} ${VIOARR_PROTOCOL_DIRECTORY}/hid_events_service_client.c)
 endif ()
 
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )

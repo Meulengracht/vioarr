@@ -166,8 +166,7 @@ static int vioarr_engine_update(void* context)
             thrd_sleepex(ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
         }
         render_sync.last_update = update;
-        start = clock();
         
-        vioarr_screen_frame(screen);
+        vioarr_screen_frame(primary_screen);
     }
 }

@@ -58,11 +58,10 @@ ResolverVali::ResolverVali(int stdoutDescriptor, int stderrDescriptor)
 
 ResolverVali::~ResolverVali()
 {
+    if (m_processEvent != -1) {
+        close(m_processEvent);
+    }
     close(m_stdinDescriptor);
-}
-
-void ResolverVali::Setup(const std::shared_ptr<ResolverVali>& selfReference)
-{
 }
 
 void ResolverVali::UpdateWorkingDirectory()
@@ -81,15 +80,15 @@ void ResolverVali::UpdateWorkingDirectory()
 bool ResolverVali::HandleKeyCode(const Asgaard::KeyEvent& key)
 {
     if (m_application != UUID_INVALID) {
-        if (key.KeyCode() == VK_C && !key.Pressed() && key.LeftControl()) {
+        if (key.KeyCode() == VKC_C && !key.Pressed() && key.LeftControl()) {
             // send signal to terminate
             ProcessKill(m_application);
         }
         else {
             // redirect to running application
             // @todo support unicode
-            char data = key.KeyAscii();
-            write(m_stdinDescriptor, &data, sizeof(data));
+            auto data = key.Key();
+            write(m_stdinDescriptor, &data, sizeof(char));
         }
         return true;
     }
@@ -187,7 +186,7 @@ std::vector<ResolverBase::DirectoryEntry> ResolverVali::GetDirectoryContents(con
     if (opendir(Path.c_str(), 0, &dir) != -1) {
         while (readdir(dir, &dp) != -1) {
             TRACE("ResolverVali::GetDirectoryContents entry %s", &dp.d_name[0]);
-            entries.push_back(DirectoryEntry(std::string(&dp.d_name[0]), getType(dp.d_options, dp.d_perms));
+            entries.push_back(DirectoryEntry(std::string(&dp.d_name[0]), getType(dp.d_options, dp.d_perms)));
         }
         closedir(dir);
     }

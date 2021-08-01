@@ -67,38 +67,41 @@ static int __create_platform_link(void)
     return 0;
 }
 
-int initialize_server(void)
+int server_initialize(void)
 {
     struct gracht_server_configuration config;
     int                                status;
+    int                                fd;
     
     gracht_server_configuration_init(&config);
 
     // Create the set descriptor we are listening to
-    gracht_server_configuration_set_aio_descriptor(&config, ioset(0));
-    if (config.set_descriptor < 0) {
-        vioarr_utils_error(VISTR("error creating event descriptor %i"), errno);
+    fd = ioset(0);
+    if (fd < 0) {
+        // trace this @todo
         return -1;
     }
+
+    gracht_server_configuration_set_aio_descriptor(&config, fd);
 
     // Listen to client disconnects so we can remove resources
     config.callbacks.clientDisconnected = __gracht_handle_disconnect;
     
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
-        vioarr_utils_error(VISTR("error initializing server library %i"), errno);
-        close(config.set_descriptor);
+        // trace this @todo
+        close(fd);
+        return -1;
     }
 
     // create the platform link
     status = __create_platform_link();
     if (status) {
-        vioarr_utils_error(VISTR("error initializing server link %i"), errno);
-        close(config.set_descriptor);
+        // trace this @todo
+        close(fd);
+        return -1;
     }
-
-    *eventIodOut = config.set_descriptor;
-    return status;
+    return fd;
 }
 #elif defined(_WIN32)
 static int __create_platform_link(void)
@@ -199,7 +202,7 @@ int server_initialize(void)
     status = gracht_server_create(&config, &g_valiServer);
     if (status) {
         // trace this @todo
-        close(config.set_descriptor);
+        close(fd);
         return -1;
     }
 
@@ -207,7 +210,7 @@ int server_initialize(void)
     status = __create_platform_link();
     if (status) {
         // trace this @todo
-        close(config.set_descriptor);
+        close(fd);
         return -1;
     }
     return fd;

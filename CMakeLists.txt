@@ -83,7 +83,7 @@ add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
 
 # include subdirectories required for building apps
-include_directories(libs/common/include)
+include_directories(libs/common/include/vioarr)
 include_directories(libs/freetype/include)
 include_directories(libs/asgaard/include)
 

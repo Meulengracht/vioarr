@@ -22,7 +22,7 @@
  *   using Mesa3D with either the soft-renderer or llvmpipe render for improved performance.
  */
 
-#include "protocols/ctt_input_protocol_client.h"
+#include "ctt_input_protocol_client.h"
 #include "engine/vioarr_input.h"
 #include "engine/vioarr_utils.h"
 

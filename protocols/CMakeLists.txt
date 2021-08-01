@@ -94,3 +94,26 @@ add_custom_target(
     hd_client_service
     DEPENDS ${HD_GENERATED_HEADERS} ${HD_GENERATED_CLIENT_SOURCES}
 )
+
+if (MOLLENOS)
+    set (OS_GENERATED_HEADERS
+        ctt_core_service.h
+    )
+
+    set (OS_GENERATED_CLIENT_SOURCES
+        ctt_core_service_client.h
+        ctt_core_service_client.c
+    )
+
+    add_custom_command(
+        OUTPUT  ${OS_GENERATED_HEADERS} ${OS_GENERATED_CLIENT_SOURCES}
+        COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
+        DEPENDS gracht $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr
+    )
+
+    add_custom_target(
+        os_client_service
+        DEPENDS ${OS_GENERATED_HEADERS} ${OS_GENERATED_CLIENT_SOURCES}
+    )
+
+endif()

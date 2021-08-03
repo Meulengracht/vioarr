@@ -100,5 +100,5 @@ add_custom_command(TARGET asgaard POST_BUILD
 
 # setup install targets
 install(TARGETS asgaard freetype gracht zip bzip2 lzma png z zlib EXPORT AsgaardExport)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include DESTINATION ${CMAKE_INSTALL_PREFIX}/include/asgaard)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/asgaard DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/asgaard)

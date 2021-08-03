@@ -22,8 +22,8 @@
  */
 
 #include <exception>
-#include <application.hpp>
-#include <events/key_event.hpp>
+#include <asgaard/application.hpp>
+#include <asgaard/events/key_event.hpp>
 #include <sys/epoll.h>
 #include <sys/eventfd.h>
 #include <sys/types.h>

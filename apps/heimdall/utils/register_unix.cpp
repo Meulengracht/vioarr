@@ -21,8 +21,8 @@
  */
 
 #include "register.hpp"
-#include <theming/theme_manager.hpp>
-#include <theming/theme.hpp>
+#include <asgaard/theming/theme_manager.hpp>
+#include <asgaard/theming/theme.hpp>
 
 namespace Heimdall
 {

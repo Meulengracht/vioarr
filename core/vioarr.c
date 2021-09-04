@@ -31,13 +31,16 @@
 #ifdef MOLLENOS
 #include <ddk/service.h>
 #include <ddk/utils.h>
+#include <gracht/link/socket.h>
 #include <gracht/link/vali.h>
+#include <inet/local.h>
 #include <io.h>
 #include <ioset.h>
 #include <os/process.h>
 
 #include "ctt_input_service_client.h"
-#include "svc_device_service_client.h"
+#include "sys_device_service_client.h"
+static const char* g_serverPath = "/tmp/vi-srv";
 #elif defined(_WIN32)
 #include <gracht/link/socket.h>
 #include <windows.h>
@@ -79,9 +82,20 @@ static void __gracht_handle_disconnect(int client)
 #ifdef MOLLENOS
 static int __create_platform_link(void)
 {
+    struct gracht_link_socket* link;
+    struct sockaddr_lc         addr = { 0 };
 
+    addr.slc_family = AF_LOCAL;
+    addr.slc_len = sizeof(addr);
+    strncpy (addr.slc_addr, g_serverPath, sizeof(addr.slc_addr));
 
-    return 0;
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_lc));
+    gracht_link_socket_set_domain(link, AF_LOCAL);
+    gracht_link_socket_set_listen(link, 1);
+
+    return gracht_server_add_link(g_valiServer, (struct gracht_link*)link);
 }
 #elif defined(_WIN32)
 static int __create_platform_link(void)
@@ -167,13 +181,18 @@ int server_initialize(int* eventIodOut)
 
 int client_initialize(void)
 {
+    struct gracht_link_vali*           link;
     struct gracht_client_configuration clientConfiguration;
     int                                status;
 
-    status = gracht_link_vali_client_create(&clientConfiguration.link);
+    status = gracht_link_vali_create(&link);
     if (status) {
         return status;
     }
+
+    // configure the client
+    gracht_client_configuration_init(&clientConfiguration);
+    gracht_client_configuration_set_link(&clientConfiguration, (struct gracht_link*)link);
 
     status = gracht_client_create(&clientConfiguration, &g_valiClient);
     if (status) {
@@ -188,25 +207,25 @@ void server_get_hid_devices(void)
     vioarr_utils_trace(VISTR("[server_get_hid_devices]"));
 
     // subscribe to events from the device manager
-    svc_device_subscribe(g_valiClient, &msg.base);
+    sys_device_subscribe(g_valiClient, &msg.base);
 
     // query all input devices
-    svc_device_get_devices_by_protocol(g_valiClient, &msg.base, PROTOCOL_CTT_INPUT_ID);
+    sys_device_get_devices_by_protocol(g_valiClient, &msg.base, SERVICE_CTT_INPUT_ID);
 }
 
-void svc_device_event_protocol_device_callback(struct svc_device_protocol_device_event* input)
+void sys_device_event_protocol_device_invocation(gracht_client_t* client, const UUId_t deviceId, const UUId_t driverId, const uint8_t protocolId)
 {
-    struct vali_link_message msg = VALI_MSG_INIT_HANDLE(input->driver_id);
-    vioarr_utils_trace(VISTR("[svc_device_event_protocol_device_callback] %u"), input->device_id);
+    struct vali_link_message msg = VALI_MSG_INIT_HANDLE(driverId);
+    vioarr_utils_trace(VISTR("[svc_device_event_protocol_device_callback] %u"), deviceId);
 
     // subscribe to the driver
-    ctt_input_subscribe(g_valiClient, &msg.base);
+    ctt_input_subscribe(client, &msg.base);
 
     // get properties of the device
-    ctt_input_get_properties(g_valiClient, &msg.base, input->device_id);
+    ctt_input_stat(client, &msg.base, deviceId);
 }
 
-void svc_device_event_device_update_callback(struct svc_device_device_update_event* input)
+void sys_device_event_device_update_invocation(gracht_client_t* client, const UUId_t deviceId, const uint8_t connected)
 {
     // todo handle connection of new devices and disconnection
 }
@@ -241,7 +260,7 @@ int server_run(int eventIod)
                 gracht_client_wait_message(g_valiClient, NULL, 0);
             }
             else {
-                gracht_server_handle_event(events[i].data.iod, events[i].events);
+                gracht_server_handle_event(g_valiServer, events[i].data.iod, events[i].events);
             }
         }
     }
@@ -275,7 +294,7 @@ int main(int argc, char **argv)
     }
 
     // add the protocols we would like to support
-    gracht_client_register_protocol(g_valiClient, &svc_device_client_protocol);
+    gracht_client_register_protocol(g_valiClient, &sys_device_client_protocol);
     gracht_client_register_protocol(g_valiClient, &ctt_input_client_protocol);    
 
     // add the server protocols we support

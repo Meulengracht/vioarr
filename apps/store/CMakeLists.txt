@@ -13,7 +13,7 @@ add_executable(store
 target_link_libraries(store asgaard)
 
 if (MOLLENOS)
-  target_link_libraries(store static_libddk)
+  target_link_libraries(store ValiDDK::libddk)
 elseif (UNIX)
   target_link_libraries(store -lpthread)
 endif()

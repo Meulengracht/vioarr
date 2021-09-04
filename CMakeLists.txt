@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.14)
 
 project (Vioarr C CXX)
 
+if (MOLLENOS)
+  enable_language (ASM_NASM)
+endif ()
+
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules/")
 
 include (CheckIncludeFiles)
@@ -25,6 +29,9 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/meulengracht/libgracht.git
   GIT_TAG main
 )
+if (MOLLENOS)
+  set (GRACHT_C_LINK_VALI ON CACHE BOOL "Enable vali ipc link")
+endif ()
 FetchContent_MakeAvailable(libgracht)
 
 FetchContent_Declare(
@@ -65,7 +72,8 @@ elseif (APPLE)
     set (APPLE_LIBS ${APPLE_LIBS} ${GLFW3_LIBRARY})
     set (LIBS ${LIBS} ${APPLE_LIBS})
 elseif (MOLLENOS)
-  set (LIBS gallium-osmesa static_libddk)
+  include($ENV{VALI_DDK_PATH}/lib/cmake/ValiDDKTargets.cmake)
+  set (LIBS freetype opengl-osmesa ValiDDK::libddk)
 endif ()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

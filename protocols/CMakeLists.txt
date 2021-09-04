@@ -97,18 +97,22 @@ add_custom_target(
 
 if (MOLLENOS)
     set (OS_GENERATED_HEADERS
-        ctt_core_service.h
+        ctt_input_service.h
+        sys_device_service.h
     )
 
     set (OS_GENERATED_CLIENT_SOURCES
-        ctt_core_service_client.h
-        ctt_core_service_client.c
+        ctt_input_service_client.h
+        ctt_input_service_client.c
+        sys_device_service_client.h
+        sys_device_service_client.c
     )
 
     add_custom_command(
         OUTPUT  ${OS_GENERATED_HEADERS} ${OS_GENERATED_CLIENT_SOURCES}
         COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
-        DEPENDS gracht $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr
+        COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service $ENV{VALI_DDK_PATH}/share/vali/protocols/device.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
+        DEPENDS gracht $ENV{VALI_DDK_PATH}/share/vali/protocols/device.gr $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr
     )
 
     add_custom_target(

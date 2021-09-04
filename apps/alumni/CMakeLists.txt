@@ -17,10 +17,6 @@ include_directories (
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
 )
 
-if (MOLLENOS)
-    include_directories($ENV{VALI_DDK_PATH}/include)
-endif()
-
 add_sources (
     main.cpp
     terminal.cpp
@@ -42,7 +38,7 @@ endif ()
 add_executable(alumni ${SRCS})
 target_link_libraries(alumni asgaard)
 if (MOLLENOS)
-    target_link_libraries(alumni static_libddk)
+    target_link_libraries(alumni ValiDDK::libddk)
 elseif (UNIX)
     target_link_libraries(alumni -lpthread)
 endif()

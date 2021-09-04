@@ -90,7 +90,7 @@ target_compile_definitions(asgaard PRIVATE
 target_link_libraries(asgaard freetype gracht zip bzip2 lzma z)
 
 if (MOLLENOS)
-  target_link_libraries(asgaard static_libddk)
+  target_link_libraries(asgaard ValiDDK::libddk)
 endif()
 
 add_custom_command(TARGET asgaard POST_BUILD

@@ -30,7 +30,7 @@
 #if defined(MOLLENOS)
 //#define __TRACE
 //#define VIOARR_TRACEMODE
-#define VIOARR_LAUNCHER "heimdall.app"
+#define VIOARR_LAUNCHER "heimdall.run"
 //#define VIOARR_REVERSE_FB_BLIT // must be given to asm aswell
 
 #include <ddk/utils.h>

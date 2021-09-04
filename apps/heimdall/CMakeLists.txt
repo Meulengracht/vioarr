@@ -25,10 +25,6 @@ include_directories (
     ${libgracht_SOURCE_DIR}/include
 )
 
-if (MOLLENOS)
-    include_directories($ENV{VALI_DDK_PATH}/include)
-endif()
-
 add_sources(
     effects/guassian_blur.cpp
     utils/spawner.cpp
@@ -46,7 +42,7 @@ add_dependencies(heimdall hd_server_service)
 target_link_libraries(heimdall asgaard gracht)
 
 if (MOLLENOS)
-  target_link_libraries(heimdall static_libddk)
+  target_link_libraries(heimdall ValiDDK::libddk)
 elseif (UNIX)
   target_link_libraries(heimdall -lpthread)
 endif()

@@ -1,4 +1,3 @@
-
 set (SRCS "")
 
 macro (add_sources)
@@ -36,7 +35,7 @@ set (GENERATED_SOURCES
 )
 
 if (MOLLENOS)
-    set (GENERATED_SOURCES ${GENERATED_SOURCES} ${VIOARR_PROTOCOL_DIRECTORY}/hid_events_service_client.c)
+    set (GENERATED_SOURCES ${GENERATED_SOURCES} ${VIOARR_PROTOCOL_DIRECTORY}/ctt_input_service_client.c)
 endif ()
 
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
@@ -58,6 +57,20 @@ elseif (UNIX)
 elseif (MOLLENOS)
     add_definitions(-DVIOARR_REVERSE_FB_BLIT -DGL_GLEXT_PROTOTYPES)
     add_definitions(-Wall -Wextra -Wno-unused-function)
+
+    if ("$ENV{VALI_ARCH}" STREQUAL "amd64")
+        set (CMAKE_ASM_NASM_OBJECT_FORMAT win64)
+        add_sources(engine/screen/vioarr_screen_amd64.s)
+        set_source_files_properties(engine/screen/vioarr_screen_amd64.s PROPERTIES LANGUAGE ASM_NASM)
+    elseif ("$ENV{VALI_ARCH}" STREQUAL "i386")
+        set (CMAKE_ASM_NASM_OBJECT_FORMAT win32)
+        add_sources(engine/screen/vioarr_screen_i386.s)
+        set_source_files_properties(engine/screen/vioarr_screen_i386.s PROPERTIES LANGUAGE ASM_NASM)
+    endif()
+    set (CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <INCLUDES> \
+      <FLAGS> -f ${CMAKE_ASM_NASM_OBJECT_FORMAT} -o <OBJECT> <SOURCE>")
+    set (CMAKE_ASM_NASM_FLAGS "-Xvc -D$ENV{VALI_ARCH} -D__$ENV{VALI_ARCH}__")
+
     add_sources (
         engine/core/vioarr_engine_vali.c
         engine/memory/vioarr_ram_vali.c
@@ -96,5 +109,5 @@ add_sources (
 )
 
 add_executable(vioarr ${SRCS})
-add_dependencies(vioarr glad freetype)
+add_dependencies(vioarr glad freetype os_client_service wm_server_service)
 target_link_libraries(vioarr common gracht glad ${LIBS})

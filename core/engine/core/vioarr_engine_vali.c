@@ -83,6 +83,10 @@ int vioarr_engine_initialize(void)
     return 0;
 }
 
+void vioarr_engine_request_redraw(void)
+{
+    
+}
 
 int vioarr_engine_x_minimum(void)
 {

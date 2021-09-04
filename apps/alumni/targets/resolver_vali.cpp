@@ -216,8 +216,9 @@ bool ResolverVali::CommandResolver(const std::string& Command, const std::vector
     std::string ProgramName = Command;
     std::string ProgramPath = "";
 
-    if (!EndsWith(ProgramName, ".app")) {
-        ProgramName += ".app";
+    // @todo Try .run in bin, .app in app folder
+    if (!EndsWith(ProgramName, ".run")) {
+        ProgramName += ".run";
     }
 
     // Guess the path of requested application, right now only working

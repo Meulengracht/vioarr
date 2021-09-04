@@ -35,10 +35,6 @@ set (GENERATED_SOURCES
     ${VIOARR_PROTOCOL_DIRECTORY}/wm_keyboard_service_client.c
 )
 
-if (MOLLENOS)
-    set (GENERATED_SOURCES ${GENERATED_SOURCES} hid_events_service_client.c)
-endif ()
-
 set_source_files_properties ( ${GENERATED_SOURCES} PROPERTIES GENERATED TRUE )
 
 # Configure primary executable target
@@ -95,10 +91,10 @@ endif()
 
 add_custom_command(TARGET asgaard POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/data/ $<TARGET_FILE_DIR:asgaard>
+    ${VIOARR_ROOT_DIRECTORY}/data/ $<TARGET_FILE_DIR:asgaard>
 )
 
 # setup install targets
 install(TARGETS asgaard freetype gracht zip bzip2 lzma png z zlib EXPORT AsgaardExport)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/asgaard DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/asgaard)
+install(DIRECTORY ${VIOARR_ROOT_DIRECTORY}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/asgaard)

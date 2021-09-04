@@ -39,8 +39,8 @@ namespace Asgaard {
         uint32_t GlobalId() const { return m_globalId; }
         
     public:
-        virtual void Destroy();
-        virtual void ExternalEvent(const Event&);
+        ASGAARD_API virtual void Destroy();
+        ASGAARD_API virtual void ExternalEvent(const Event&);
         
     private:
         uint32_t m_id;

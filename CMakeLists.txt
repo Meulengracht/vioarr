@@ -81,6 +81,7 @@ set (CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set (CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 # this will be the directory the protocols are generated to
+set (VIOARR_ROOT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 set (VIOARR_PROTOCOL_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protocols)
 
 add_subdirectory (protocols)

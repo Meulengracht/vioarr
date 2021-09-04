@@ -19,7 +19,7 @@ include_directories(
     ${zip_SOURCE_DIR}/src
     ${zip_SOURCE_DIR}/src/extlibs
     ${PROJECT_SOURCE_DIR}/libs/common/include
-    ../freetype/include
+    ${freetype_SOURCE_DIR}/include
     ./include/
 )
 

@@ -35,11 +35,11 @@ endif ()
 FetchContent_MakeAvailable(libgracht)
 
 FetchContent_Declare(
-  png
-  GIT_REPOSITORY https://github.com/umbrella-c/libpng.git
-  GIT_TAG main
+  freetype
+  GIT_REPOSITORY https://github.com/umbrella-c/libfreetype.git
+  GIT_TAG master
 )
-FetchContent_MakeAvailable(png)
+FetchContent_MakeAvailable(freetype)
 
 FetchContent_Declare(
   zip
@@ -86,7 +86,6 @@ set (VIOARR_PROTOCOL_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/protocols)
 add_subdirectory (protocols)
 
 add_subdirectory (libs/common)
-add_subdirectory (libs/freetype)
 add_subdirectory (libs/asgaard)
 add_subdirectory (libs/glad)
 

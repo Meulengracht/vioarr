@@ -15,7 +15,7 @@ include_directories (
     ${VIOARR_PROTOCOL_DIRECTORY}
     ${libgracht_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/../libs/glad/include/glad
-    ${PROJECT_SOURCE_DIR}/libs/freetype/include
+    ${freetype_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/libs/common/include
 )
 
@@ -109,5 +109,8 @@ add_sources (
 )
 
 add_executable(vioarr ${SRCS})
-add_dependencies(vioarr glad freetype os_client_service wm_server_service)
+add_dependencies(vioarr glad freetype wm_server_service)
+if (MOLLENOS)
+    add_dependencies(vioarr os_client_service)
+endif ()
 target_link_libraries(vioarr common gracht glad ${LIBS})

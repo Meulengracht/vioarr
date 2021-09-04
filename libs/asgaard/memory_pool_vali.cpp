@@ -33,6 +33,26 @@
 #include <os/mollenos.h>
 
 namespace Asgaard {
+    MemoryPool::MemoryPool(uint32_t id, std::size_t handle, std::size_t size)
+        : Object(id)
+        , m_size(size)
+    {
+        if (size == 0) {
+            throw InvalidArgumentException("MemoryPool::MemoryPool 0-size provided");
+        }
+
+        // inherit existing handle
+        auto status = dma_attach(static_cast<UUId_t>(handle), &m_attachment);
+        if (status != OsSuccess) {
+            throw ApplicationException("MemoryPool::MemoryPool failed to attach to existing memory pool", OsStatusToErrno(status));
+        }
+
+        status = dma_attachment_map(&m_attachment, DMA_ACCESS_WRITE);
+        if (status != OsSuccess) {
+            throw ApplicationException("MemoryPool::MemoryPool() failed to map existing memory pool", OsStatusToErrno(status));
+        }
+    }
+
     MemoryPool::MemoryPool(uint32_t id, std::size_t size)
         : Object(id)
         , m_size(size)

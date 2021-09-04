@@ -46,7 +46,7 @@ namespace Asgaard {
             };
         public:
             ASGAARD_API Textbox(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
-            ~Textbox();
+            ASGAARD_API ~Textbox();
 
             ASGAARD_API void Destroy() override;
             

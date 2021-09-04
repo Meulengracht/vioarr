@@ -36,8 +36,8 @@ public:
     Dispatcher();
     ~Dispatcher();
 
-    void StartTimer(Subscriber* who, int timerId, unsigned int milliseconds, bool recurring);
-    void CancelTimer(Subscriber* who, int timerId);
+    ASGAARD_API void StartTimer(Subscriber* who, int timerId, unsigned int milliseconds, bool recurring);
+    ASGAARD_API void CancelTimer(Subscriber* who, int timerId);
 
 public:
     unsigned int Tick();

@@ -117,11 +117,11 @@ namespace Asgaard {
         void Destroy() override;
 
     public:
-        gracht_client_t*               VioarrClient() const { return m_vClient; }
-        gracht_client_t*               HeimdallClient() const { return m_hClient; }
-        const std::shared_ptr<Screen>& GetScreen() const    { return m_screens.front(); }
-        std::shared_ptr<Keyboard>      GetKeyboard() const;
-        std::shared_ptr<Pointer>       GetPointer() const;
+        gracht_client_t*                      VioarrClient() const { return m_vClient; }
+        gracht_client_t*                      HeimdallClient() const { return m_hClient; }
+        const std::shared_ptr<Screen>&        GetScreen() const    { return m_screens.front(); }
+        ASGAARD_API std::shared_ptr<Keyboard> GetKeyboard() const;
+        ASGAARD_API std::shared_ptr<Pointer>  GetPointer() const;
 
     public:
         void ExternalEvent(const Event&) override;

@@ -30,7 +30,7 @@ namespace Asgaard {
     
     class SubSurface : public Surface {
     public:
-        SubSurface(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
+        ASGAARD_API SubSurface(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
 
     public:
         template<class S, typename... Params>
@@ -50,7 +50,7 @@ namespace Asgaard {
         }
     
     public:
-        void Resize(int width, int height);
-        void Move(int parentX, int parentY);
+        ASGAARD_API void Resize(int width, int height);
+        ASGAARD_API void Move(int parentX, int parentY);
     };
 }

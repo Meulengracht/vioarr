@@ -127,11 +127,11 @@ namespace Asgaard {
         virtual void OnMouseScroll(const std::shared_ptr<Pointer>&, int scollX, int scrollY) { }
         virtual void OnMouseClick(const std::shared_ptr<Pointer>&, enum Pointer::Buttons button, bool pressed) { }
         virtual void OnKeyEvent(const KeyEvent&) { }
-        virtual void Notification(const Publisher*, const Asgaard::Notification&) override;
+        ASGAARD_API virtual void Notification(const Publisher*, const Asgaard::Notification&) override;
 
     private:
         void BindToScreen(const std::shared_ptr<Screen>&);
-        void AddChild(const std::shared_ptr<Surface>&);
+        ASGAARD_API void AddChild(const std::shared_ptr<Surface>&);
         
     private:
         Rectangle                             m_dimensions;

@@ -48,17 +48,17 @@ namespace Asgaard {
                 LEFT = 0x10
             };
         public:
-            Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
-            ~Label();
+            ASGAARD_API Label(uint32_t id, const std::shared_ptr<Screen>& screen, const Rectangle&);
+            ASGAARD_API ~Label();
 
             void Destroy() override;
             
-            void SetBackgroundColor(const Drawing::Color& color);
-            void SetTextColor(const Drawing::Color& color);
-            void SetFont(const std::shared_ptr<Drawing::Font>& font);
-            void SetText(const std::string& text);
-            void SetAnchors(Anchors anchors);
-            void RequestRedraw();
+            ASGAARD_API void SetBackgroundColor(const Drawing::Color& color);
+            ASGAARD_API void SetTextColor(const Drawing::Color& color);
+            ASGAARD_API void SetFont(const std::shared_ptr<Drawing::Font>& font);
+            ASGAARD_API void SetText(const std::string& text);
+            ASGAARD_API void SetAnchors(Anchors anchors);
+            ASGAARD_API void RequestRedraw();
             
         protected:
             void Notification(const Publisher*, const Asgaard::Notification&) override;

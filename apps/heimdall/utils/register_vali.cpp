@@ -48,9 +48,9 @@ namespace Heimdall
             auto editImage = theme->GetImage(Asgaard::Theming::Theme::Elements::IMAGE_EDITOR);
             auto gameImage = theme->GetImage(Asgaard::Theming::Theme::Elements::IMAGE_GAME);
             
-            g_applicationRegister.push_back(std::make_unique<Application>("Terminal", "$bin/alumni", termImage));
-            g_applicationRegister.push_back(std::make_unique<Application>("Lite", "$bin/lite", editImage));
-            g_applicationRegister.push_back(std::make_unique<Application>("Doom", "$bin/doom", gameImage));
+            g_applicationRegister.push_back(std::make_unique<Application>("Terminal", "$bin/alumni.run", termImage));
+            g_applicationRegister.push_back(std::make_unique<Application>("Lite", "$bin/lite.run", editImage));
+            g_applicationRegister.push_back(std::make_unique<Application>("Doom", "$bin/doom.run", gameImage));
 
             // todo load from db
         }

@@ -39,18 +39,18 @@ namespace Asgaard {
         class Image;
     }
     
-    class WindowBase : public Surface {
+    class ASGAARD_API WindowBase : public Surface {
     public:
-        ASGAARD_API WindowBase(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
-        ASGAARD_API ~WindowBase();
+        WindowBase(uint32_t, const std::shared_ptr<Screen>&, const Rectangle&);
+        ~WindowBase();
 
-        ASGAARD_API void SetTitle(const std::string& title);
-        ASGAARD_API void SetIconImage(const std::shared_ptr<Drawing::Image>& image);
+        void SetTitle(const std::string& title);
+        void SetIconImage(const std::shared_ptr<Drawing::Image>& image);
 
-        ASGAARD_API void SetResizable(bool resizeable);
-        ASGAARD_API void EnableDecoration(bool enable);
+        void SetResizable(bool resizeable);
+        void EnableDecoration(bool enable);
 
-        ASGAARD_API void Destroy() override;
+        void Destroy() override;
         
     // Window events that can/should be reacted on.
     protected:
@@ -61,14 +61,14 @@ namespace Asgaard {
 
     // Window functions that can be called to configure this window 
     protected:
-        ASGAARD_API void InitiateResize(const std::shared_ptr<Pointer>&, enum SurfaceEdges);
-        ASGAARD_API void InitiateMove(const std::shared_ptr<Pointer>&);
+        void InitiateResize(const std::shared_ptr<Pointer>&, enum SurfaceEdges);
+        void InitiateMove(const std::shared_ptr<Pointer>&);
 
         // Protected function, allow override
-        ASGAARD_API void Notification(const Publisher*, const Asgaard::Notification&) override;
+        void Notification(const Publisher*, const Asgaard::Notification&) override;
 
     private:
-        ASGAARD_API void ExternalEvent(const Event&) final;
+        void ExternalEvent(const Event&) final;
 
     private:
         std::vector<enum PixelFormat>     m_supportedFormats;

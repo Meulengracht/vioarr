@@ -198,7 +198,7 @@ int client_initialize(void)
     if (status) {
         return status;
     }
-    return status;
+    return gracht_client_connect(g_valiClient);
 }
 
 void server_get_hid_devices(void)

@@ -102,4 +102,4 @@ add_subdirectory (core)
 
 # configure global install targets
 install (EXPORT AsgaardExport DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/cmake/asgaard)
-install (DIRECTORY ${CMAKE_SOURCE_DIR}/protocols DESTINATION ${CMAKE_INSTALL_PREFIX}/share/vioarr/protocols)
+install (DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/protocols DESTINATION ${CMAKE_INSTALL_PREFIX}/share/vioarr/protocols)

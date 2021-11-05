@@ -114,3 +114,10 @@ if (MOLLENOS)
     add_dependencies(vioarr os_client_service)
 endif ()
 target_link_libraries(vioarr common gracht glad ${LIBS})
+
+# Setup install targets for vioarr
+install(TARGETS vioarr
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)

@@ -42,3 +42,10 @@ if (MOLLENOS)
 elseif (UNIX)
     target_link_libraries(alumni -lpthread)
 endif()
+
+# Setup install targets for alumni
+install(TARGETS alumni
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)

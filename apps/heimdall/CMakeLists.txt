@@ -47,3 +47,9 @@ elseif (UNIX)
   target_link_libraries(heimdall -lpthread)
 endif()
 
+# Setup install targets for heimdall
+install(TARGETS heimdall
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+    RUNTIME DESTINATION bin
+)

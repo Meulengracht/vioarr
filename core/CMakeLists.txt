@@ -69,7 +69,7 @@ elseif (MOLLENOS)
     endif()
     set (CMAKE_ASM_NASM_COMPILE_OBJECT "<CMAKE_ASM_NASM_COMPILER> <INCLUDES> \
       <FLAGS> -f ${CMAKE_ASM_NASM_OBJECT_FORMAT} -o <OBJECT> <SOURCE>")
-    set (CMAKE_ASM_NASM_FLAGS "-Xvc -D$ENV{VALI_ARCH} -D__$ENV{VALI_ARCH}__")
+    set (CMAKE_ASM_NASM_FLAGS "-Xvc -D$ENV{VALI_ARCH} -D__$ENV{VALI_ARCH}__ -DVIOARR_REVERSE_FB_BLIT")
 
     add_sources (
         engine/core/vioarr_engine_vali.c

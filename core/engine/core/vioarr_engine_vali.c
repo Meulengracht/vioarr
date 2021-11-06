@@ -85,7 +85,9 @@ int vioarr_engine_initialize(void)
 
 void vioarr_engine_request_redraw(void)
 {
-    
+    mtx_lock(&render_sync.lock);
+    cnd_signal(&render_sync.signal);
+    mtx_unlock(&render_sync.lock);
 }
 
 int vioarr_engine_x_minimum(void)
@@ -142,7 +144,7 @@ static void signal_init_thread(void)
 
 static int vioarr_engine_update(void* context)
 {
-    clock_t update, diffMs;
+    clock_t diffMs;
     int     status;
 
     (void)context;
@@ -158,18 +160,16 @@ static int vioarr_engine_update(void* context)
     vioarr_utils_trace(VISTR("vioarr_engine_update started"));
     signal_init_thread();
     
-    vioarr_utils_trace(VISTR("[vioarr] [renderer_thread] started"));
     while (1) {
         mtx_lock(&render_sync.lock);
         cnd_wait(&render_sync.signal, &render_sync.lock);
         mtx_unlock(&render_sync.lock);
 
-        update = clock();
-        diffMs = (update - render_sync.last_update) / (CLOCKS_PER_SEC / 1000);
+        diffMs = (clock() - render_sync.last_update) / (CLOCKS_PER_SEC / 1000);
         if (diffMs < ENGINE_SCREEN_REFRESH_MS) {
             thrd_sleepex(ENGINE_SCREEN_REFRESH_MS - (diffMs % ENGINE_SCREEN_REFRESH_MS));
         }
-        render_sync.last_update = update;
+        render_sync.last_update = clock();
         
         vioarr_screen_frame(primary_screen);
     }

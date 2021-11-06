@@ -321,7 +321,6 @@ namespace Asgaard {
 
     void Application::Notification(const Publisher* source, const Asgaard::Notification& notification)
     {
-        BOCHSBREAK;
         const auto screen = dynamic_cast<const Screen*>(source);
         if (screen == nullptr) {
             return;

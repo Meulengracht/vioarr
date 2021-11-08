@@ -125,14 +125,17 @@ private:
             painter.RenderImage(image);
         };
 
-        // Render the normal state
+        // Render the normal state, but resized to fit the screen
         Drawing::Image background(DATA_DIRECTORY "/themes/backgrounds/bg.png");
-        renderImage(m_buffer, background);
+        auto bgFitted = background.Resize(
+            GetScreen()->GetCurrentWidth(), 
+            GetScreen()->GetCurrentHeight());
+        renderImage(m_buffer, bgFitted);
 
         // create the launcher
         m_launcher = Surface::Create<LauncherBase>(GetScreen(), 
             Rectangle(0, 0, GetScreen()->GetCurrentWidth(), GetScreen()->GetCurrentHeight()), 
-            background
+            bgFitted
         );
 
         // create the application bar

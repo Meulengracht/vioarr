@@ -40,6 +40,7 @@
 struct startup_sync_context {
     mtx_t lock;
     cnd_t signal;
+    int   ready;
 };
 
 struct render_sync_context {
@@ -66,6 +67,7 @@ int vioarr_engine_initialize(void)
     // the startup sequence. 
     mtx_init(&startup_context.lock, mtx_plain);
     cnd_init(&startup_context.signal);
+    startup_context.ready = 0;
 
     // initialize the rendering sync context that controls
     // how often we render
@@ -81,7 +83,9 @@ int vioarr_engine_initialize(void)
 
     // wait for startup sequence to finish
     mtx_lock(&startup_context.lock);
-    cnd_wait(&startup_context.signal, &startup_context.lock);
+    while (!startup_context.ready) {
+        cnd_wait(&startup_context.signal, &startup_context.lock);
+    }
     mtx_unlock(&startup_context.lock);
     return 0;
 }
@@ -137,8 +141,10 @@ static int vioarr_engine_setup_screens(void)
 static void signal_init_thread(void)
 {
     mtx_lock(&startup_context.lock);
-    cnd_signal(&startup_context.signal);
+    startup_context.ready = 1;
     mtx_unlock(&startup_context.lock);
+
+    cnd_signal(&startup_context.signal);
 }
 
 static int vioarr_engine_update(void* context)

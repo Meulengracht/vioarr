@@ -204,7 +204,7 @@ int client_initialize(void)
 void server_get_hid_devices(void)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(GetDeviceService());
-    vioarr_utils_trace(VISTR("[server_get_hid_devices]"));
+    vioarr_utils_trace(VISTR("server_get_hid_devices"));
 
     // subscribe to events from the device manager
     sys_device_subscribe(g_valiClient, &msg.base);
@@ -216,7 +216,7 @@ void server_get_hid_devices(void)
 void sys_device_event_protocol_device_invocation(gracht_client_t* client, const UUId_t deviceId, const UUId_t driverId, const uint8_t protocolId)
 {
     struct vali_link_message msg = VALI_MSG_INIT_HANDLE(driverId);
-    vioarr_utils_trace(VISTR("[svc_device_event_protocol_device_callback] %u"), deviceId);
+    vioarr_utils_trace(VISTR("sys_device_event_protocol_device_invocation %u"), deviceId);
 
     // subscribe to the driver
     ctt_input_subscribe(client, &msg.base);

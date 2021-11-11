@@ -89,7 +89,10 @@ namespace Asgaard {
             // destruction is handled by wm server
             shmdt(m_memory);
         }
-        wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
+
+        if (!m_inheritted) {
+            wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
+        }
     }
     
     std::size_t MemoryPool::Handle() const

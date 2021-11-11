@@ -56,7 +56,7 @@ void wm_memory_create_pool_invocation(struct gracht_message* message, const uint
 
 void wm_memory_pool_create_buffer_invocation(struct gracht_message* message, const uint32_t poolId, const uint32_t bufferId, const int offset, const int width, const int height, const int stride, const enum wm_pixel_format format, const unsigned int flags)
 {
-    vioarr_utils_trace(VISTR("[wm_memory_pool_create_buffer_callback] client %i"), message->client);
+    vioarr_utils_trace(VISTR("[wm_memory_pool_create_buffer_callback] client %i, pool %u, buffer %u"), message->client, poolId, bufferId);
     vioarr_memory_pool_t* pool = vioarr_objects_get_object(message->client, poolId);
     vioarr_buffer_t*      buffer;
     int                   status;

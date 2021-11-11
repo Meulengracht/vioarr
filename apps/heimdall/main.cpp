@@ -28,10 +28,12 @@
 #ifdef MOLLENOS
 #include <ddk/service.h>
 #include <ddk/utils.h>
-#include <gracht/link/vali.h>
+#include <gracht/link/socket.h>
+#include <inet/local.h>
 #include <io.h>
 #include <ioset.h>
 #include <os/process.h>
+static const char* g_serverPath = "/tmp/hd-srv";
 #elif defined(_WIN32)
 #include <gracht/link/socket.h>
 #include <windows.h>
@@ -62,9 +64,21 @@ static void __gracht_handle_disconnect(gracht_conn_t client)
 #ifdef MOLLENOS
 static int __create_platform_link(void)
 {
+    struct gracht_link_socket* link;
+    struct sockaddr_lc         addr = { 0 };
 
+    addr.slc_family = AF_LOCAL;
+    addr.slc_len = sizeof(addr);
+    strncpy (addr.slc_addr, g_serverPath, sizeof(addr.slc_addr));
 
-    return 0;
+    gracht_link_socket_create(&link);
+    gracht_link_socket_set_type(link, gracht_link_stream_based);
+    gracht_link_socket_set_address(link, (const struct sockaddr_storage*)&addr, sizeof(struct sockaddr_lc));
+    gracht_link_socket_set_domain(link, AF_LOCAL);
+    gracht_link_socket_set_listen(link, 1);
+
+    g_serverLink = reinterpret_cast<struct gracht_link*>(link);
+    return gracht_server_add_link(g_valiServer, g_serverLink);
 }
 
 int server_initialize(void)

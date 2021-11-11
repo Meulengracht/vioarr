@@ -36,6 +36,7 @@ namespace Asgaard {
     MemoryPool::MemoryPool(uint32_t id, std::size_t handle, std::size_t size)
         : Object(id)
         , m_size(size)
+        , m_inheritted(true)
     {
         if (size == 0) {
             throw InvalidArgumentException("MemoryPool::MemoryPool 0-size provided");
@@ -56,6 +57,7 @@ namespace Asgaard {
     MemoryPool::MemoryPool(uint32_t id, std::size_t size)
         : Object(id)
         , m_size(size)
+        , m_inheritted(false)
     {
         if (size == 0) {
             throw InvalidArgumentException("MemoryPool::MemoryPool 0-size provided");
@@ -82,7 +84,10 @@ namespace Asgaard {
             dma_attachment_unmap(&m_attachment);
             dma_detach(&m_attachment);
         }
-        wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
+
+        if (!m_inheritted) {
+            wm_memory_pool_destroy(APP.VioarrClient(), nullptr, Id());
+        }
     }
     
     std::size_t MemoryPool::Handle() const

@@ -84,10 +84,10 @@ typedef struct vioarr_surface {
 
 static int  __initialize_surface_properties(vioarr_surface_properties_t* properties);
 static void __cleanup_surface_properties(vioarr_surface_properties_t* properties);
-static void __cleanup_surface_backbuffer(vioarr_screen_t* screen, vioarr_surface_backbuffer_t* backbuffer);
+static void __cleanup_surface_backbuffer(vcontext_t* context, vioarr_surface_backbuffer_t* backbuffer);
 static void __swap_properties(vioarr_surface_t* surface);
 static void __update_surface(vcontext_t* context, vioarr_surface_t* surface);
-static int  __swap_backbuffer(NVGcontext* context, vioarr_surface_t* surface);
+static int  __swap_backbuffer(vcontext_t* context, vioarr_surface_t* surface);
 static void __refresh_content(vcontext_t* context, vioarr_surface_t* surface);
 static void __render_drop_shadow(vcontext_t* context, vioarr_surface_t* surface);
 static void __render_content(vcontext_t* context, vioarr_surface_t* surface);
@@ -161,10 +161,34 @@ int vioarr_surface_create(int client, uint32_t id, vioarr_screen_t* screen, int 
     return 0;
 }
 
-void vioarr_surface_destroy(vioarr_surface_t* surface)
+void vioarr_surface_free(vcontext_t* context, vioarr_surface_t* surface)
 {
     vioarr_surface_t* itr;
 
+    if (!surface) {
+        return;
+    }
+
+    // if we have children, go through them and promote them to regular surfaces
+    itr = ACTIVE_PROPERTIES(surface).children;
+    while (itr) {
+        vioarr_surface_t* next = itr->link;
+        __make_orphan(itr);
+        itr = next;
+    }
+
+    __cleanup_surface_properties(&surface->properties[0]);
+    __cleanup_surface_properties(&surface->properties[1]);
+    __cleanup_surface_backbuffer(context, &surface->backbuffers[0]);
+    __cleanup_surface_backbuffer(context, &surface->backbuffers[1]);
+
+    free(surface->dirt);
+    free(surface->dimensions);
+    free(surface);
+}
+
+void vioarr_surface_destroy(vioarr_surface_t* surface)
+{
     if (!surface) {
         return;
     }
@@ -182,26 +206,11 @@ void vioarr_surface_destroy(vioarr_surface_t* surface)
     if (surface->parent) {
         __remove_child(surface->parent, surface);
         __make_orphan(surface);
-        vioarr_engine_request_redraw();
-        vioarr_renderer_wait_frame(vioarr_screen_renderer(surface->screen));
     }
 
-    // if we have children, go through them and promote them to regular surfaces
-    itr = ACTIVE_PROPERTIES(surface).children;
-    while (itr) {
-        vioarr_surface_t* next = itr->link;
-        __make_orphan(itr);
-        itr = next;
-    }
-
-    __cleanup_surface_properties(&surface->properties[0]);
-    __cleanup_surface_properties(&surface->properties[1]);
-    __cleanup_surface_backbuffer(surface->screen, &surface->backbuffers[0]);
-    __cleanup_surface_backbuffer(surface->screen, &surface->backbuffers[1]);
-
-    free(surface->dirt);
-    free(surface->dimensions);
-    free(surface);
+    // handle freeing of resources later as the renderer thread
+    // could still be reading
+    vioarr_renderer_queue_cleanup(vioarr_screen_renderer(surface->screen), surface);
 }
 
 int vioarr_surface_add_child(vioarr_surface_t* parent, vioarr_surface_t* child, int x, int y)
@@ -861,10 +870,10 @@ static void __cleanup_surface_properties(vioarr_surface_properties_t* properties
     }
 }
 
-static void __cleanup_surface_backbuffer(vioarr_screen_t* screen, vioarr_surface_backbuffer_t* backbuffer)
+static void __cleanup_surface_backbuffer(vcontext_t* context, vioarr_surface_backbuffer_t* backbuffer)
 {
     if (backbuffer->content) {
-        vioarr_renderer_destroy_image(vioarr_screen_renderer(screen), backbuffer->resource_id);
+        nvgDeleteImage(context, backbuffer->resource_id);
         vioarr_buffer_destroy(backbuffer->content);
     }
 }

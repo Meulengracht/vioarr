@@ -36,6 +36,7 @@ enum wm_surface_edge;
 
 int               vioarr_surface_create(int, uint32_t, vioarr_screen_t*, int, int, int, int, vioarr_surface_t**);
 void              vioarr_surface_destroy(vioarr_surface_t*);
+void              vioarr_surface_free(vcontext_t*, vioarr_surface_t*);
 void              vioarr_surface_set_buffer(vioarr_surface_t*, vioarr_buffer_t*);
 void              vioarr_surface_set_drop_shadow(vioarr_surface_t*, int x, int y, int width, int height);
 void              vioarr_surface_set_input_region(vioarr_surface_t*, int x, int y, int width, int height);

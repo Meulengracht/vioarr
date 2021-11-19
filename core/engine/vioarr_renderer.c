@@ -34,6 +34,7 @@
 
 #include <list.h>
 #include "vioarr_buffer.h"
+#include "vioarr_engine.h"
 #include "vioarr_renderer.h"
 #include "vioarr_screen.h"
 #include "vioarr_surface.h"
@@ -41,20 +42,18 @@
 #include "vioarr_utils.h"
 #include <stdlib.h>
 #include <threads.h>
-#include <stdatomic.h>
 
 typedef struct vioarr_renderer {
 #ifdef VIOARR_BACKEND_NANOVG
     vcontext_t*      context;
-    mtx_t            context_sync;
 #endif
     vioarr_screen_t* screen;
     int              width;
     int              height;
     int              scale;
     int              rotation;
-    atomic_uint      frame_count;
     float            pixel_ratio;
+    mtx_t            lock;
     list_t           cleanup_list;
 } vioarr_renderer_t;
 
@@ -70,7 +69,6 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen, int width, in
 
 #ifdef VIOARR_BACKEND_NANOVG
     vioarr_utils_trace(VISTR("[vioarr_renderer_create] creating nvg context"));
-    mtx_init(&renderer->context_sync, mtx_plain);
 #ifdef __VIOARR_CONFIG_RENDERER_MSAA
 	renderer->context = nvgCreateGL3(NVG_ANTIALIAS | NVG_STENCIL_STROKES | NVG_DEBUG);
 #else
@@ -89,7 +87,7 @@ vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t* screen, int width, in
     renderer->pixel_ratio = (float)width / (float)screenWidth;
     renderer->scale       = 1;
     renderer->rotation    = 0;
-    renderer->frame_count = ATOMIC_VAR_INIT(0);
+    mtx_init(&renderer->lock, mtx_plain);
     list_construct(&renderer->cleanup_list);
     
     return renderer;
@@ -162,7 +160,7 @@ int get_nvg_flags(vioarr_buffer_t* buffer)
 }
 #endif
 
-void vioarr_renderer_destroy_image(vioarr_renderer_t* renderer, int resourceId)
+void vioarr_renderer_queue_cleanup(vioarr_renderer_t* renderer, vioarr_surface_t* surface)
 {
     element_t* item;
 
@@ -171,37 +169,19 @@ void vioarr_renderer_destroy_image(vioarr_renderer_t* renderer, int resourceId)
     }
 
     item = malloc(sizeof(element_t));
-    item->key = renderer->context;
-    item->value = (void*)(int64_t)resourceId;
+    item->key = NULL;
+    item->value = surface;
 
-#ifdef VIOARR_BACKEND_NANOVG
-    mtx_lock(&renderer->context_sync);
+    mtx_lock(&renderer->lock);
     list_append(&renderer->cleanup_list, item);
-    mtx_unlock(&renderer->context_sync);
-#endif
+    mtx_unlock(&renderer->lock);
+    vioarr_engine_request_redraw();
 }
 
-void vioarr_renderer_wait_frame(vioarr_renderer_t* renderer)
+static void cleanup_entry(element_t* item, void* context)
 {
-    uint32_t startFrame;
-    uint32_t nextFrame;
-
-    if (!renderer) {
-        return;
-    }
-
-    startFrame = atomic_load(&renderer->frame_count);
-    nextFrame  = startFrame + 1;
-    while (startFrame < nextFrame && nextFrame - startFrame == 1) {
-        thrd_yield();
-        startFrame = atomic_load(&renderer->frame_count);
-    }
-}
-
-static void cleanup_surface(element_t* item, void* context)
-{
-    (void)context;
-    nvgDeleteImage(item->key, (int)(int64_t)item->value);
+    vioarr_renderer_t* renderer = context;    
+    vioarr_surface_free(renderer->context, item->value);
     free(item);
 }
 
@@ -214,10 +194,10 @@ void vioarr_renderer_render(vioarr_renderer_t* renderer)
     
 #ifdef VIOARR_BACKEND_NANOVG
     glViewport(0, 0, renderer->width, renderer->height);
-    glClearColor(0.15f, 0.34f, 0.35f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     
-    mtx_lock(&renderer->context_sync);
+    mtx_lock(&renderer->lock);
     nvgBeginFrame(renderer->context, 
         vioarr_region_width(drawRegion), 
         vioarr_region_height(drawRegion), 
@@ -231,7 +211,7 @@ void vioarr_renderer_render(vioarr_renderer_t* renderer)
 #endif
 
     // cleanup all resources queued before starting
-    list_clear(&renderer->cleanup_list, cleanup_surface, NULL);
+    list_clear(&renderer->cleanup_list, cleanup_entry, renderer);
 
     vioarr_manager_render_start(&surfaces);
     for (level = 0; level < SURFACE_LEVELS; level++) {
@@ -246,7 +226,6 @@ void vioarr_renderer_render(vioarr_renderer_t* renderer)
     
 #ifdef VIOARR_BACKEND_NANOVG
     nvgEndFrame(renderer->context);
-    mtx_unlock(&renderer->context_sync);
+    mtx_unlock(&renderer->lock);
 #endif
-    atomic_fetch_add(&renderer->frame_count, 1);
 }

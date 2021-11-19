@@ -28,15 +28,14 @@
 #include "vioarr_screen.h"
 
 typedef struct vioarr_renderer vioarr_renderer_t;
+typedef struct vioarr_surface  vioarr_surface_t;
 
 vioarr_renderer_t* vioarr_renderer_create(vioarr_screen_t*, int width, int height);
 void               vioarr_renderer_set_scale(vioarr_renderer_t*, int);
 void               vioarr_renderer_set_rotation(vioarr_renderer_t*, int);
 int                vioarr_renderer_scale(vioarr_renderer_t*);
 int                vioarr_renderer_rotation(vioarr_renderer_t*);
-void               vioarr_renderer_destroy_image(vioarr_renderer_t*, int);
-
-void               vioarr_renderer_wait_frame(vioarr_renderer_t*);
+void               vioarr_renderer_queue_cleanup(vioarr_renderer_t*, vioarr_surface_t*);
 void               vioarr_renderer_render(vioarr_renderer_t*);
 
 #endif //!__VIOARR_RENDERER_H__

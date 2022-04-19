@@ -15,11 +15,7 @@ endmacro()
 # setup include directories
 include_directories(
     ${VIOARR_PROTOCOL_DIRECTORY}
-    ${libgracht_SOURCE_DIR}/include
-    ${zip_SOURCE_DIR}/src
-    ${zip_SOURCE_DIR}/src/extlibs
     ${PROJECT_SOURCE_DIR}/libs/common/include
-    ${freetype_SOURCE_DIR}/include
     ./include/
 )
 
@@ -79,11 +75,11 @@ elseif (UNIX)
 endif ()
 
 add_library(asgaard SHARED ${GENERATED_SOURCES} ${SRCS})
-add_dependencies(asgaard zip wm_client_service hd_client_service)
+add_dependencies(asgaard wm_client_service hd_client_service)
 target_compile_definitions(asgaard PRIVATE
     -DASGAARD_BUILD -DASGAARD_THEME_PASSWORD=\"$ENV{VALI_CODE}\"
 )
-target_link_libraries(asgaard freetype gracht zip bzip2 lzma z)
+target_link_libraries(asgaard ${FREETYPE_LIBRARY} ${ZIP_LIBRARY} ${GRACHT_LIBRARY} z bzip2 lzma)
 
 if (MOLLENOS)
   target_link_libraries(asgaard ValiDDK::libddk)
@@ -95,6 +91,6 @@ add_custom_command(TARGET asgaard POST_BUILD
 )
 
 # setup install targets
-install(TARGETS asgaard freetype gracht zip bzip2 lzma png z zlib EXPORT AsgaardExport)
+install(TARGETS asgaard EXPORT AsgaardExport)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/asgaard DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 install(DIRECTORY ${VIOARR_ROOT_DIRECTORY}/data DESTINATION ${CMAKE_INSTALL_PREFIX}/share/asgaard)

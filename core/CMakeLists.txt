@@ -13,15 +13,9 @@ endmacro()
 
 include_directories (
     ${VIOARR_PROTOCOL_DIRECTORY}
-    ${libgracht_SOURCE_DIR}/include
     ${CMAKE_CURRENT_BINARY_DIR}/../libs/glad/include/glad
-    ${freetype_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/libs/common/include
 )
-
-if (MOLLENOS)
-    include_directories($ENV{VALI_DDK_PATH}/include)
-endif()
 
 set (GENERATED_SOURCES
     ${VIOARR_PROTOCOL_DIRECTORY}/wm_core_service_server.c
@@ -109,11 +103,11 @@ add_sources (
 )
 
 add_executable(vioarr ${SRCS})
-add_dependencies(vioarr glad freetype wm_server_service)
+add_dependencies(vioarr glad wm_server_service)
 if (MOLLENOS)
     add_dependencies(vioarr os_client_service)
 endif ()
-target_link_libraries(vioarr common gracht glad ${LIBS})
+target_link_libraries(vioarr common ${GRACHT_LIBRARY} glad ${LIBS})
 
 # Setup install targets for vioarr
 install(TARGETS vioarr

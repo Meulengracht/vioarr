@@ -22,7 +22,6 @@ include_directories (
     ${VIOARR_PROTOCOL_DIRECTORY}
     ${PROJECT_SOURCE_DIR}/libs/common/include
     ${PROJECT_SOURCE_DIR}/libs/asgaard/include
-    ${libgracht_SOURCE_DIR}/include
 )
 
 add_sources(
@@ -39,7 +38,7 @@ endif()
 # Configure primary executable target
 add_executable(heimdall ${GENERATED_SOURCES} ${SRCS})
 add_dependencies(heimdall hd_server_service)
-target_link_libraries(heimdall asgaard gracht)
+target_link_libraries(heimdall asgaard ${GRACHT_LIBRARY})
 
 if (MOLLENOS)
   target_link_libraries(heimdall ValiDDK::libddk)

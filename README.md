@@ -18,3 +18,11 @@ Asgaard provides a default client implementation framework that apps can quickly
 - Launcher (Heimdall)
 
 More applications are planned, and a much better application environment is also in the works.
+
+## Build Instructions
+
+To build vioarr, GLAD must be installed as a python3 module
+
+```
+pip3 install --upgrade git+https://github.com/meulengracht/glad.git#egg=glad
+```

@@ -12,6 +12,9 @@ include (CheckIncludeFiles)
 check_include_files (threads.h HAVE_C11_THREADS)
 check_include_files (pthread.h HAVE_PTHREAD)
 
+find_package (Gracht REQUIRED)
+find_package (Freetype REQUIRED)
+find_package (ZIP REQUIRED)
 find_package (Python3 REQUIRED)
 find_package (GLM REQUIRED)
 message (STATUS "Found GRLM in ${GLM_INCLUDE_DIR}")
@@ -20,35 +23,6 @@ if (NOT MOLLENOS)
   find_package (GLFW3 REQUIRED)
   message (STATUS "Found GLFW3 in ${GLFW3_INCLUDE_DIR}")
 endif ()
-
-# checkout dependencies that we need
-include(FetchContent)
-
-FetchContent_Declare(
-  libgracht
-  GIT_REPOSITORY https://github.com/meulengracht/libgracht.git
-  GIT_TAG main
-)
-if (MOLLENOS)
-  set (GRACHT_C_LINK_VALI ON CACHE BOOL "Enable vali ipc link")
-endif ()
-FetchContent_MakeAvailable(libgracht)
-
-FetchContent_Declare(
-  freetype
-  GIT_REPOSITORY https://github.com/umbrella-c/libfreetype.git
-  GIT_TAG master
-)
-FetchContent_MakeAvailable(freetype)
-
-FetchContent_Declare(
-  zip
-  GIT_REPOSITORY https://github.com/umbrella-c/libzip.git
-  GIT_TAG main
-)
-
-set(LIBZIP_COMPILE_AS_PIC ON CACHE INTERNAL "Build libzip with -fPIC enabled")
-FetchContent_MakeAvailable(zip)
 
 if (WIN32)
     set (LIBS glfw3 opengl32 freetype)
@@ -72,8 +46,8 @@ elseif (APPLE)
     set (APPLE_LIBS ${APPLE_LIBS} ${GLFW3_LIBRARY})
     set (LIBS ${LIBS} ${APPLE_LIBS})
 elseif (MOLLENOS)
-  include($ENV{VALI_DDK_PATH}/lib/cmake/ValiDDKTargets.cmake)
-  set (LIBS freetype opengl-osmesa ValiDDK::libddk)
+  include($ENV{VALI_SDK_PATH}/lib/cmake/ValiDDKTargets.cmake)
+  set (LIBS freetype gallium-osmesa ValiDDK::libddk)
 endif ()
 
 set (CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)

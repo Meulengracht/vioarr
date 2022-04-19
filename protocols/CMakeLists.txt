@@ -51,8 +51,8 @@ set (WM_GENERATED_CLIENT_SOURCES
 
 add_custom_command(
     OUTPUT  ${WM_GENERATED_HEADERS} ${WM_GENERATED_SERVER_SOURCES} ${WM_GENERATED_CLIENT_SOURCES}
-    COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --server --client
-    DEPENDS gracht ${CMAKE_CURRENT_SOURCE_DIR}/types.gr ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr
+    COMMAND python3 $ENV{VALI_SDK_PATH}/share/vali/parser.py --service ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --server --client
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/types.gr ${CMAKE_CURRENT_SOURCE_DIR}/vioarr.gr
 )
 
 add_custom_target(
@@ -81,8 +81,8 @@ set (HD_GENERATED_CLIENT_SOURCES
 
 add_custom_command(
     OUTPUT  ${HD_GENERATED_HEADERS} ${HD_GENERATED_SERVER_SOURCES} ${HD_GENERATED_CLIENT_SOURCES}
-    COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service ${CMAKE_CURRENT_SOURCE_DIR}/heimdall.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --server --client
-    DEPENDS gracht ${CMAKE_CURRENT_SOURCE_DIR}/heimdall.gr
+    COMMAND python3 $ENV{VALI_SDK_PATH}/share/vali/parser.py --service ${CMAKE_CURRENT_SOURCE_DIR}/heimdall.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --server --client
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/heimdall.gr
 )
 
 add_custom_target(
@@ -110,14 +110,13 @@ if (MOLLENOS)
 
     add_custom_command(
         OUTPUT  ${OS_GENERATED_HEADERS} ${OS_GENERATED_CLIENT_SOURCES}
-        COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
-        COMMAND python3 ${libgracht_SOURCE_DIR}/generator/parser.py --service $ENV{VALI_DDK_PATH}/share/vali/protocols/device.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
-        DEPENDS gracht $ENV{VALI_DDK_PATH}/share/vali/protocols/device.gr $ENV{VALI_DDK_PATH}/share/vali/protocols/contracts/input.gr
+        COMMAND python3 $ENV{VALI_SDK_PATH}/share/vali/parser.py --service $ENV{VALI_SDK_PATH}/share/vali/protocols/contracts/input.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
+        COMMAND python3 $ENV{VALI_SDK_PATH}/share/vali/parser.py --service $ENV{VALI_SDK_PATH}/share/vali/protocols/device.gr --out ${CMAKE_CURRENT_BINARY_DIR} --lang-c --client
+        DEPENDS $ENV{VALI_SDK_PATH}/share/vali/protocols/device.gr $ENV{VALI_SDK_PATH}/share/vali/protocols/contracts/input.gr
     )
 
     add_custom_target(
         os_client_service
         DEPENDS ${OS_GENERATED_HEADERS} ${OS_GENERATED_CLIENT_SOURCES}
     )
-
 endif()

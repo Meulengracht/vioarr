@@ -24,6 +24,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cctype>
+#include <limits>
 #include <cmath>
 #include <asgaard/utils/freetype.hpp>
 #include <asgaard/drawing/font.hpp>

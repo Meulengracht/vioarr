@@ -1,0 +1,73 @@
+project: 
+  summary: Open source window manager with complimentary apps
+  description: |
+    Open source window manager with complimentary apps. The window manager provides a window manager protocol that anyone would be able to implement, and
+    it allows for a very flexible system. Vioarr comes with a C++ application framework, which can be useful as a quick start for new applications
+  author: Philip Meulengracht
+  email: the_meulengracht@hotmail.com
+  version: 1.0.0
+  license: GPLv3
+  homepage: https://github.com/Meulengracht/vioarr
+
+ingredients:
+- name: vali/clang-cc
+  description: Use the clang cross-compiler to build the OS
+  channel: devel
+- name: vali/sdk-c
+  description: Require C SDK to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/sdk-cpp
+  description: Require C++ SDK to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/libzip
+  description: Require Libzip to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/libgracht
+  description: Require Gracht to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/libfreetype
+  description: Require Freetype to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/libmesa
+  description: Require Mesa3D to build the library for Vali
+  channel: devel
+  platform: vali
+- name: vali/glm
+  description: Require GLM to build the library for Vali
+  channel: devel
+  platform: vali
+
+recipes:
+  - name: vioarr
+    path: /
+    toolchain: vali/clang-cc
+    steps:
+    - type: generate
+      system: cmake
+      arguments:
+        - -G
+        - '"Unix Makefiles"'
+        - -DCMAKE_TOOLCHAIN_FILE=${{ PROJECT_PATH }}/chef/Vali.cmake
+      env:
+        CROSS: ${{ TOOLCHAIN_PREFIX }}
+        VALI_ARCH: ${{ CHEF_ARCHITECTURE }}
+        VALI_SDK_PATH: ${{ INGREDIENTS_PREFIX }}
+    - type: build
+      depends: [generate]
+      system: make
+      env:
+        CROSS: ${{ TOOLCHAIN_PREFIX }}
+        VALI_ARCH: ${{ CHEF_ARCHITECTURE }}
+        VALI_SDK_PATH: ${{ INGREDIENTS_PREFIX }}
+
+packs:
+- name: libasgaard
+  type: ingredient
+  filters:
+    - include
+    - lib

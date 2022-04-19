@@ -23,6 +23,7 @@
 
 #include <cassert>
 #include <cctype>
+#include <limits>
 #include <cmath>
 #include <cstdarg>
 
